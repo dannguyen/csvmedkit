@@ -6,7 +6,9 @@
 ## 0.1 
 
 - csvflatten
-    - add tabulate/csvview internal
+    - [X] add tabulate/csvview internal
+    - [ ] finish tests
+
 - csvheader
 
 
@@ -15,3 +17,10 @@
 - fix setup.py, add dependencies, test utils, etc
 - add csvmedkitutil, and other baseclasses
 - set up pypi
+
+
+
+
+## Future
+
+- csvswitch: case/switch transform

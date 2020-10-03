@@ -1,53 +1,76 @@
 #!/usr/bin/env python
 
-"""The setup script."""
+import os
+import sys
+from setuptools import setup
 
-from setuptools import setup, find_packages
+HERE_PATH = os.path.abspath(os.path.dirname(__file__))
+ABOUT = {}
+with open(os.path.join(HERE_PATH, "csvmedkit", "__about__.py"), "r") as f:
+    exec(f.read(), ABOUT)
 
-with open('README.rst') as readme_file:
-    readme = readme_file.read()
+with open("README.rst", "r") as f:
+    README = f.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
+install_requires = [
+    'csvkit>=1.0.5',
+    "altair>=4.1",
+    "altair-viewer>=0.3.0",
+    "python-slugify>=4.0",
+    'regex>=2020.7.14',
+]
 
-requirements = [ ]
+dev_requires = [
+    'coverage>=4.4.2',
+    'nose>=1.1.2',
+    'sphinx>=1.0.7',
+    'sphinx_rtd_theme',
+    'tox>=3.1.0',
+]
 
-setup_requirements = [ ]
-
-test_requirements = [ ]
 
 setup(
-    author="Dan Nguyen",
-    author_email='dansonguyen@gmail.com',
-    python_requires='>=3.6',
+    name=ABOUT["__title__"],
+    version=ABOUT["__version__"],
+    description=ABOUT["__description__"],
+    author=ABOUT["__author__"],
+    author_email=ABOUT["__author_email__"],
+    url=ABOUT["__url__"],
+    long_description=README,
+    long_description_content_type="text/x-rst",
+    project_urls={
+        'Documentation': 'https://csvmedkit.readthedocs.io/en/latest/',
+    },
+    license='MIT',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
         'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Scientific/Engineering :: Information Analysis',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Utilities'
     ],
-    description="csvmedkit is an extension to csvkit",
+    packages=[
+        'csvmedkit',
+    ],
     entry_points={
         'console_scripts': [
-            'csvmedkit=csvmedkit.cli:main',
-        ],
+            'csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance',
+        ]
     },
-    install_requires=requirements,
-    license="MIT license",
-    long_description=readme + '\n\n' + history,
-    include_package_data=True,
-    keywords='csvmedkit',
-    name='csvmedkit',
-    packages=find_packages(include=['csvmedkit', 'csvmedkit.*']),
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements,
-    url='https://github.com/dannguyen/csvmedkit',
-    version='0.0.0.1',
-    zip_safe=False,
+    install_requires=install_requires,
+    extras_require={
+        'dev': dev_requires
+    }
 )

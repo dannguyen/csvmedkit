@@ -1,21 +1,15 @@
-#!/usr/bin/env python
-
-"""Tests for `csvmedkit` package."""
-
-
 import unittest
+from unittest import skip as skiptest
 
-from csvmedkit import csvmedkit
+import re
+
+import csvmedkit
+import csvmedkit.__about__ as about
 
 
-class TestCsvmedkit(unittest.TestCase):
-    """Tests for `csvmedkit` package."""
+class FunTestCase(unittest.TestCase):
+    def test_about(self):
+        self.assertEqual("csvmedkit", about.__title__)
 
-    def setUp(self):
-        """Set up test fixtures, if any."""
-
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
-
-    def test_000_something(self):
-        """Test something."""
+    def test_version(self):
+        assert re.match(r"\d+\.\d+\.\d+", about.__version__)
