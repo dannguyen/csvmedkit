@@ -3,12 +3,13 @@ from unittest import skip as skiptest
 import sys
 
 
+from csvmedkit.exceptions import *
 from csvmedkit.moreutils.csvflatten import (
     CSVFlatten,
     launch_new_instance,
     DEFAULT_EOR_MARKER,
 )
-from tests.utils import CSVKitTestCase, EmptyFileTests, stdin_as_string
+from tests.utils import CSVKitTestCase, EmptyFileTests
 
 
 class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
@@ -20,10 +21,9 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
         ):
             launch_new_instance()
 
-    def test_transformed_structure(self):
+    def test_basic(self):
         """
-        a,b,c
-        1,2,3
+        default operation is to transpose the table into field,value form
         """
         self.assertLines(
             ["examples/dummy.csv"],

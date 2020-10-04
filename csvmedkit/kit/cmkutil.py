@@ -1,8 +1,19 @@
 """Main module."""
 import argparse
 from collections import namedtuple
+from typing import List as typeList
 
-from csvmedkit import CSVKitUtility, agate, __title__, __version__
+from csvmedkit import CSVKitUtility, agate, parse_column_identifiers
+from csvmedkit import __title__, __version__
+
+
+def qparse_column_ids(
+    ids: str, column_names: typeList[str], column_offset=1
+) -> typeList[int]:
+    """just a simplified version of parse_column_identifiers"""
+    return parse_column_identifiers(
+        ids, column_names, column_offset, excluded_columns=None
+    )
 
 
 class CmkUtil(CSVKitUtility):
@@ -10,8 +21,11 @@ class CmkUtil(CSVKitUtility):
     slightly adjusted version of standard CSVKitUtility
     """
 
-    def text_reader(self) -> agate.csv.reader:
+    def text_csv_reader(self) -> agate.csv.reader:
         return agate.csv.reader(self.skip_lines(), **self.reader_kwargs)
+
+    def text_csv_writer(self) -> agate.csv.writer:
+        return agate.csv.writer(self.output_file, **self.writer_kwargs)
 
     def _extract_csv_reader_kwargs(self):
         """
@@ -213,26 +227,26 @@ MyIO = namedtuple(
 )
 
 
-class JustTextUtility(CmkUtil):
-    def init_io(self, write_header=True):
-        if not hasattr(self.args, "columns"):
-            self.args.columns = []
+# class JustTextUtility(CmkUtil):
+#     def init_io(self, write_header=True):
+#         if not hasattr(self.args, "columns"):
+#             self.args.columns = []
 
-        reader_kwargs = self.reader_kwargs
-        writer_kwargs = self.writer_kwargs
+#         reader_kwargs = self.reader_kwargs
+#         writer_kwargs = self.writer_kwargs
 
-        # Move the line_numbers option from the writer to the reader.
-        if writer_kwargs.pop("line_numbers", False):
-            reader_kwargs["line_numbers"] = True
+#         # Move the line_numbers option from the writer to the reader.
+#         if writer_kwargs.pop("line_numbers", False):
+#             reader_kwargs["line_numbers"] = True
 
-        rows, column_names, column_ids = self.get_rows_and_column_names_and_column_ids(
-            **reader_kwargs
-        )
+#         rows, column_names, column_ids = self.get_rows_and_column_names_and_column_ids(
+#             **reader_kwargs
+#         )
 
-        output = agate.csv.writer(self.output_file, **writer_kwargs)
-        if write_header is True:
-            output.writerow(column_names)
+#         output = agate.csv.writer(self.output_file, **writer_kwargs)
+#         if write_header is True:
+#             output.writerow(column_names)
 
-        return MyIO(
-            rows=rows, column_names=column_names, column_ids=column_ids, output=output
-        )
+#         return MyIO(
+#             rows=rows, column_names=column_names, column_ids=column_ids, output=output
+#         )

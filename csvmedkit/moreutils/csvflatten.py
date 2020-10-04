@@ -2,7 +2,7 @@
 
 import agate
 
-from csvmedkit.kit.cmkutil import JustTextUtility
+from csvmedkit.kit.cmkutil import CmkUtil
 from csvmedkit import rxlib as re
 import os
 import sys
@@ -18,7 +18,7 @@ FLAT_COLUMN_NAMES = (
 PRETTIFY_PADDING = 15
 
 
-class CSVFlatten(JustTextUtility):
+class CSVFlatten(CmkUtil):
     description = """Prints flattened records, such that each row represents a record's fieldname and corresponding value,
                      similar to transposing a record in spreadsheet format"""
 
@@ -76,11 +76,8 @@ class CSVFlatten(JustTextUtility):
             self.argparser.error("You must provide an input file or piped data.")
 
         # the following args are referenced in self.reader_kwargs and used in get_rows_and_column_names_and_column_ids
-        self.args.columns = []
-        self.args.line_numbers = False
-        rows, column_names, column_ids = self.get_rows_and_column_names_and_column_ids(
-            **self.reader_kwargs
-        )
+        rows = self.text_csv_reader()
+        column_names = next(rows)
 
         self.max_column_name_len = (
             max(len(c) for c in column_names) if column_names else 0

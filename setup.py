@@ -13,19 +13,17 @@ with open("README.rst", "r") as f:
     README = f.read()
 
 install_requires = [
-    'csvkit>=1.0.5',
-    "altair>=4.1",
-    "altair-viewer>=0.3.0",
+    "csvkit>=1.0.5",
     "python-slugify>=4.0",
-    'regex>=2020.7.14',
+    "regex>=2020.7.14",
 ]
 
 dev_requires = [
-    'coverage>=4.4.2',
-    'nose>=1.1.2',
-    'sphinx>=1.0.7',
-    'sphinx_rtd_theme',
-    'tox>=3.1.0',
+    "coverage>=4.4.2",
+    "nose>=1.1.2",
+    "sphinx>=1.0.7",
+    "sphinx_rtd_theme",
+    "tox>=3.1.0",
 ]
 
 
@@ -39,38 +37,37 @@ setup(
     long_description=README,
     long_description_content_type="text/x-rst",
     project_urls={
-        'Documentation': 'https://csvmedkit.readthedocs.io/en/latest/',
+        "Documentation": "https://csvmedkit.readthedocs.io/en/latest/",
     },
-    license='MIT',
+    license="MIT",
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: End Users/Desktop',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Utilities'
+        "Development Status :: 3 - Alpha",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Utilities",
     ],
     packages=[
-        'csvmedkit',
+        "csvmedkit",
     ],
     entry_points={
-        'console_scripts': [
-            'csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance',
+        "console_scripts": [
+            "csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance",
+            "csvheaders = csvmedkit.moreutils.csvheaders:launch_new_instance",
         ]
     },
     install_requires=install_requires,
-    extras_require={
-        'dev': dev_requires
-    }
+    extras_require={"dev": dev_requires},
 )
