@@ -1,7 +1,8 @@
 """Main module."""
 import argparse
 from collections import namedtuple
-from typing import List as typeList
+from sys import stderr
+from typing import List as typeList, NoReturn as typeNoReturn
 
 from csvmedkit import CSVKitUtility, agate, parse_column_identifiers
 from csvmedkit import __title__, __version__
@@ -16,10 +17,43 @@ def qparse_column_ids(
     )
 
 
+# def cmk_open_input_file(path, args):
+#     """
+#     Open the input file specified on the command line.
+#     Like CSVKitUtility._open_input_file(), but not a class method (or py3 compatible)
+#     """
+#     if six.PY2:
+#         mode = 'Urb'
+#         kwargs = {}
+#     else:
+#     mode = 'rt'  # default
+#     kwargs = {'encoding': args.encoding}
+
+#     if not path or path == '-':
+#         f = sys.stdin
+#     else:
+#         extension = splitext(path)[1]
+
+#         if extension == '.gz':
+#             f = LazyFile(gzip.open, path, mode, **kwargs)
+#         elif extension == '.bz2':
+#             if six.PY2:
+#                 f = LazyFile(bz2.BZ2File, path, mode, **kwargs)
+#             else:
+#                 f = LazyFile(bz2.open, path, mode, **kwargs)
+#         else:
+#             f = LazyFile(open, path, mode, **kwargs)
+
+#     return f
+
+
 class CmkUtil(CSVKitUtility):
     """
     slightly adjusted version of standard CSVKitUtility
     """
+
+    def log_err(self, txt: str) -> typeNoReturn:
+        stderr.write(f"{txt}\n")
 
     def text_csv_reader(self) -> agate.csv.reader:
         return agate.csv.reader(self.skip_lines(), **self.reader_kwargs)

@@ -66,6 +66,8 @@ setup(
         "console_scripts": [
             "csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance",
             "csvheaders = csvmedkit.moreutils.csvheaders:launch_new_instance",
+            "csvrgrep = csvmedkit.moreutils.csvrgrep:launch_new_instance",
+
         ]
     },
     install_requires=install_requires,

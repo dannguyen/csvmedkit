@@ -23,9 +23,24 @@
         - [x] validate given indexes
         - [x] write tests
 
+- csvrgrep 
+    - [?] port over
+    - [x] port tests
+    - [?] clean up argument/stdin handling
+        - [ ] finish up isatty hangups
+    - [ ] clean up filter_rows
+
+
+- csvsed
+    - [ ] sans replacement flag
 
 - csvslice
+    - `-i/--index`: 
 
+- csvdrop
+    - https://stackoverflow.com/questions/14661701/how-to-drop-a-list-of-rows-from-pandas-dataframe
+    - syntax: '0,1,2,10-20,-1,-5:,30:'
+    - `-o` log 
 
 ## 0.0
 
