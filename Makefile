@@ -49,7 +49,7 @@ clean-test: ## remove test and coverage artifacts
 
 
 test: ## run tests quickly with the default Python
-	python setup.py test
+	nosetests
 
 test-all: ## run tests on every Python version with tox
 	tox

@@ -8,7 +8,7 @@ from typing import (
     Tuple as typeTuple,
 )
 
-from csvmedkit.kit.cmkutil import CmkUtil, qparse_column_ids
+from csvmedkit.kit.cmkutil import CmkUtil, cmk_parse_column_ids
 from csvmedkit import re_plus as re, slugify
 
 
@@ -167,7 +167,7 @@ class CSVHeaders(CmkUtil):
         if self.rename_headers:
             for rh in self.rename_headers:
                 col, rename = rh
-                cid = qparse_column_ids(
+                cid = cmk_parse_column_ids(
                     col, column_names, column_offset=self.start_index
                 )
                 if len(cid) != 1:

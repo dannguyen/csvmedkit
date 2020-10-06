@@ -1,14 +1,15 @@
 """Main module."""
 import argparse
 from collections import namedtuple
-from sys import stderr
+import sys
 from typing import List as typeList, NoReturn as typeNoReturn
+import warnings
 
 from csvmedkit import CSVKitUtility, agate, parse_column_identifiers
 from csvmedkit import __title__, __version__
 
 
-def qparse_column_ids(
+def cmk_parse_column_ids(
     ids: str, column_names: typeList[str], column_offset=1
 ) -> typeList[int]:
     """just a simplified version of parse_column_identifiers"""
@@ -250,15 +251,75 @@ class CmkUtil(CSVKitUtility):
         )
 
 
-MyIO = namedtuple(
-    "MyIO",
-    [
-        "rows",
-        "column_names",
-        "column_ids",
-        "output",
-    ],
-)
+
+
+
+
+
+class CmkMixedUtil(CmkUtil):
+    """
+    just like standard CmkUtil, except parses intermixed args because it has required positional args
+    """
+
+    def __init__(self, args=None, output_file=None):
+        """
+        Perform argument processing and other setup for a CSVKitUtility.
+
+        same as standard, except we use parse_intermixed_args
+        """
+        self._init_common_parser()
+        self.add_arguments()
+        self.args = self.argparser.parse_intermixed_args(args)
+
+        # Output file is only set during testing.
+        if output_file is None:
+            self.output_file = sys.stdout
+        else:
+            self.output_file = output_file
+
+        self.reader_kwargs = self._extract_csv_reader_kwargs()
+        self.writer_kwargs = self._extract_csv_writer_kwargs()
+
+        self._install_exception_handler()
+
+        try:
+            import signal
+
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+        except (ImportError, AttributeError):
+            # Do nothing on platforms that don't have signals or don't have SIGPIPE
+            pass
+
+
+
+    def run(self):
+        """
+        Unlike standard .run(), this will behave if self.input_file has already been set
+        """
+        # if 'f' not in self.override_flags:
+        if not self.input_file:
+            self.input_file = self._open_input_file(self.args.input_path)
+
+        try:
+            with warnings.catch_warnings():
+                if getattr(self.args, 'no_header_row', None):
+                    warnings.filterwarnings(action='ignore', message='Column names not specified', module='agate')
+
+                self.main()
+        finally:
+            # if 'f' not in self.override_flags:
+                self.input_file.close()
+
+
+# MyIO = namedtuple(
+#     "MyIO",
+#     [
+#         "rows",
+#         "column_names",
+#         "column_ids",
+#         "output",
+#     ],
+# )
 
 
 # class JustTextUtility(CmkUtil):

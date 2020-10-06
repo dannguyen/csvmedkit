@@ -2,15 +2,14 @@ from argparse import Action
 from os import isatty
 import sys
 from typing import Iterable as typeIterable, List as typeList
-import warnings
 
 
 from csvkit.grep import FilteringCSVReader
-from csvmedkit.kit.cmkutil import CmkUtil, parse_column_identifiers
+from csvmedkit.kit.cmkutil import CmkMixedUtil, parse_column_identifiers
 from csvmedkit import re_std as re
 
 
-class CSVRgrep(CmkUtil):
+class CSVRgrep(CmkMixedUtil):
     description = "Like csvgrep, except with support for multiple expressions"
     override_flags = [
         "f",
@@ -172,34 +171,6 @@ class CSVRgrep(CmkUtil):
         outs.writerow(column_names)
         outs.writerows(xrows)
 
-    def __init__(self, args=None, output_file=None):
-        """
-        Perform argument processing and other setup for a CSVKitUtility.
-
-        same as standard, except we use parse_intermixed_args
-        """
-        self._init_common_parser()
-        self.add_arguments()
-        self.args = self.argparser.parse_intermixed_args(args)
-
-        # Output file is only set during testing.
-        if output_file is None:
-            self.output_file = sys.stdout
-        else:
-            self.output_file = output_file
-
-        self.reader_kwargs = self._extract_csv_reader_kwargs()
-        self.writer_kwargs = self._extract_csv_writer_kwargs()
-
-        self._install_exception_handler()
-
-        try:
-            import signal
-
-            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-        except (ImportError, AttributeError):
-            # Do nothing on platforms that don't have signals or don't have SIGPIPE
-            pass
 
     def run(self):
         """
@@ -246,19 +217,8 @@ class CSVRgrep(CmkUtil):
                     self.args.input_path = None
 
         self.input_file = self._open_input_file(self.args.input_path)
+        super().run()
 
-        try:
-            with warnings.catch_warnings():
-                if getattr(self.args, "no_header_row", None):
-                    warnings.filterwarnings(
-                        action="ignore",
-                        message="Column names not specified",
-                        module="agate",
-                    )
-
-                self.main()
-        finally:
-            self.input_file.close()
 
 
 def launch_new_instance():

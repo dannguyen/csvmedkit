@@ -30,8 +30,9 @@
         - [ ] finish up isatty hangups
     - [ ] clean up filter_rows
 
-
 - csvsed
+    - [ ] use cmkmixutil class
+    - [ ] don't implement csvrgrep for now, but move filter class over?
     - [ ] sans replacement flag
 
 - csvslice
