@@ -1,0 +1,218 @@
+#!/usr/bin/env python
+from typing import List as typeList
+
+from csvmedkit import re_std as re
+from csvmedkit.cmkutil import CmkMixedUtil, cmk_filter_rows, cmk_parse_column_ids
+from csvmedkit.exceptions import *
+
+
+class CSVSed(CmkMixedUtil):
+    description = """Replaces all instances of [PATTERN] with [REPL]"""
+
+    override_flags = [
+        "f",
+    ]
+
+    def add_arguments(self):
+        self.argparser.add_argument(
+            "-c",
+            "--columns",
+            dest="columns",
+            help='A comma separated list of column indices, names or ranges to be searched, e.g. "1,id,3-5".',
+        )
+
+        self.argparser.add_argument(
+            "-E",
+            "--expr",
+            dest="expressions_list",
+            nargs="*",
+            action="append",
+            type=str,
+            help=r"""
+                When you want to do multiple sed_expressions:
+                    -E 'PATTERN' 'REPL' '[names_of_columns]'
+
+                    'names_of_columns' is a comma-delimited list of columns; it cannot refer to
+                        columns *not included* in the `-c/--columns` flag; leave blank to match all columns
+
+                e.g.
+                -E '(?i)\b(bob|bobby|rob)\b' 'Robert' 'first_name' \
+                -E '^(?i)smith$' 'SMITH' 'last_name' \
+                -E '(\d{2})-(\d{3})' '$1:$2' '' \
+                """,
+        )
+
+        self.argparser.add_argument(
+            "-G",
+            "--like-grep",
+            dest="like_grep",
+            action="store_true",
+            default=False,
+            help="""Only return rows in which [PATTERN] was a match (BEFORE any transformations) – i.e. like grep''s traditional behavior""",
+        )
+
+        self.argparser.add_argument(
+            "-m",
+            "--match-literal",
+            dest="literal_match",
+            action="store_true",
+            default=False,
+            help="By default, [PATTERN] is assumed to be a regex. Set this flag to make it a literal text find/replace",
+        )
+
+        self.argparser.add_argument(
+            metavar="PATTERN",
+            dest="first_pattern",
+            type=str,
+            # nargs='?',
+            help="A pattern to search for",
+        )
+
+        self.argparser.add_argument(
+            metavar="REPL",
+            dest="first_repl",
+            type=str,
+            # nargs='?',
+            help="A replacement pattern",
+        )
+
+        self.argparser.add_argument(
+            metavar="FILE",
+            nargs="?",
+            dest="input_path",
+            help="The CSV file to operate on. If omitted, will accept input as piped data via STDIN.",
+        )
+
+    def _handle_sed_expressions(self, column_names: typeList[str]) -> typeList:
+        # TODO: fix this spaghetti CRAP: maybe make expressions handle dicts/named typles instead of lists
+
+        first_col_str = self.args.columns if self.args.columns else ""
+        first_expr = [self.args.first_pattern, self.args.first_repl, first_col_str]
+        expressions = [first_expr]
+        if list_expressions := getattr(self.args, "expressions_list", []):
+            for i, _e in enumerate(list_expressions):
+                ex = _e.copy()
+
+                if len(ex) < 2 or len(ex) > 3:
+                    self.argparser.error(
+                        f"-E/--expr takes 2 or 3 arguments; you provided {len(ex)}: {ex}"
+                    )
+
+                if len(ex) == 2:
+                    ex.append(first_col_str)
+
+                expressions.append(ex)
+
+        for ex in expressions:
+            # this branch re-loops through the_expressions and fixes any leading dashes in the repls
+            if ex[1][0:2] == r"\-":
+                ex[1] = ex[1][1:]
+
+            # compile the pattern into a regex
+            if not self.literal_match_mode:
+                ex[0] = re.compile(ex[0])
+
+            # set the column_ids
+            ex[2] = cmk_parse_column_ids(ex[2], column_names, self.column_offset)
+
+        return expressions
+
+    def run(self):
+        self.last_expr = []
+        if not self.args.input_path:
+            # then it must have been eaten by an -E flag; we assume the input file is in last_expr[-1],
+            # where `last_expr` is the last member of expressions_list
+
+            # TODO: maybe refactor this
+            if self.args.expressions_list:
+                self.last_expr = self.args.expressions_list[-1]
+
+                if len(self.last_expr) > 2:
+                    # could be either 3 or 4
+                    self.args.input_path = self.last_expr.pop()
+                elif len(self.last_expr) == 2:
+                    # do nothing, but be warned that if there is no stdin,
+                    # then -E might have eaten up the input_file argument
+                    # and interpreted it as pattern
+                    self.args.input_path = None
+                else:
+                    # else, last_expr has an implied third argument, and
+                    # input_path is hopefully stdin
+                    self.args.input_path = None
+
+        self.input_file = self._open_input_file(self.args.input_path)
+        super().run()
+
+    def main(self):
+        # TODO: THIS IS CRAP
+        if self.additional_input_expected():
+            if len(self.last_expr) == 2:
+                stderr.write(
+                    f"""WARNING: the last positional argument – {self.last_expr[0]} – is interpreted as the first and only argument to -E/--expr, i.e. the pattern to search for.\n"""
+                )
+                stderr.write(
+                    "Make sure that it isn't meant to be the name of your input file!\n\n"
+                )
+            stderr.write(
+                "No input file or piped data provided. Waiting for standard input:\n"
+            )
+
+        self.column_offset = self.get_column_offset()
+        self.literal_match_mode = self.args.literal_match
+
+        if self.writer_kwargs.pop("line_numbers", False):
+            self.reader_kwargs["line_numbers"] = True
+
+        xrows, column_names, column_ids = self.get_rows_and_column_names_and_column_ids(
+            **self.reader_kwargs
+        )
+
+        self.expressions = self._handle_sed_expressions(column_names)
+
+        # here's where we emulate csvrgrep...
+        if self.args.like_grep:
+            epattern = self.args.first_pattern
+            ecolstring = self.args.columns
+            xrows = cmk_filter_rows(
+                xrows,
+                epattern,
+                ecolstring,
+                column_names,
+                column_ids,
+                literal_match=self.literal_match_mode,
+                column_offset=self.column_offset,
+                inverse=False,
+                any_match=True,
+            )
+
+        outs = self.text_csv_writer()
+        outs.writerow(column_names)
+        for row in xrows:
+            new_row = []
+
+            for cid, val in enumerate(row):
+                newval = val
+
+                for ex in self.expressions:
+                    pattern, repl, col_ids = ex
+                    if cid in col_ids:
+                        repl = fr"{repl}"
+
+                        newval = (
+                            pattern.sub(repl, newval)
+                            if not self.literal_match_mode
+                            else newval.replace(pattern, repl)
+                        )
+                new_row.append(newval)
+                # end of expression-iteration; move on to the next column val
+
+            outs.writerow(new_row)
+
+
+def launch_new_instance():
+    utility = CSVSed()
+    utility.run()
+
+
+if __name__ == "__main__":
+    launch_new_instance()

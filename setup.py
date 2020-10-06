@@ -67,6 +67,8 @@ setup(
             "csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance",
             "csvheaders = csvmedkit.moreutils.csvheaders:launch_new_instance",
             "csvrgrep = csvmedkit.moreutils.csvrgrep:launch_new_instance",
+            "csvsed = csvmedkit.moreutils.csvsed:launch_new_instance",
+
 
         ]
     },

@@ -3,10 +3,7 @@ from os import isatty
 import sys
 from typing import Iterable as typeIterable, List as typeList
 
-
-from csvkit.grep import FilteringCSVReader
-from csvmedkit.cmkutil import CmkMixedUtil, parse_column_identifiers
-from csvmedkit import re_std as re
+from csvmedkit.cmkutil import CmkMixedUtil, cmk_filter_rows
 
 
 class CSVRgrep(CmkMixedUtil):
@@ -136,7 +133,7 @@ class CSVRgrep(CmkMixedUtil):
         )
 
         for epattern, ecolstring in self.expressions:
-            xrows = filter_rows(
+            xrows = cmk_filter_rows(
                 xrows,
                 epattern,
                 ecolstring,
@@ -152,7 +149,6 @@ class CSVRgrep(CmkMixedUtil):
         outs = self.text_csv_writer()
         outs.writerow(column_names)
         outs.writerows(xrows)
-
 
     def run(self):
         """
@@ -202,49 +198,9 @@ class CSVRgrep(CmkMixedUtil):
         super().run()
 
 
-
 def launch_new_instance():
     utility = CSVRgrep()
     utility.run()
-
-
-def filter_rows(
-    rows: typeIterable,
-    pattern_str: str,
-    columns_str: str,
-    column_names: list,
-    default_column_ids: list,
-    literal_match: bool,
-    column_offset: int,
-    inverse: bool,
-    any_match: bool,
-    # not_columns,
-) -> FilteringCSVReader:
-
-    if literal_match:
-        pattern = pattern_str
-    else:  # literal match
-        pattern = re.compile(pattern_str)
-
-    if columns_str:
-        expr_col_ids = parse_column_identifiers(
-            columns_str,
-            column_names,
-            column_offset,
-        )
-    else:
-        expr_col_ids = default_column_ids
-
-    epatterns = dict((eid, pattern) for eid in expr_col_ids)
-
-    filtered_rows = FilteringCSVReader(
-        rows,
-        header=False,
-        patterns=epatterns,
-        inverse=inverse,
-        any_match=any_match,
-    )
-    return filtered_rows
 
 
 if __name__ == "__main__":

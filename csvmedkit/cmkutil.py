@@ -2,50 +2,15 @@
 import argparse
 from collections import namedtuple
 import sys
-from typing import List as typeList, NoReturn as typeNoReturn
+from typing import List as typeList, NoReturn as typeNoReturn, Iterable as typeIterable
 import warnings
+
+from csvkit.grep import FilteringCSVReader
+
 
 from csvmedkit import CSVKitUtility, agate, parse_column_identifiers
 from csvmedkit import __title__, __version__
-
-
-def cmk_parse_column_ids(
-    ids: str, column_names: typeList[str], column_offset=1
-) -> typeList[int]:
-    """just a simplified version of parse_column_identifiers"""
-    return parse_column_identifiers(
-        ids, column_names, column_offset, excluded_columns=None
-    )
-
-
-# def cmk_open_input_file(path, args):
-#     """
-#     Open the input file specified on the command line.
-#     Like CSVKitUtility._open_input_file(), but not a class method (or py3 compatible)
-#     """
-#     if six.PY2:
-#         mode = 'Urb'
-#         kwargs = {}
-#     else:
-#     mode = 'rt'  # default
-#     kwargs = {'encoding': args.encoding}
-
-#     if not path or path == '-':
-#         f = sys.stdin
-#     else:
-#         extension = splitext(path)[1]
-
-#         if extension == '.gz':
-#             f = LazyFile(gzip.open, path, mode, **kwargs)
-#         elif extension == '.bz2':
-#             if six.PY2:
-#                 f = LazyFile(bz2.BZ2File, path, mode, **kwargs)
-#             else:
-#                 f = LazyFile(bz2.open, path, mode, **kwargs)
-#         else:
-#             f = LazyFile(open, path, mode, **kwargs)
-
-#     return f
+from csvmedkit import re_std as re
 
 
 class CmkUtil(CSVKitUtility):
@@ -251,11 +216,6 @@ class CmkUtil(CSVKitUtility):
         )
 
 
-
-
-
-
-
 class CmkMixedUtil(CmkUtil):
     """
     just like standard CmkUtil, except parses intermixed args because it has required positional args
@@ -290,25 +250,75 @@ class CmkMixedUtil(CmkUtil):
             # Do nothing on platforms that don't have signals or don't have SIGPIPE
             pass
 
-
-
     def run(self):
         """
         Unlike standard .run(), this will behave if self.input_file has already been set
         """
         # if 'f' not in self.override_flags:
-        if not self.input_file:
+        if not getattr(self, "input_file", None):
             self.input_file = self._open_input_file(self.args.input_path)
 
         try:
             with warnings.catch_warnings():
-                if getattr(self.args, 'no_header_row', None):
-                    warnings.filterwarnings(action='ignore', message='Column names not specified', module='agate')
+                if getattr(self.args, "no_header_row", None):
+                    warnings.filterwarnings(
+                        action="ignore",
+                        message="Column names not specified",
+                        module="agate",
+                    )
 
                 self.main()
         finally:
             # if 'f' not in self.override_flags:
-                self.input_file.close()
+            self.input_file.close()
+
+
+def cmk_parse_column_ids(
+    ids: str, column_names: typeList[str], column_offset=1
+) -> typeList[int]:
+    """just a simplified version of parse_column_identifiers"""
+    return parse_column_identifiers(
+        ids, column_names, column_offset, excluded_columns=None
+    )
+
+
+def cmk_filter_rows(
+    rows: typeIterable,
+    pattern_str: str,
+    columns_str: str,
+    column_names: list,
+    default_column_ids: list,
+    literal_match: bool,
+    column_offset: int,
+    inverse: bool,
+    any_match: bool,
+    # not_columns,
+) -> FilteringCSVReader:
+
+    if literal_match:
+        pattern = pattern_str
+    else:  # literal match
+        pattern = re.compile(pattern_str)
+
+    if columns_str:
+        expr_col_ids = parse_column_identifiers(
+            columns_str,
+            column_names,
+            column_offset,
+        )
+    else:
+        expr_col_ids = default_column_ids
+
+    epatterns = dict((eid, pattern) for eid in expr_col_ids)
+
+    filtered_rows = FilteringCSVReader(
+        rows,
+        header=False,
+        patterns=epatterns,
+        inverse=inverse,
+        any_match=any_match,
+    )
+    return filtered_rows
 
 
 # MyIO = namedtuple(
@@ -345,3 +355,32 @@ class CmkMixedUtil(CmkUtil):
 #         return MyIO(
 #             rows=rows, column_names=column_names, column_ids=column_ids, output=output
 #         )
+
+# def cmk_open_input_file(path, args):
+#     """
+#     Open the input file specified on the command line.
+#     Like CSVKitUtility._open_input_file(), but not a class method (or py3 compatible)
+#     """
+#     if six.PY2:
+#         mode = 'Urb'
+#         kwargs = {}
+#     else:
+#     mode = 'rt'  # default
+#     kwargs = {'encoding': args.encoding}
+
+#     if not path or path == '-':
+#         f = sys.stdin
+#     else:
+#         extension = splitext(path)[1]
+
+#         if extension == '.gz':
+#             f = LazyFile(gzip.open, path, mode, **kwargs)
+#         elif extension == '.bz2':
+#             if six.PY2:
+#                 f = LazyFile(bz2.BZ2File, path, mode, **kwargs)
+#             else:
+#                 f = LazyFile(bz2.open, path, mode, **kwargs)
+#         else:
+#             f = LazyFile(open, path, mode, **kwargs)
+
+#     return f

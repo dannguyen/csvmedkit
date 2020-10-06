@@ -31,9 +31,12 @@
     - [ ] clean up filter_rows
 
 - csvsed
-    - [ ] use cmkmixutil class
-    - [ ] don't implement csvrgrep for now, but move filter class over?
-    - [ ] sans replacement flag
+    - [x] use cmkmixutil class
+    - [x] sans replacement flag
+    - [x] port old tests
+
+- write intro docs
+
 
 ## 0.2
 

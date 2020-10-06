@@ -8,3 +8,5 @@ List of utilities
    moreutils/csvheaders
    moreutils/csvflatten
 
+   moreutils/csvrgrep
+   moreutils/csvsed

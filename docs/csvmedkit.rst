@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+csvmedkit.cmkutil module
+------------------------
+
+.. automodule:: csvmedkit.cmkutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 csvmedkit.exceptions module
 ---------------------------
 

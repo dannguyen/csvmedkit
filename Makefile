@@ -55,10 +55,11 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source csvmedkit setup.py test
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
+	nosetests --with-coverage --cover-package=csvmedkit
+# 	coverage run --source csvmedkit setup.py test
+# 	coverage report -m
+# 	coverage html
+# 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/csvmedkit.rst
