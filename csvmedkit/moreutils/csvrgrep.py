@@ -5,7 +5,7 @@ from typing import Iterable as typeIterable, List as typeList
 
 
 from csvkit.grep import FilteringCSVReader
-from csvmedkit.kit.cmkutil import CmkMixedUtil, parse_column_identifiers
+from csvmedkit.cmkutil import CmkMixedUtil, parse_column_identifiers
 from csvmedkit import re_std as re
 
 
@@ -16,24 +16,6 @@ class CSVRgrep(CmkMixedUtil):
     ]
 
     def add_arguments(self, **kwargs):
-
-        # def names_only_mode():
-        #     class _NamesModeAction(Action):
-        #         def __call__(self, parser, namespace, values, option_string=None):
-        #             print('zooom')
-        #             # otherargs = [a for a in sys.argv if a != option_string]
-        #             # infile = next((a for a in reversed(sys.argv) if a != option_string), None)
-        #             # if not infile or infile == '-':
-        #             #     infile = sys.stdin
-
-        #             import IPython; IPython.embed()
-        #             sys.exit(0)
-
-        #     return _NamesModeAction
-        #     # def __call__(self, parser, namespace, values, option_string=None):
-        #     #     # super().__call__(parser, namespace, values, option_string)
-        #     #     print("call time")
-        # # def names_only_mode(bytestring=None):
 
         self.argparser.add_argument(
             "-n",

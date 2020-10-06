@@ -6,7 +6,7 @@ import re
 import csvmedkit
 import csvmedkit.__about__ as about
 
-from csvmedkit.kit.cmkutil import CmkUtil, cmk_parse_column_ids
+from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
 
 
 class TestCMK(unittest.TestCase):

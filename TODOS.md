@@ -35,6 +35,8 @@
     - [ ] don't implement csvrgrep for now, but move filter class over?
     - [ ] sans replacement flag
 
+## 0.2
+
 - csvslice
     - `-i/--index`: 
 

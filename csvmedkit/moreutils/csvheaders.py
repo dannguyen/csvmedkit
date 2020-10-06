@@ -8,7 +8,7 @@ from typing import (
     Tuple as typeTuple,
 )
 
-from csvmedkit.kit.cmkutil import CmkUtil, cmk_parse_column_ids
+from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
 from csvmedkit import re_plus as re, slugify
 
 

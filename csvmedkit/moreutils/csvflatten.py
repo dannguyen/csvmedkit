@@ -2,7 +2,7 @@
 
 import agate
 
-from csvmedkit.kit.cmkutil import CmkUtil
+from csvmedkit.cmkutil import CmkUtil
 from csvmedkit import rxlib as re
 import os
 import sys
