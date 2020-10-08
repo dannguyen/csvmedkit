@@ -2,23 +2,48 @@
 csvflatten
 **********
 
+:command:`csvflatten` is a command for producing "flattened" records. Useful for quickly getting a view of records with numerous fields, and for documenting data examples in Markdown-compatible format.
+
 .. contents:: :local:
 
 
 Description
 ===========
 
-Print records in column-per-line format. Best used in conjunction with `csvlook <https://csvkit.readthedocs.io/en/latest/scripts/csvlook.html>`_
+For every input record, :command:`csvflatten`'s output will contain 2-column rows — ``field,value`` — for each of the record's key-value pairs. This is useful for viewing records one at a time, especially if each row contains many columns.
 
-Similar in concept to `xsv flatten <https://github.com/BurntSushi/xsv#available-commands>`_, though the output is much different.
-
-TK/TODO: copy text/rationale from `original Github issue <https://github.com/dannguyen/csvkit/issues/1>`_
+It's a concept similar to `xsv flatten <https://github.com/BurntSushi/xsv#available-commands>`_, though the structure of "flattened" output differs.
 
 
+For example, given the following table:
 
-Example::
+.. csv-table::
+   :header: id,product,price
 
-    $ csvflatten examples/hamlet.csv --prettify
+   001,apples,1.50
+   002,oranges,2.25
+
+The "flattened" view of its 2 records would look like this:
+
+.. csv-table::
+   :header: field,value
+
+   id,001
+   product,apples
+   price,1.50
+   ~~~~~,
+   id,002
+   product,oranges
+   price,2.25
+
+
+Basic example
+-------------
+
+By default, :command:`csvflatten` produces CSV output without word-wrapping long fields (such as the ``lines`` field in the example below). But the most common use-case is to produce *pretty* tabular output, including word-wrapping long fields to the width of the terminal. This is done using the ``-P/--prettify`` flag::
+
+
+    $ csvflatten examples/hamlet.csv -P
 
     | fieldname | value                                          |
     | --------- | ---------------------------------------------- |
@@ -51,12 +76,42 @@ Example::
     | lines     | Know you the hand?                             |
 
 
+This output is suitable for pasting into a `Markdown file <https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3>`_  to produce a formatted HTML table:
 
-Comparison to existing tools
-============================
+.. figure:: files/images/hamlet-markdown-table.png
+    :alt: hamlet-markdown-table.png
 
 
-``csvlook`` doesn't pretty-format multi-line fields, and can also result in very wide tables without ``--max-column-width``::
+
+For reference's sake, this is what :download:`hamlet.csv </../examples/hamlet.csv>` contains::
+
+    act,scene,speaker,lines
+    1,5,Horatio,"Propose the oath, my lord."
+    1,5,Hamlet,"Never to speak of this that you have seen,
+    Swear by my sword."
+    1,5,Ghost,[Beneath] Swear.
+    3,4,Gertrude,"O, speak to me no more;
+    These words, like daggers, enter in mine ears;
+    No more, sweet Hamlet!"
+    4,7,Laertes,Know you the hand?
+
+(note the multi-line fields for the 2nd and 4th records)
+
+
+
+
+
+
+
+How it compares to existing tools
+=================================
+
+
+Compared to csvkit's``csvlook``
+-------------------------------
+
+
+`csvlook <https://csvkit.readthedocs.io/en/latest/scripts/csvlook.html>`_  doesn't pretty-format multi-line fields, and can also result in very wide tables without ``--max-column-width``::
 
     $ csvlook examples/hamlet.csv --max-column-width 50
 
@@ -71,7 +126,10 @@ Comparison to existing tools
     |   4 |     7 | Laertes  | Know you the hand?                                 |
 
 
-``xsv flatten`` does do auto-wrapping of long entries, but doesn't produce tableized output::
+Compared to ``xsv flatten``
+---------------------------
+
+`xsv flatten <https://github.com/BurntSushi/xsv#available-commands>`_ does do auto-wrapping of long entries, but doesn't produce tableized output::
 
     $ xsv flatten examples/hamlet.csv
 
@@ -102,3 +160,131 @@ Comparison to existing tools
     scene    7
     speaker  Laertes
     lines    Know you the hand?
+
+
+Compared to ``tabulate``
+------------------------
+
+`python-tabulate <https://pypi.org/project/tabulate/>`_ is a command-line tool for producing a variety of tabular outputs, including ``rst``, ``grid``, and ``html`` formats. However, it does not handle multi-line fields well. Nor does it natively handle the CSV format, e.g. double-quoted values that contain commas, hence, the use of csvkit's `csvformat <https://csvkit.readthedocs.io/en/latest/scripts/csvformat.html>`_ to change delimiters to ``\t`` in the example below::
+
+
+
+    $ csvformat -T examples/hamlet.csv | tabulate -f grid -1 -s '\t'
+
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | act                                            |   scene | speaker   | lines                                       |
+    +================================================+=========+===========+=============================================+
+    | 1                                              |       5 | Horatio   | Propose the oath, my lord.                  |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | 1                                              |       5 | Hamlet    | "Never to speak of this that you have seen, |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | Swear by my sword."                            |         |           |                                             |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | 1                                              |       5 | Ghost     | [Beneath] Swear.                            |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | 3                                              |       4 | Gertrude  | "O, speak to me no more;                    |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | These words, like daggers, enter in mine ears; |         |           |                                             |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | No more, sweet Hamlet!"                        |         |           |                                             |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+    | 4                                              |       7 | Laertes   | Know you the hand?                          |
+    +------------------------------------------------+---------+-----------+---------------------------------------------+
+
+
+Common use cases
+================
+
+TK TK
+
+
+Options and usage
+=================
+
+-P/--prettify
+-------------
+
+Print output in tabular format instead of CSV. Unless ``-L/--chop-length`` is explicitly specified, long values are split into multiple rows based on the current terminal width.
+
+
+-L/--chop-length [integer]
+--------------------------
+
+Specify a max character length for field values; values that exceed this length are split into multiple rows. This is useful for producing output easier to view in a spreadsheet or when using the ``-P/--prettify`` option.
+
+The default behavior is as follows:
+
+- *Without* ``--prettify`` mode, this value is set to ``0``, i.e. no splitting of long values.
+- *With* ``--prettify`` mode, this value is automatically set to the width of the terminal. To disable this behavior, you can explicitly set ``--chop-length 0``
+
+
+
+-B/--chop-labels
+----------------
+
+When a value is chopped into multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
+
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+
+
+If the ``--chop-labels`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
+
+    |  field   |  value  |
+    +----------+---------+
+    | id       | 001     |
+    | title    | this is |
+    | title__1 | a story |
+    | title__2 | of love |
+
+
+
+-E END_OF_RECORD_MARKER, --eor END_OF_RECORD_MARKER
+---------------------------------------------------
+
+By default, each record is separated by having a string of *tildes* in ``field``, e.g.::
+
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    | ~~~~~ |         |
+    | id    | 002     |
+    | title | Book 2  |
+
+
+Set to ``'none'`` to disable::
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    | id    | 002     |
+    | title | Book 2  |
+
+Or to a value of your choosing::
+
+
+    $ csvflatten -E 'NEW-RECORD' data.csv
+
+    |   field    |  value  |
+    +------------+---------+
+    | id         | 001     |
+    | title      | this is |
+    |            | a story |
+    |            | of love |
+    | NEW-RECORD |         |
+    | id         | 002     |
+    | title      | Book 2  |
+
+

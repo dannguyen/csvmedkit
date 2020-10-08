@@ -3,10 +3,9 @@ List of utilities
 *****************
 
 .. toctree::
-   :maxdepth: 1
+   :titlesonly:
 
    moreutils/csvheaders
    moreutils/csvflatten
-
    moreutils/csvrgrep
    moreutils/csvsed
