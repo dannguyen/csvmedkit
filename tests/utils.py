@@ -19,14 +19,14 @@ And paste:
 
 """
 
+from contextlib import contextmanager
+import six
 import sys
 import unittest
 import warnings
-from contextlib import contextmanager
 
-import agate
-import six
 
+from csvmedkit import agate
 from csvmedkit.exceptions import ColumnIdentifierError, RequiredHeaderError
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)

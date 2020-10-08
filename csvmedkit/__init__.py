@@ -4,7 +4,7 @@
 Copies csvkit's init plus some other things
 """
 
-import agate
+from csvkit import agate
 
 agate = agate
 

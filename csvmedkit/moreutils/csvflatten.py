@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import agate
 
+from csvmedkit import agate, rxlib as re
 from csvmedkit.cmkutil import CmkUtil
-from csvmedkit import rxlib as re
 import os
 import sys
 
