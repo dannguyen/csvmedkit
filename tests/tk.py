@@ -1,22 +1,7 @@
 #!/usr/bin/env python
 
 """
-To test standard input (without piped data), run each of:
-
-* csvclean
-* csvcut -c 1
-* csvformat
-* csvgrep -c 1 -m d
-* csvjson --no-inference --stream --snifflimit 0
-* csvstack
-* in2csv --format csv --no-inference --snifflimit 0
-
-And paste:
-
-"a","b","c"
-"g","h","i"
-"d","e","f"
-
+Basically, a copy of csvkit/tests/utils.py, but with a different name for less confusion
 """
 
 from contextlib import contextmanager

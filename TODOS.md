@@ -4,9 +4,10 @@
 ## 0.1 
 
 - csvflatten
-    - [X] add tabulate/csvview internal
-    - [x] general tests
-    - [ ] is default prettify markdown-table compatible? 
+    - [X] add agate.print_table internally, i.e. `--prettify`
+    - [X] add ``--row_ids``
+    - [ ] general tests
+    - [x] is default prettify markdown-table compatible? 
         - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
 - csvheader
     - [x] default preview headers listing

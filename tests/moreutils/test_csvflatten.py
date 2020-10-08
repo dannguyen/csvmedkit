@@ -9,7 +9,7 @@ from csvmedkit.moreutils.csvflatten import (
     launch_new_instance,
     DEFAULT_EOR_MARKER,
 )
-from tests.utils import CSVKitTestCase, EmptyFileTests
+from tests.tk import CSVKitTestCase, EmptyFileTests
 
 
 class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
@@ -46,73 +46,109 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-    def test_forced_quoting_in_chop_length_mode(self):
+    def test_basic_mutli_records(self):
         self.assertLines(
+            ["examples/dummy2.csv"],
             [
-                "examples/dummy.csv",
-                "--chop-length",
-                "42",
-            ],
-            [
-                '"field","value"',
-                '"a","1"',
-                '"b","2"',
-                '"c","3"',
-            ],
-        )
-        self.assertLines(
-            [
-                "examples/dummy.csv",
-                "-L",
-                "42",
-            ],
-            [
-                '"field","value"',
-                '"a","1"',
-                '"b","2"',
-                '"c","3"',
+                "field,value",
+                "a,1",
+                "b,2",
+                "c,3",
+                "~~~~~,",
+                "a,8",
+                "b,9",
+                "c,10",
             ],
         )
 
-    def test_x_chop(self):
+    def test_basic_multiline(self):
+        """even without -L set, multilines are split into different records"""
+        self.assertLines(
+            ["examples/dummy2m.csv"],
+            [
+                "field,value",
+                "a,1",
+                "b,2",
+                'c,"3,"',
+                ",4",
+                "~~~~~,",
+                "a,8",
+                "b,9",
+                "c,10",
+            ],
+        )
+
+    #########################################
+    ## cmax length
+    ##########################################
+
+    def test_max_length(self):
         self.assertLines(
             ["examples/statecodes.csv", "-L", "5"],
             [
-                '"field","value"',
-                '"code","IA"',
-                '"name","Iowa"',
-                f'"~~~~",""',
-                '"code","RI"',
-                '"name","Rhode"',
-                '""," Isla"',
-                '"","nd"',
-                f'"~~~~",""',
-                '"code","TN"',
-                '"name","Tenne"',
-                '"","ssee"',
+                "field,value",
+                "code,IA",
+                "name,Iowa",
+                f"~~~~~,",
+                "code,RI",
+                "name,Rhode",
+                ",Islan",
+                ",d",
+                f"~~~~~,",
+                "code,TN",
+                "name,Tenne",
+                ",ssee",
             ],
         )
 
-    def test_x_chop_field_label(self):
+    #########################################
+    ## chop/chunk label
+    ##########################################
+
+    def test_chunk_label_basic(self):
         """
-        --chop-labels adds label to every chunk
+        Even without -L set, multilines values are split into different records.
+
+        Note that unlike prior versions, -B/--chunk-labels can be set without -L
         """
-        eor = "~~~~"
         self.assertLines(
-            ["examples/statecodes.csv", "-L", "5", "--chop-labels"],
             [
-                '"field","value"',
-                '"code","IA"',
-                '"name","Iowa"',
-                f'"{eor}",""',
-                '"code","RI"',
-                '"name","Rhode"',
-                '"name__1"," Isla"',
-                '"name__2","nd"',
-                f'"{eor}",""',
-                '"code","TN"',
-                '"name","Tenne"',
-                '"name__1","ssee"',
+                "examples/dummy2m.csv",
+                "-B",
+            ],
+            [
+                "field,value",
+                "a,1",
+                "b,2",
+                'c,"3,"',
+                "c__1,4",
+                "~~~~~,",
+                "a,8",
+                "b,9",
+                "c,10",
+            ],
+        )
+
+    def test_chunk_label_and_max_length(self):
+        """
+        --chunk-labels adds label to every chunk
+        """
+        eor = "~~~~~"
+        self.assertLines(
+            ["examples/statecodes.csv", "--max-length", "5", "--chunk-labels"],
+            [
+                "field,value",
+                "code,IA",
+                "name,Iowa",
+                f"{eor},",
+                "code,RI",
+                "name,Rhode",
+                "name__1,Islan",
+                "name__2,d",
+                f"{eor},",
+                "code,TN",
+                "name,Tenne",
+                "name__1,ssee",
             ],
         )
 
@@ -120,22 +156,25 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
         self.assertLines(
             ["examples/statecodes.csv", "-L", "5", "-B"],
             [
-                '"field","value"',
-                '"code","IA"',
-                '"name","Iowa"',
-                f'"{eor}",""',
-                '"code","RI"',
-                '"name","Rhode"',
-                '"name__1"," Isla"',
-                '"name__2","nd"',
-                f'"{eor}",""',
-                '"code","TN"',
-                '"name","Tenne"',
-                '"name__1","ssee"',
+                "field,value",
+                "code,IA",
+                "name,Iowa",
+                f"{eor},",
+                "code,RI",
+                "name,Rhode",
+                "name__1,Islan",
+                "name__2,d",
+                f"{eor},",
+                "code,TN",
+                "name,Tenne",
+                "name__1,ssee",
             ],
         )
 
+    #########################################
     ## end of record marker/separator
+    ##########################################
+
     def test_end_of_record_marker_default(self):
         """
         alpha,omega
@@ -221,10 +260,167 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
+    ###################################################################################################
+    # row_id mode
+    ###################################################################################################
+
+    def test_row_id_basic(self):
+        """
+        prepend _recid_ column; by default, --E/--eor is disabled
+        """
+        self.assertLines(
+            ["-R", "examples/dummy2.csv"],
+            [
+                "_recid_,field,value",
+                "0,a,1",
+                "0,b,2",
+                "0,c,3",
+                "1,a,8",
+                "1,b,9",
+                "1,c,10",
+            ],
+        )
+
+    def test_row_id_eor(self):
+        """
+        user has option to add -E/--eor if they want
+        """
+        self.assertLines(
+            ["--rec-id", "-E", "WOAH", "examples/dummy2.csv"],
+            [
+                "_recid_,field,value",
+                "0,a,1",
+                "0,b,2",
+                "0,c,3",
+                ",WOAH,",
+                "1,a,8",
+                "1,b,9",
+                "1,c,10",
+            ],
+        )
+
+    def test_row_id_multiline(self):
+        """for multiline vals that are now multirows, rec_id will have a value, even if field is blank"""
+        self.assertLines(
+            ["-R", "examples/dummy2m.csv"],
+            [
+                "_recid_,field,value",
+                "0,a,1",
+                "0,b,2",
+                '0,c,"3,"',
+                "0,,4",
+                "1,a,8",
+                "1,b,9",
+                "1,c,10",
+            ],
+        )
+
+    ###################################################################################################
+    # prettify mode
+    ###################################################################################################
+
+    def test_prettify_basic(self):
+        self.assertLines(
+            ["-P", "examples/dummy.csv"],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| a     | 1     |",
+                "| b     | 2     |",
+                "| c     | 3     |",
+            ],
+        )
+
+    def test_prettify_basic_n_records(self):
+        self.assertLines(
+            ["--prettify", "examples/dummy2.csv"],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| a     | 1     |",
+                "| b     | 2     |",
+                "| c     | 3     |",
+                "| ~~~~~ |       |",
+                "| a     | 8     |",
+                "| b     | 9     |",
+                "| c     | 10    |",
+            ],
+        )
+
+    def test_prettify_multiline_records(self):
+        """
+        By default, newlines are converted to simple whitespace via textwrap.wrap(); note that this is
+        a result of --prettify setting --max-length by default
+
+        """
+        self.assertLines(
+            ["-P", "examples/dummy2m.csv"],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| a     | 1     |",
+                "| b     | 2     |",
+                "| c     | 3, 4  |",
+                "| ~~~~~ |       |",
+                "| a     | 8     |",
+                "| b     | 9     |",
+                "| c     | 10    |",
+            ],
+        )
+
+    def test_prettify_multiline_records_disable_max_length(self):
+        """newlines NOT prettified to whitespace if we disable max chop length"""
+
+        self.assertLines(
+            ["-P", "-L", "0", "examples/dummy2m.csv"],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| a     | 1     |",
+                "| b     | 2     |",
+                "| c     | 3,    |",
+                "|       | 4     |",
+                "| ~~~~~ |       |",
+                "| a     | 8     |",
+                "| b     | 9     |",
+                "| c     | 10    |",
+            ],
+        )
+
+    def test_prettify_eor_none(self):
+        self.assertLines(
+            ["-P", "-E", "none", "examples/dummy2.csv"],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| a     | 1     |",
+                "| b     | 2     |",
+                "| c     | 3     |",
+                "| a     | 8     |",
+                "| b     | 9     |",
+                "| c     | 10    |",
+            ],
+        )
+
+    def test_prettify_rec_ids(self):
+        self.assertLines(
+            ["-P", "--rec-id", "examples/dummy2.csv"],
+            [
+                "| _recid_ | field | value |",
+                "| ------- | ----- | ----- |",
+                "|       0 | a     | 1     |",
+                "|       0 | b     | 2     |",
+                "|       0 | c     | 3     |",
+                "|       1 | a     | 8     |",
+                "|       1 | b     | 9     |",
+                "|       1 | c     | 10    |",
+            ],
+        )
+
     @skiptest(
         "figure out how to set/patch terminal size for test; come up with fixtures file"
     )
-    def test_prettify(self):
+    def test_prettify_use_terminal_width(self):
         pass
 
     ###################################################################################################
@@ -233,3 +429,36 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
     @skiptest("write out examples later")
     def test_regular_hamlet_w_csvlook(self):
         self.assertLines(["examples/hamlet.csv", "-P"], ["lines"])
+
+    ################################
+    # obsolete
+    ################################
+
+    @skiptest("obsolete: no longer need to force this")
+    def test_forced_quoting_in_max_length_mode(self):
+        self.assertLines(
+            [
+                "examples/dummy.csv",
+                "--max-length",
+                "42",
+            ],
+            [
+                '"field","value"',
+                '"a","1"',
+                '"b","2"',
+                '"c","3"',
+            ],
+        )
+        self.assertLines(
+            [
+                "examples/dummy.csv",
+                "-L",
+                "42",
+            ],
+            [
+                '"field","value"',
+                '"a","1"',
+                '"b","2"',
+                '"c","3"',
+            ],
+        )

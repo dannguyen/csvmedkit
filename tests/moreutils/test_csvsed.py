@@ -5,7 +5,7 @@ import sys
 
 from unittest import skip as skiptest
 from unittest.mock import patch
-from tests.utils import CSVKitTestCase, ColumnsTests, EmptyFileTests
+from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests
 
 from csvmedkit.exceptions import ColumnIdentifierError
 from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance

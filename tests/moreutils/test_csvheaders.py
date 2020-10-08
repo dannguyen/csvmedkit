@@ -8,7 +8,7 @@ from csvmedkit.moreutils.csvheaders import (
     launch_new_instance,
 )
 
-from tests.utils import CSVKitTestCase, EmptyFileTests
+from tests.tk import CSVKitTestCase, EmptyFileTests
 
 
 class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):

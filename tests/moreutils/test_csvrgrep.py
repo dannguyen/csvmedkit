@@ -6,7 +6,7 @@ from unittest import skip as skiptest
 from unittest.mock import patch
 from subprocess import Popen, PIPE
 
-from tests.utils import CSVKitTestCase, ColumnsTests, EmptyFileTests, NamesTests
+from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests, NamesTests
 from csvmedkit.moreutils.csvrgrep import CSVRgrep, launch_new_instance
 from csvmedkit.exceptions import *
 

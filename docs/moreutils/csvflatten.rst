@@ -204,10 +204,13 @@ Options and usage
 -P/--prettify
 -------------
 
-Print output in tabular format instead of CSV. Unless ``-L/--chop-length`` is explicitly specified, long values are split into multiple rows based on the current terminal width.
+Print output in tabular format instead of CSV. Unless ``-L/--max-length`` is explicitly specified, long values are split into multiple rows based on the current terminal width.
 
 
--L/--chop-length [integer]
+
+
+
+-L/--max-length [integer]
 --------------------------
 
 Specify a max character length for field values; values that exceed this length are split into multiple rows. This is useful for producing output easier to view in a spreadsheet or when using the ``-P/--prettify`` option.
@@ -215,14 +218,14 @@ Specify a max character length for field values; values that exceed this length 
 The default behavior is as follows:
 
 - *Without* ``--prettify`` mode, this value is set to ``0``, i.e. no splitting of long values.
-- *With* ``--prettify`` mode, this value is automatically set to the width of the terminal. To disable this behavior, you can explicitly set ``--chop-length 0``
+- *With* ``--prettify`` mode, this value is automatically set to the width of the terminal. To disable this behavior, you can explicitly set ``--max-length 0``
 
 
 
--B/--chop-labels
+-B/--chunk-labels
 ----------------
 
-When a value is chopped into multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
+When a value is chopped into chunks across multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
 
 
     | field |  value  |
@@ -233,7 +236,7 @@ When a value is chopped into multiple rows, by default, the  ``field`` (i.e. fir
     |       | of love |
 
 
-If the ``--chop-labels`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
+If the ``--chunk-labels`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
 
     |  field   |  value  |
     +----------+---------+
@@ -244,8 +247,8 @@ If the ``--chop-labels`` flag is set, each subsequent ``field`` will be filled w
 
 
 
--E END_OF_RECORD_MARKER, --eor END_OF_RECORD_MARKER
----------------------------------------------------
+-E/--eor [END_OF_RECORD_MARKER (string)]
+----------------------------------------
 
 By default, each record is separated by having a string of *tildes* in ``field``, e.g.::
 
@@ -261,7 +264,7 @@ By default, each record is separated by having a string of *tildes* in ``field``
     | title | Book 2  |
 
 
-Set to ``'none'`` to disable::
+Set ``'none'`` to disable::
 
     | field |  value  |
     +-------+---------+
@@ -288,3 +291,21 @@ Or to a value of your choosing::
     | title      | Book 2  |
 
 
+
+-R/--rec-id
+-----------
+
+Include a ``_recid_`` column that contains the 0-based index for the respective record::
+
+
+    | _recid_ | field |  value  |
+    +---------+-------+---------+
+    |       0 | id    | 001     |
+    |       0 | title | this is |
+    |       0 |       | a story |
+    |       0 |       | of love |
+    |       1 | id    | 002     |
+    |       1 | title | Book 2  |
+
+
+Note that ``-rec-id`` by default disables the end-of-record separator
