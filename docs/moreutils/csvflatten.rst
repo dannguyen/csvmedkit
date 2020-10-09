@@ -302,7 +302,7 @@ The default behavior is as follows:
 
 
 -B/--chunk-labels
-----------------
+-----------------
 
 When a value is chopped into chunks across multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
 
