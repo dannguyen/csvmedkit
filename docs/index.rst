@@ -11,7 +11,6 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
 
    moreutils/csvheaders
    moreutils/csvflatten
-   moreutils/csvrgrep
    moreutils/csvsed
 
 

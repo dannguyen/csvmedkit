@@ -1,3 +1,7 @@
+"""
+csvrgrep is in experimental status
+"""
+
 import contextlib
 from io import StringIO
 
@@ -7,8 +11,11 @@ from unittest.mock import patch
 from subprocess import Popen, PIPE
 
 from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests, NamesTests
-from csvmedkit.moreutils.csvrgrep import CSVRgrep, launch_new_instance
+from csvmedkit.xutils.csvrgrep import CSVRgrep, launch_new_instance
 from csvmedkit.exceptions import *
+
+# i.e. as opposed to `csvrgrep`; CLI_PATH is used since csvrgrep is not an entry point
+CLI_PATH = "./csvmedkit/xutils/csvrgrep.py"
 
 
 class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
@@ -251,7 +258,7 @@ class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
         p1 = Popen(["cat", "examples/dummy5.csv"], stdout=PIPE)
         p2 = Popen(
             [
-                "csvrgrep",
+                CLI_PATH,
                 "4",
             ],
             stdin=p1.stdout,
@@ -277,7 +284,7 @@ class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
         cat data.txt | csvrgrep '1' -E '4'
         """
         p1 = Popen(["cat", "examples/dummy5.csv"], stdout=PIPE)
-        p2 = Popen(["csvrgrep", "1", "-E", "4"], stdin=p1.stdout, stdout=PIPE)
+        p2 = Popen([CLI_PATH, "1", "-E", "4"], stdin=p1.stdout, stdout=PIPE)
         p1.stdout.close()
         p1.wait()
         txt = p2.communicate()[0].decode("utf-8")
@@ -298,7 +305,7 @@ class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
 
     def test_names_mode_with_stdin(self):
         p1 = Popen(["cat", "examples/dummy.csv"], stdout=PIPE)
-        p2 = Popen(["csvrgrep", "-n"], stdin=p1.stdout, stdout=PIPE)
+        p2 = Popen([CLI_PATH, "-n"], stdin=p1.stdout, stdout=PIPE)
         p1.stdout.close()
         p1.wait()
         txt = p2.communicate()[0].decode("utf-8")
@@ -374,7 +381,7 @@ class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
         )
         p2 = Popen(
             [
-                "csvrgrep",
+                CLI_PATH,
                 "2|1",
                 "-E",
                 "1|2",

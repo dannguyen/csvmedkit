@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""
+csvrgrep is experimental/unofficial for now
+"""
+
 from argparse import Action
 from os import isatty
 import sys
