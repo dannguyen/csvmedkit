@@ -8,13 +8,13 @@ import sys
 import textwrap
 from typing import NoReturn as typeNoReturn
 
-DEFAULT_CHOP_LENGTH = 50
 DEFAULT_EOR_MARKER = "~"
+DEFAULT_MAX_LENGTH = 50
 FLAT_COLUMN_NAMES = (
     "field",
     "value",
 )
-REC_ID_COLUMN_NAME = "_recid_"
+REC_ID_COLUMN_NAME = "recid"
 
 COLTYPE_MAP = {
     REC_ID_COLUMN_NAME: agate.Number(),
@@ -22,7 +22,8 @@ COLTYPE_MAP = {
     "value": agate.Text(null_values=()),
 }
 
-PRETTIFY_PADDING = 15
+FLAT_COL_PADDING = 4
+FLAT_COL_WIDTH = len("field") + FLAT_COL_PADDING  # e.g. '| field |' and '| recid |'
 
 
 class CSVFlatten(CmkUtil):
@@ -81,23 +82,35 @@ class CSVFlatten(CmkUtil):
         # the following args are referenced in self.reader_kwargs and used in get_rows_and_column_names_and_column_ids
         rows = self.text_csv_reader()
         column_names = next(rows)
-
         self.rec_ids_mode = self.args.rec_ids_mode
+        self.output_flat_column_names = (
+            FLAT_COLUMN_NAMES
+            if not self.rec_ids_mode
+            else (REC_ID_COLUMN_NAME,) + FLAT_COLUMN_NAMES
+        )
 
-        self.max_column_name_len = (
-            max(len(c) for c in (column_names + list(FLAT_COLUMN_NAMES)))
+        self.max_column_name_length = (
+            max(len(c) for c in (column_names + list(self.output_flat_column_names)))
             if column_names
-            else 0
+            else 0  # for empty file case
         )
 
         self.prettify = True if self.args.prettify else False
-        if self.args.max_field_length or self.args.max_field_length == 0:
+
+        if (
+            self.args.max_field_length or self.args.max_field_length == 0
+        ):  # 0 is considered to be infinite/no-wrap
             self.max_field_length = self.args.max_field_length
         elif self.prettify and not self.args.max_field_length:
             # user wants it pretty but didn't specify a max_field_length, so we automatically figure it out
-            tsize = get_terminal_size()
-            self.max_field_length = tsize.columns - (
-                self.max_column_name_len + PRETTIFY_PADDING
+            # TODO: this is ugly
+            termwidth = get_terminal_size().columns
+            flatcol_widths = FLAT_COL_WIDTH * (len(self.output_flat_column_names) - 1)
+            avail_width = termwidth - (
+                flatcol_widths + self.max_column_name_length + FLAT_COL_PADDING
+            )
+            self.max_field_length = (
+                avail_width if avail_width > FLAT_COL_PADDING else DEFAULT_MAX_LENGTH
             )
         else:
             self.max_field_length = None
@@ -113,7 +126,7 @@ class CSVFlatten(CmkUtil):
                 self.end_of_record_marker = None
             else:
                 self.end_of_record_marker = "".join(
-                    DEFAULT_EOR_MARKER for i in range(self.max_column_name_len)
+                    DEFAULT_EOR_MARKER for i in range(self.max_column_name_length)
                 )
 
         # if max_field_length is specified, then the pattern for chunking uses it
@@ -155,17 +168,11 @@ class CSVFlatten(CmkUtil):
                         )
                     outrows.append(o_row + [fieldname, chunk])
 
-        out_column_names = (
-            (REC_ID_COLUMN_NAME,) + FLAT_COLUMN_NAMES
-            if self.rec_ids_mode
-            else FLAT_COLUMN_NAMES
-        )
-
         if self.args.prettify:
             outtable = agate.Table(
                 outrows,
-                column_names=out_column_names,
-                column_types={k: COLTYPE_MAP[k] for k in out_column_names},
+                column_names=self.output_flat_column_names,
+                column_types={k: COLTYPE_MAP[k] for k in self.output_flat_column_names},
             )
 
             outtable.print_table(
@@ -176,7 +183,7 @@ class CSVFlatten(CmkUtil):
             )
         else:
             writer = agate.csv.writer(self.output_file, **self.writer_kwargs)
-            writer.writerow(out_column_names)
+            writer.writerow(self.output_flat_column_names)
             writer.writerows(outrows)
 
 

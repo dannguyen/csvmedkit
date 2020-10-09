@@ -18,7 +18,7 @@ class CSVSed(CmkMixedUtil):
             "-c",
             "--columns",
             dest="columns",
-            help='A comma separated list of column indices, names or ranges to be searched, e.g. "1,id,3-5".',
+            help='A comma separated list of column indices, names or ranges to be searched, e.g. "1,id,3-5". If not specified, csvsed will affect *all* columns',
         )
 
         self.argparser.add_argument(
@@ -32,13 +32,12 @@ class CSVSed(CmkMixedUtil):
                 When you want to do multiple sed_expressions:
                     -E 'PATTERN' 'REPL' '[names_of_columns]'
 
-                    'names_of_columns' is a comma-delimited list of columns; it cannot refer to
-                        columns *not included* in the `-c/--columns` flag; leave blank to match all columns
+                    'names_of_columns' is a comma-delimited list of columns. Omit or leave blank to match the columns specified by '-c/--columns'
 
                 e.g.
                 -E '(?i)\b(bob|bobby|rob)\b' 'Robert' 'first_name' \
                 -E '^(?i)smith$' 'SMITH' 'last_name' \
-                -E '(\d{2})-(\d{3})' '$1:$2' '' \
+                -E '(\d{2})-(\d{3})' '$1:$2' \
                 """,
         )
 

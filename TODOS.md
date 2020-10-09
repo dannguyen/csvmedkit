@@ -6,7 +6,7 @@
 - csvflatten
     - documentation
         - [ ] write up common use cases
-    - [ ] how to deal with extremely long headers?
+    - [X] how to deal with extremely long headers?
         - if `-L` isn't specified, and max header is bigger than terminal, then throw error/warning
     - [X] add agate.print_table internally, i.e. `--prettify`
     - [X] add ``--row_ids``
@@ -32,17 +32,22 @@
         - [x] write tests
 
 
+- csvsed
+    - [x] use cmkmixutil class
+    - [x] sans replacement flag
+    - [x] port old tests
+    - [ ] implicit stdin pipe isn't working; fix broken test
+    - [ ] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
+
+
+
 - csvrgrep 
     - [?] port over
     - [x] port tests
     - [?] clean up argument/stdin handling
         - [ ] finish up isatty hangups
     - [ ] clean up filter_rows
-
-- csvsed
-    - [x] use cmkmixutil class
-    - [x] sans replacement flag
-    - [x] port old tests
+    - [ ] does implicit stdin pipe work? write test
 
 - write intro docs
 

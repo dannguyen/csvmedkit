@@ -5,7 +5,7 @@ import sys
 
 from unittest import skip as skiptest
 from unittest.mock import patch
-from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests
+from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests, stdin_as_string
 
 from csvmedkit.exceptions import ColumnIdentifierError
 from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance
@@ -233,9 +233,8 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
             [
                 "-c",
                 "col_a,col_b",
-                r"^(.{1,2})$",
-                r"\1\1",
-                "examples/ab.csv",
+                r"^(.{1,2})$",  # first pattern
+                r"\1\1",  # second pattern
                 "-E",
                 r"^(.{4})$",
                 r"_\1_",
@@ -244,6 +243,7 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
                 r"^(.{6})",
                 r"\1, oxford and etc.",
                 "col_a",
+                "examples/ab.csv",
             ],
             [
                 "id,col_a,col_b",
@@ -313,6 +313,246 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
                 # '6,memory,"Person,woman,man,camera,TV"',
             ],
         )
+
+    ######################################
+    # test intermixed args
+    ######################################
+
+    def test_intermix_just_required_args(self):
+        """input_file always has to come after pattern and replace"""
+        self.assertLines(
+            [r"(\w)", r"\1!", "examples/dummy.csv"],
+            [
+                "a,b,c",
+                "1!,2!,3!",
+            ],
+        )
+
+    def test_intermix_columns_option(self):
+        # -c option before required args
+        self.assertLines(
+            [
+                "-c",
+                "a,c",
+                r"(\w)",
+                r"\1!",
+                "examples/dummy.csv",
+            ],
+            [
+                "a,b,c",
+                "1!,2,3!",
+            ],
+        )
+
+        # -c option after required args
+        self.assertLines(
+            [r"(\w)", r"\1!", "examples/dummy.csv", "-c", "a,c"],
+            [
+                "a,b,c",
+                "1!,2,3!",
+            ],
+        )
+
+        # -c option mixed up in there
+        self.assertLines(
+            [
+                r"(\w)",
+                "-c",
+                "a,c",
+                r"\1!",
+                "examples/dummy.csv",
+            ],
+            [
+                "a,b,c",
+                "1!,2,3!",
+            ],
+        )
+
+    def test_intermix_multiple_expressions(self):
+        # options/extra expressions after required args  [first_pattern] [first_repl] and [input_file]
+        self.assertLines(
+            [
+                r"(\w)",
+                r"\1!",
+                "examples/dummy.csv",
+                "-c",
+                "a,c",
+                "-E",
+                "!",
+                "X",
+                "c",
+                "-E",
+                ".",
+                "Q",
+                "b",
+            ],
+            [
+                "a,b,c",
+                "1!,Q,3X",
+            ],
+        )
+
+        # extra expressions w/ only 2 args each, after required args [first_pattern] [first_repl] and [input_file]
+        self.assertLines(
+            [
+                r"(\w)",
+                r"\1!",
+                "examples/dummy.csv",
+                "-c",
+                "a,c",
+                "-E",
+                "!",
+                "X",
+                "-E",
+                r"[A-Z]",
+                "Q",
+            ],
+            [
+                "a,b,c",
+                "1Q,2,3Q",
+            ],
+        )
+
+        # extra expressions between [first_pattern] [first_repl] and [input_file]
+        self.assertLines(
+            [
+                "-c",
+                "a,c",
+                r"(\w)",
+                r"\1!",
+                "-E",
+                "!",
+                "X",
+                "c",
+                "-E",
+                ".",
+                "Q",
+                "b",
+                "examples/dummy.csv",
+            ],
+            [
+                "a,b,c",
+                "1!,Q,3X",
+            ],
+        )
+
+        # extra expressions with only 2 args each, between [first_pattern] [first_repl] and [input_file]
+        self.assertLines(
+            [
+                "-c",
+                "a,c",
+                r"(\w)",
+                r"\1!",
+                "-E",
+                "!",
+                "X",
+                "-E",
+                ".",
+                "Q",
+                "examples/dummy.csv",
+            ],
+            [
+                "a,b,c",
+                "QQ,2,QQ",
+            ],
+        )
+
+        # recommended format: column option, required args, extra expressions
+        self.assertLines(
+            [
+                "-c",
+                "a,c",
+                r"(\w)",
+                r"\1!",
+                "examples/dummy.csv",
+                "-E",
+                "!",
+                "X",
+                "-E",
+                r"\w",
+                "Z",
+                "a,b",
+            ],
+            [
+                "a,b,c",
+                "ZZ,Z,3X",
+            ],
+        )
+
+        # alt recommended format: column option, [first_pattern], [first_replacement], extra expressions, infile
+        self.assertLines(
+            [
+                "-c",
+                "a,c",
+                r"(\w)",
+                r"\1!",
+                "-E",
+                "!",
+                "X",
+                "-E",
+                r"\w",
+                "Z",
+                "a,b",
+                "examples/dummy.csv",
+            ],
+            [
+                "a,b,c",
+                "ZZ,Z,3X",
+            ],
+        )
+
+    def test_intermix_and_explicit_stdin(self):
+        # alt recommended format: stdin piped into: column option, [first_pattern], [first_replacement], extra expressions
+        #  and explicit stdin '-'
+        infile = StringIO("a,b,c\n1,2,3\n")
+        with stdin_as_string(infile):
+            self.assertLines(
+                [
+                    "-c",
+                    "a,c",
+                    r"(\w)",
+                    r"\1!",
+                    "-E",
+                    "!",
+                    "X",
+                    "-E",
+                    r"\w",
+                    "Z",
+                    "a,b",
+                    "-",
+                ],
+                [
+                    "a,b,c",
+                    "ZZ,Z,3X",
+                ],
+            )
+            infile.close()
+
+    def test_intermix_and_implicit_stdin(self):
+        # alt recommended format: stdin piped into: column option, [first_pattern], [first_replacement], extra expressions
+        #  and explicit stdin '-'
+        infile = StringIO("a,b,c\n1,2,3\n")
+        with stdin_as_string(infile):
+            self.assertLines(
+                [
+                    "-c",
+                    "a,c",
+                    r"(\w)",
+                    r"\1!",
+                    "-E",
+                    "!",
+                    "X",
+                    "-E",
+                    r"\w",
+                    "Z",
+                    "a,b",
+                ],
+                [
+                    "a,b,c",
+                    "ZZ,Z,3X",
+                ],
+            )
+            infile.close()
 
     ##############################
     # error stuff
@@ -402,9 +642,9 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
         sys.stdin = oldstdin
         exit
 
-    ###############
+    ##############################
     # special stuff
-    ###############
+    ##############################
 
     def test_pattern_arg_has_leading_hyphen_causes_error(self):
         ioerr = StringIO()

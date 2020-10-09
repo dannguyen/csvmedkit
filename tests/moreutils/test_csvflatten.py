@@ -1,3 +1,5 @@
+from collections import namedtuple
+import contextlib
 from io import StringIO
 from unittest.mock import patch
 from unittest import skip as skiptest
@@ -286,12 +288,12 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
 
     def test_row_id_basic(self):
         """
-        prepend _recid_ column; by default, --E/--eor is disabled
+        prepend recid column; by default, --E/--eor is disabled
         """
         self.assertLines(
             ["-R", "examples/dummy2.csv"],
             [
-                "_recid_,field,value",
+                "recid,field,value",
                 "0,a,1",
                 "0,b,2",
                 "0,c,3",
@@ -308,7 +310,7 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
         self.assertLines(
             ["--rec-id", "-E", "WOAH", "examples/dummy2.csv"],
             [
-                "_recid_,field,value",
+                "recid,field,value",
                 "0,a,1",
                 "0,b,2",
                 "0,c,3",
@@ -324,7 +326,7 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
         self.assertLines(
             ["-R", "examples/dummy2m.csv"],
             [
-                "_recid_,field,value",
+                "recid,field,value",
                 "0,a,1",
                 "0,b,2",
                 '0,c,"3,"',
@@ -388,9 +390,54 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-    def test_prettify_multiline_records_disable_max_length(self):
-        """newlines NOT prettified to whitespace if we disable max chop length"""
+    @patch("csvmedkit.moreutils.csvflatten.get_terminal_size")
+    def test_prettify_uses_terminal_size_by_default(self, mock_get_tsize):
+        Tz = namedtuple("terminal_size", ["columns", "lines"])
+        mock_get_tsize.return_value = Tz(23, 42)
+        lines = self.assertLines(
+            [
+                "-P",
+                "examples/abc123.csv",
+            ],
+            [
+                "| field | value |",
+                "| ----- | ----- |",
+                "| code  | alfa  |",
+                "| blob  | 01234 |",
+                "|       | 56789 |",
+                "| ~~~~~ |       |",
+                "| code  | beta  |",
+                "| blob  | ABCDE |",
+                "|       | FGHIJ |",
+            ],
+        )
 
+    @patch("csvmedkit.moreutils.csvflatten.get_terminal_size")
+    def test_prettify_ignores_terminal_size_if_too_small(self, mock_get_tsize):
+        """
+        if the calculated field widths are wider than the terminal (by the margin of a padding value),
+        then DEFAULT_MAX_WIDTH is used for the .max_field_length
+        """
+        Tz = namedtuple("terminal_size", ["columns", "lines"])
+        mock_get_tsize.return_value = Tz(15, 42)
+        lines = self.assertLines(
+            [
+                "-P",
+                "examples/abc123.csv",
+            ],
+            [
+                "| field | value      |",
+                "| ----- | ---------- |",
+                "| code  | alfa       |",
+                "| blob  | 0123456789 |",
+                "| ~~~~~ |            |",
+                "| code  | beta       |",
+                "| blob  | ABCDEFGHIJ |",
+            ],
+        )
+
+    def test_prettify_multiline_records_disable_max_length(self):
+        """newlines NOT converted to whitespace if we disable max chop length"""
         self.assertLines(
             ["-P", "-L", "0", "examples/dummy2m.csv"],
             [
@@ -426,22 +473,16 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
         self.assertLines(
             ["-P", "--rec-id", "examples/dummy2.csv"],
             [
-                "| _recid_ | field | value |",
-                "| ------- | ----- | ----- |",
-                "|       0 | a     | 1     |",
-                "|       0 | b     | 2     |",
-                "|       0 | c     | 3     |",
-                "|       1 | a     | 8     |",
-                "|       1 | b     | 9     |",
-                "|       1 | c     | 10    |",
+                "| recid | field | value |",
+                "| ----- | ----- | ----- |",
+                "|     0 | a     | 1     |",
+                "|     0 | b     | 2     |",
+                "|     0 | c     | 3     |",
+                "|     1 | a     | 8     |",
+                "|     1 | b     | 9     |",
+                "|     1 | c     | 10    |",
             ],
         )
-
-    @skiptest(
-        "figure out how to set/patch terminal size for test; come up with fixtures file"
-    )
-    def test_prettify_use_terminal_width(self):
-        pass
 
     ###################################################################################################
     ### Tests that verify my examples
