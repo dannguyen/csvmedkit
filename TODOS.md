@@ -36,8 +36,9 @@
     - [x] use cmkmixutil class
     - [x] sans replacement flag
     - [x] port old tests
-    - [ ] implicit stdin pipe isn't working; fix broken test
-    - [ ] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
+    - [x] implicit stdin pipe isn't working; fix broken test
+    - moved -E functionality to experimental phase for now
+        - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
 
 
 

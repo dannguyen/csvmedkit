@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import argparse
+from pathlib import Path
 from typing import List as typeList
 
 from csvmedkit import re_std as re
@@ -19,26 +21,6 @@ class CSVSed(CmkMixedUtil):
             "--columns",
             dest="columns",
             help='A comma separated list of column indices, names or ranges to be searched, e.g. "1,id,3-5". If not specified, csvsed will affect *all* columns',
-        )
-
-        self.argparser.add_argument(
-            "-E",
-            "--expr",
-            dest="expressions_list",
-            nargs="*",
-            action="append",
-            type=str,
-            help=r"""
-                When you want to do multiple sed_expressions:
-                    -E 'PATTERN' 'REPL' '[names_of_columns]'
-
-                    'names_of_columns' is a comma-delimited list of columns. Omit or leave blank to match the columns specified by '-c/--columns'
-
-                e.g.
-                -E '(?i)\b(bob|bobby|rob)\b' 'Robert' 'first_name' \
-                -E '^(?i)smith$' 'SMITH' 'last_name' \
-                -E '(\d{2})-(\d{3})' '$1:$2' \
-                """,
         )
 
         self.argparser.add_argument(
@@ -80,6 +62,25 @@ class CSVSed(CmkMixedUtil):
             nargs="?",
             dest="input_path",
             help="The CSV file to operate on. If omitted, will accept input as piped data via STDIN.",
+        )
+
+        self.argparser.add_argument(
+            "-E",
+            "--expr",
+            dest="expressions_list",
+            nargs="*",
+            action="append",
+            type=str,
+            help=argparse.SUPPRESS
+            # r"""
+            # When you want to do multiple sed_expressions:
+            #     -E 'PATTERN' 'REPL' '[names_of_columns]'
+            #     'names_of_columns' is a comma-delimited list of columns. Omit or leave blank to match the columns specified by '-c/--columns'
+            # e.g.
+            # -E '(?i)\b(bob|bobby|rob)\b' 'Robert' 'first_name' \
+            # -E '^(?i)smith$' 'SMITH' 'last_name' \
+            # -E '(\d{2})-(\d{3})' '$1:$2' \
+            # """,
         )
 
     def _handle_sed_expressions(self, column_names: typeList[str]) -> typeList:
@@ -128,7 +129,19 @@ class CSVSed(CmkMixedUtil):
 
                 if len(self.last_expr) > 2:
                     # could be either 3 or 4
-                    self.args.input_path = self.last_expr.pop()
+                    # test if last part of the expr is actually a file
+                    # TODO: this is a bit of a hack; note that it will fail in the edge case where user provides
+                    #   a columns argument that somehow manages to be the name of an existing file(???)
+                    _xarg = self.last_expr[-1]
+                    if Path(_xarg).is_file():
+                        self.args.input_path = self.last_expr.pop()
+                    elif _xarg == "-":
+                        # TODO: should we deprecate explicit '-'?
+                        # there's no feasible scenario for a column to be named '-', so we assume its the explicit stdin operator
+                        self.last_expr.pop()  # throw minus away
+                        self.args.input_path = None  # expect stdin to provide the data
+                    else:
+                        self.args.input_path = None  # expect stdin to provide the data
                 elif len(self.last_expr) == 2:
                     # do nothing, but be warned that if there is no stdin,
                     # then -E might have eaten up the input_file argument
