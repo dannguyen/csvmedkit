@@ -4,25 +4,31 @@
 ## 0.1 
 
 - csvflatten
+    - documentation
+        - [ ] write up common use cases
     - [X] add agate.print_table internally, i.e. `--prettify`
     - [X] add ``--row_ids``
-    - [ ] general tests
+    - [x] general tests
     - [x] is default prettify markdown-table compatible? 
         - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
+
 - csvheader
+    - [ ] documentation
     - [x] default preview headers listing
     - [x] `--HA/--add-generic-headers`
     - [x] `--HM/--make-generic-headers` 
-    - sed headers
+    - sed headers (replace)
+        - [x] renamed it to: `-X/--regex`
         - [x] basic
         - [x] write tests
-    - slug headers
+    - slugify headers
         - [x] basic
-        - [x] write tests
+        - [x] fix tests from --slug to --slugify
     - rename headers
         - [x] basic
         - [x] validate given indexes
         - [x] write tests
+
 
 - csvrgrep 
     - [?] port over

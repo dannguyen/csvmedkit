@@ -189,17 +189,22 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
 
     def test_sed(self):
         self.assertLines(
-            ["--sed", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
+            ["-X", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
         )
 
-    def test_slug_mode(self):
+    def test_slugify_mode(self):
         self.assertLines(
-            ["--slug", "examples/heady.csv"], ["a,b_sharps,c_sea_shells", "1,2,3"]
+            ["--slugify", "examples/heady.csv"],
+            [
+                "a,b_sharps,sea_shells",
+                "100,cats,Iowa",
+                "200,dogs,Ohio",
+            ],
         )
 
     def test_preview_mode(self):
         """
-        prints only headers, even if --slug and/or --rename is used
+        prints only headers, even if --slugify and/or --rename is used
         """
 
         # no different than basic default behavior
@@ -231,7 +236,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
                 "index,field",
                 "1,a",
                 "2,b_sharps",
-                "3,c_sea_shells",
+                "3,sea_shells",
             ],
         )
 
@@ -248,12 +253,12 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
 
         # when sed
         self.assertLines(
-            ["-P", "--sed", "(a|c)", r"Sed, \1", "examples/dummy.csv"],
+            ["-P", "-X", "(a|c)", r"Foo, \1", "examples/dummy.csv"],
             [
                 "index,field",
-                '1,"Sed, a"',
+                '1,"Foo, a"',
                 "2,b",
-                '3,"Sed, c"',
+                '3,"Foo, c"',
             ],
         )
 
@@ -283,17 +288,17 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             [
                 "-S",
                 "--rename",
-                'a|apples,"b|B-Sharps!","c|Sea, shells "',
+                'a|Alice,"b|big-bob!","c| CA. "',
                 "examples/dummy.csv",
             ],
-            ["apples,b_sharps,sea_shells", "1,2,3"],
+            ["alice,big_bob,ca", "1,2,3"],
         )
 
     def test_rename_then_sed(self):
         """renaming always happens first, then the slugging"""
         self.assertLines(
             [
-                "--sed",
+                "-X",
                 "(a|b)",
                 r"!\1!",
                 "-R",
@@ -306,7 +311,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
     def test_sed_then_slug(self):
         """renaming always happens first, then the slugging"""
         self.assertLines(
-            ["-S", "--sed", "(c|b)", r" F O \1 O ", "examples/dummy.csv"],
+            ["-S", "-X", "(c|b)", r" F O \1 O ", "examples/dummy.csv"],
             ["a,f_o_b_o,f_o_c_o", "1,2,3"],
         )
 

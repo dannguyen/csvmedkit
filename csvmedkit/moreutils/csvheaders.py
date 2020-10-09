@@ -39,34 +39,35 @@ class CSVHeaders(CmkUtil):
         )
 
         self.argparser.add_argument(
-            "-P",
-            "--preview",
-            action="store_true",
-            help="""Output only the list of headers; use this to preview renamed or otherwise transformed headers without including the rest of the data""",
-        )
-
-        self.argparser.add_argument(
             "-R",
             "--rename",
             dest="rename_headers",
             type=str,
-            help="""comma-delimited list of header|new_name TK """,
+            help="""Comma-delimited list of pipe-delimited pairs:  (existing) column names/ids, and their replacement, e.g. 'col_a|new_a,2|new_b,"3|New C Col"'  """,
         )
 
         self.argparser.add_argument(
             "-S",
-            "--slug",
-            dest="slug_mode",
+            "--slugify",
+            dest="slugify_mode",
             action="store_true",
-            help=""" slug the headers in snakecase TK""",
+            help="""Convert all the headers into snakecase, e.g. 'Date-Time ' becomes 'date_time' """,
         )
 
         self.argparser.add_argument(
-            "--sed",
-            dest="sed_headers",
+            "-X",
+            "--regex",
+            dest="regex_headers",
             nargs=2,
             type=str,
-            help="""Apply a regex replacement to each header""",
+            help="""Apply a regex replacement to each header: '[PATTERN]' '[REPLACEMENT]'""",
+        )
+
+        self.argparser.add_argument(
+            "-P",
+            "--preview",
+            action="store_true",
+            help="""Output only the list of headers; use this to preview renamed or otherwise transformed headers without processing the entire input data file""",
         )
 
     @staticmethod
@@ -122,7 +123,7 @@ class CSVHeaders(CmkUtil):
         )
 
     def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
-        self.slug_mode = True if self.args.slug_mode else False
+        self.slugify_mode = True if self.args.slugify_mode else False
 
         if self.args.rename_headers:
             self.rename_headers = self.parse_rename_param(
@@ -131,8 +132,8 @@ class CSVHeaders(CmkUtil):
         else:
             self.rename_headers = False
 
-        if self.args.sed_headers:
-            _pat, _rep = self.args.sed_headers
+        if self.args.regex_headers:
+            _pat, _rep = self.args.regex_headers
             self.sed_pattern = re.compile(_pat)
             self.sed_replace = _rep
         else:
@@ -143,7 +144,7 @@ class CSVHeaders(CmkUtil):
         elif any(
             m
             for m in (
-                self.slug_mode,
+                self.slugify_mode,
                 self.rename_headers,
                 self.sed_pattern,
                 self.args.add_generic_headers,
@@ -181,7 +182,7 @@ class CSVHeaders(CmkUtil):
             for i, colname in enumerate(column_names):
                 column_names[i] = self.sed_pattern.sub(self.sed_replace, colname)
 
-        if self.slug_mode:
+        if self.slugify_mode:
             for i, colname in enumerate(column_names):
                 column_names[i] = slugify(colname)
 
