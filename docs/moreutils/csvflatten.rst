@@ -192,10 +192,63 @@ Compared to ``tabulate``
     +------------------------------------------------+---------+-----------+---------------------------------------------+
 
 
-Common scenarios and use cases
-==============================
+That said, if you like ``tabulate``'s table-formatting options, such as ``-f grid``, you can pipe :command:`csvflatten` (and :command:`csvformat` to convert to tab-delimiters) into ``tabulate`` like so::
 
-TK TK
+
+    $ csvflatten --eor 'none' examples/hamlet.csv | csvformat -T \
+        tabulate -f grid -1 -s '\t'
+
+    +---------+------------------------------------------------+
+    | field   | value                                          |
+    +=========+================================================+
+    | act     | 1                                              |
+    +---------+------------------------------------------------+
+    | scene   | 5                                              |
+    +---------+------------------------------------------------+
+    | speaker | Horatio                                        |
+    +---------+------------------------------------------------+
+    | lines   | Propose the oath, my lord.                     |
+    +---------+------------------------------------------------+
+    | act     | 1                                              |
+    +---------+------------------------------------------------+
+    | scene   | 5                                              |
+    +---------+------------------------------------------------+
+    | speaker | Hamlet                                         |
+    +---------+------------------------------------------------+
+    | lines   | Never to speak of this that you have seen,     |
+    +---------+------------------------------------------------+
+    |         | Swear by my sword.                             |
+    +---------+------------------------------------------------+
+    | act     | 1                                              |
+    +---------+------------------------------------------------+
+    | scene   | 5                                              |
+    +---------+------------------------------------------------+
+    | speaker | Ghost                                          |
+    +---------+------------------------------------------------+
+    | lines   | [Beneath] Swear.                               |
+    +---------+------------------------------------------------+
+    | act     | 3                                              |
+    +---------+------------------------------------------------+
+    | scene   | 4                                              |
+    +---------+------------------------------------------------+
+    | speaker | Gertrude                                       |
+    +---------+------------------------------------------------+
+    | lines   | O, speak to me no more;                        |
+    +---------+------------------------------------------------+
+    |         | These words, like daggers, enter in mine ears; |
+    +---------+------------------------------------------------+
+    |         | No more, sweet Hamlet!                         |
+    +---------+------------------------------------------------+
+    | act     | 4                                              |
+    +---------+------------------------------------------------+
+    | scene   | 7                                              |
+    +---------+------------------------------------------------+
+    | speaker | Laertes                                        |
+    +---------+------------------------------------------------+
+    | lines   | Know you the hand?                             |
+    +---------+------------------------------------------------+
+
+
 
 
 Reference: Options and usage
@@ -208,12 +261,38 @@ Print output in tabular format instead of CSV. Unless ``-L/--max-length`` is exp
 
 
 
-
-
 -L/--max-length [integer]
 --------------------------
 
-Specify a max character length for field values; values that exceed this length are split into multiple rows. This is useful for producing output easier to view in a spreadsheet or when using the ``-P/--prettify`` option.
+Specify a max character length for field values; values that exceed this length are split into multiple rows. This is useful for producing output easier to view in a spreadsheet::
+
+    $ csvflatten -L 5 examples/abc123.csv
+
+    field,value
+    code,alfa
+    blob,01234
+    ,56789
+    ~~~~~,
+    code,beta
+    blob,ABCDE
+    ,FGHIJ
+
+
+Or combining with the ``-P/--prettify`` option::
+
+    $ csvflatten -P -L 5 examples/abc123.csv
+
+    | field | value |
+    | ----- | ----- |
+    | code  | alfa  |
+    | blob  | 01234 |
+    |       | 56789 |
+    | ~~~~~ |       |
+    | code  | beta  |
+    | blob  | ABCDE |
+    |       | FGHIJ |
+
+
 
 The default behavior is as follows:
 
@@ -309,3 +388,12 @@ Include a ``_recid_`` column that contains the 0-based index for the respective 
 
 
 Note that ``-rec-id`` by default disables the end-of-record separator
+
+
+
+
+
+Common scenarios and use cases
+==============================
+
+TK TK

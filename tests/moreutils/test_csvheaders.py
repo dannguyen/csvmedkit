@@ -1,3 +1,4 @@
+from io import StringIO
 from unittest.mock import patch
 from unittest import skip as skiptest
 import sys
@@ -8,7 +9,7 @@ from csvmedkit.moreutils.csvheaders import (
     launch_new_instance,
 )
 
-from tests.tk import CSVKitTestCase, EmptyFileTests
+from tests.tk import CSVKitTestCase, EmptyFileTests, stdin_as_string
 
 
 class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
@@ -45,7 +46,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
 
     def test_add_generic_headers(self):
         self.assertLines(
-            ["--add-generic-headers", "examples/dummy.csv"],
+            ["--add-headers", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -62,9 +63,19 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-    def test_make_generic_headers(self):
+    def test_add_craploads_of_generic_headers(self):
+        txt = ",".join(str(i) for i in range(100))
+        infile = StringIO(f"{txt}\n")
+        with stdin_as_string(infile):
+            self.assertLines(
+                ["--add-headers"],
+                [",".join(f"field_{i}" for i in range(1, 101)), txt],
+            )
+        infile.close()
+
+    def test_zap_headers(self):
         self.assertLines(
-            ["--make-generic-headers", "examples/dummy.csv"],
+            ["--zap-headers", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "1,2,3",
@@ -72,7 +83,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
         )
 
         self.assertLines(
-            ["--HM", "--zero", "examples/dummy.csv"],
+            ["--HZ", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "1,2,3",
@@ -268,7 +279,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
 
     def test_make_headers_no_added_effect_to_add_headers(self):
         self.assertLines(
-            ["--HM", "--HA", "examples/dummy.csv"],
+            ["--HZ", "--HA", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -278,7 +289,7 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
 
     def test_make_headers_precedence_over_rename(self):
         self.assertLines(
-            ["--HM", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["--HZ", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
             ["x,y,z", "1,2,3"],
         )
 

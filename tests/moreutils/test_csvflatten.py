@@ -1,3 +1,4 @@
+from io import StringIO
 from unittest.mock import patch
 from unittest import skip as skiptest
 import sys
@@ -9,7 +10,7 @@ from csvmedkit.moreutils.csvflatten import (
     launch_new_instance,
     DEFAULT_EOR_MARKER,
 )
-from tests.tk import CSVKitTestCase, EmptyFileTests
+from tests.tk import CSVKitTestCase, EmptyFileTests, stdin_as_string
 
 
 class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
@@ -77,6 +78,25 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
                 "c,10",
             ],
         )
+
+    def test_blank_columns(self):
+        input_file = StringIO("a,b,c\n1,,3\n,,\n")
+        with stdin_as_string(input_file):
+            self.assertLines(
+                [],
+                [
+                    "field,value",
+                    "a,1",
+                    "b,",
+                    "c,3",
+                    "~~~~~,",
+                    "a,",
+                    "b,",
+                    "c,",
+                ],
+            )
+
+        input_file.close()
 
     #########################################
     ## cmax length

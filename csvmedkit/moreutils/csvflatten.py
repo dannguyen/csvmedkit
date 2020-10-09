@@ -3,7 +3,7 @@
 
 from csvmedkit import agate
 from csvmedkit.cmkutil import CmkUtil
-import os
+from shutil import get_terminal_size
 import sys
 import textwrap
 from typing import NoReturn as typeNoReturn
@@ -95,7 +95,7 @@ class CSVFlatten(CmkUtil):
             self.max_field_length = self.args.max_field_length
         elif self.prettify and not self.args.max_field_length:
             # user wants it pretty but didn't specify a max_field_length, so we automatically figure it out
-            tsize = os.get_terminal_size()
+            tsize = get_terminal_size()
             self.max_field_length = tsize.columns - (
                 self.max_column_name_len + PRETTIFY_PADDING
             )
@@ -143,7 +143,7 @@ class CSVFlatten(CmkUtil):
                 # value_lines = row[col_idx].strip().splitlines()
                 # for line in value_lines:
                 txt = row[col_idx].strip()
-                chunks = self.chunkpattern(txt)
+                chunks = self.chunkpattern(txt) or [""]
                 for chunk_idx, chunk in enumerate(chunks):
                     if chunk_idx == 0:
                         fieldname = colname

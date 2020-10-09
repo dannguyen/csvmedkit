@@ -6,6 +6,8 @@
 - csvflatten
     - documentation
         - [ ] write up common use cases
+    - [ ] how to deal with extremely long headers?
+        - if `-L` isn't specified, and max header is bigger than terminal, then throw error/warning
     - [X] add agate.print_table internally, i.e. `--prettify`
     - [X] add ``--row_ids``
     - [x] general tests
@@ -15,7 +17,7 @@
 - csvheader
     - [ ] documentation
     - [x] default preview headers listing
-    - [x] `--HA/--add-generic-headers`
+    - [x] `--HA/--add-headers`
     - [x] `--HM/--make-generic-headers` 
     - sed headers (replace)
         - [x] renamed it to: `-X/--regex`

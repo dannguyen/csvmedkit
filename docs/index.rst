@@ -5,13 +5,23 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: The utilities:
+   :titlesonly:
 
-   utils
-   authors
-   history
-   modules
+   moreutils/csvheaders
+   moreutils/csvflatten
+   moreutils/csvrgrep
+   moreutils/csvsed
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Cookbook:
+
+   cookbook/index
+
+
 
 
 
@@ -32,4 +42,13 @@ A. As useful as core csvkit is, there are still a bunch of common data-wrangling
 
 Indices and tables
 ==================
+
 * :ref:`search`
+
+
+.. toctree::
+
+   authors
+   history
+   modules
+

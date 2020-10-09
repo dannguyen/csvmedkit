@@ -24,18 +24,18 @@ class CSVHeaders(CmkUtil):
     def add_arguments(self):
         self.argparser.add_argument(
             "--HA",
-            "--add-generic-headers",
-            dest="add_generic_headers",
+            "--add-headers",
+            dest="add_headers",
             action="store_true",
             help="""Add/prepend headers to the given data, in generic 'field_%%d' format, e.g. 'field_1', 'field_2', etc.""",
         )
 
         self.argparser.add_argument(
-            "--HM",
-            "--make-generic-headers",
-            dest="make_generic_headers",
+            "--HZ",
+            "--zap-headers",
+            dest="zap_headers",
             action="store_true",
-            help="Similar to `--HA/--add-generic-headers`, but instead of adding, replace current headers with generic 'field_%%d' format, e.g. 'field_1', 'field_2', etc. ",
+            help="""Similar to `--HA/--add-headers`, but instead of adding a generic header row, completely replace (i.e. "zap") the current headers""",
         )
 
         self.argparser.add_argument(
@@ -101,8 +101,8 @@ class CSVHeaders(CmkUtil):
         if not any(
             h
             for h in (
-                self.args.make_generic_headers,
-                self.args.add_generic_headers,
+                self.args.zap_headers,
+                self.args.add_headers,
             )
         ):
             self.generic_columnized = False
@@ -113,7 +113,7 @@ class CSVHeaders(CmkUtil):
             _row = next(rows)
             column_names = [f"field_{i}" for i, _c in enumerate(_row, self.start_index)]
 
-            if self.args.add_generic_headers:
+            if self.args.add_headers:
                 # then first row (_row) is actually data, not headers to be replaced
                 rows = itertools.chain([_row], rows)
 
@@ -147,7 +147,7 @@ class CSVHeaders(CmkUtil):
                 self.slugify_mode,
                 self.rename_headers,
                 self.sed_pattern,
-                self.args.add_generic_headers,
+                self.args.add_headers,
                 self.generic_columnized,
             )
         ):
