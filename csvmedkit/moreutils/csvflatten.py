@@ -7,10 +7,8 @@ from shutil import get_terminal_size
 import sys
 import textwrap
 from typing import (
-    Iterable as typeIterable,
-    NoReturn as typeNoReturn,
     Callable as typeCallable,
-    Union as typeUnion,
+    Optional as typeOptional,
 )
 
 DEFAULT_EOR_MARKER = "~"
@@ -93,13 +91,13 @@ class CSVFlatten(UniformReader, CmkUtil):
         return _cp
 
     @property
-    def end_of_record_marker(self) -> typeUnion[None, str]:
+    def end_of_record_marker(self) -> typeOptional[str]:
         """
         preconditions:
             - self.max_column_name_length
             - self.rec_ids_mode
         """
-        marker: typeUnion[None, str]
+        marker: typeOptional[str]
 
         _eor = self.args.end_of_record_marker
         if _eor == "none" or _eor == "":

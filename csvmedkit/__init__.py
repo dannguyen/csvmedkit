@@ -6,17 +6,6 @@ Copies csvkit's init plus some other things
 
 from csvkit import agate
 
-from agate.aggregations import (
-    Count,
-    Min,
-    Max,
-    MaxLength,
-    Mean,
-    Median,
-    Mode,
-    StDev,
-    Sum,
-)
 
 #  from csvkit import reader, writer, DictReader, DictWriter
 from csvkit.cli import CSVKitUtility, parse_column_identifiers
@@ -27,26 +16,13 @@ import re as re_std  # because I'm still deciding between re/regex, we should ha
 import regex as re_plus
 
 
-from typing import Union as tyUnion, Sequence as tySequence
+from typing import Union as typeUnion, Sequence as typeSequence
 
 agate = agate
 rxlib = re_std
 
 
-Aggregates = {
-    "count": Count,
-    "max": Max,
-    "maxlength": MaxLength,
-    "min": Min,
-    "mean": Mean,
-    "median": Median,
-    "mode": Mode,
-    "stdev": StDev,
-    "sum": Sum,
-}
-
-
-def slugify(txt: tyUnion[str, tySequence]) -> str:
+def slugify(txt: typeUnion[str, typeSequence]) -> str:
     if not isinstance(txt, str):
         txt = " ".join(txt)
     return pyslugify(txt, separator="_")

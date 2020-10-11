@@ -9,7 +9,8 @@ from typing import (
     Union as typeUnion,
 )
 
-from csvmedkit import agate, slugify, Aggregates
+from csvmedkit import agate, slugify
+from csvmedkit.aggs import Aggregates
 from csvmedkit.exceptions import *
 from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
 
