@@ -201,9 +201,9 @@ class TestAggCount(TestCSVPivot):
             ],
         )
 
-    @skiptest(
-        "Need to implement typecasting of second argument to count, especially when number"
-    )
+    # @skiptest(
+    #     "Need to implement typecasting of second argument to count, especially when number"
+    # )
     def test_agg_count_with_2_args_typecast(self):
         self.assertRows(
             ["-a", "count:age,25", "-r", "gender", "examples/peeps.csv"],

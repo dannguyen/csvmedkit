@@ -6,7 +6,12 @@ from csvmedkit.cmkutil import CmkUtil
 from shutil import get_terminal_size
 import sys
 import textwrap
-from typing import NoReturn as typeNoReturn
+from typing import (
+    Iterable as typeIterable,
+    NoReturn as typeNoReturn,
+    Callable as typeCallable,
+    Union as typeUnion,
+)
 
 DEFAULT_EOR_MARKER = "~"
 DEFAULT_MAX_LENGTH = 50
@@ -75,14 +80,65 @@ class CSVFlatten(CmkUtil):
             help="""Print output in tabular format instead of CSV""",
         )
 
+    @property
+    def chunkpattern(self) -> typeCallable:
+        """
+        expects self.max_field_length to be set
+        """
+        # if max_field_length is specified, then the pattern for chunking uses it
+        if self.max_field_length:
+            _cp = lambda txt: textwrap.wrap(txt, width=self.max_field_length)
+        else:  # we just split newlines
+            _cp = lambda txt: txt.splitlines()
+        return _cp
+
+    @property
+    def end_of_record_marker(self) -> typeUnion[None, str]:
+        """
+        preconditions:
+            - self.max_column_name_length
+            - self.rec_ids_mode
+        """
+        marker: typeUnion[None, str]
+
+        _eor = self.args.end_of_record_marker
+        if _eor == "none" or _eor == "":
+            marker = None
+        elif _eor:  # use default
+            marker = _eor
+        else:
+            # disable by default, if we're in rowid mode
+            if self.rec_ids_mode:
+                marker = None
+            else:
+                marker = "".join(
+                    DEFAULT_EOR_MARKER for i in range(self.max_column_name_length)
+                )
+        return marker
+
+    @property
+    def label_chunks_mode(self):
+        return self.args.label_chunks_mode
+
+    @property
+    def rec_ids_mode(self):
+        return self.args.rec_ids_mode
+
+    @property
+    def prettify(self):
+        return self.args.prettify
+
     def main(self):
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
 
-        # the following args are referenced in self.reader_kwargs and used in get_rows_and_column_names_and_column_ids
+        rows: typeIterable
+        column_names: list
+        outrows: list
+        outtable: agate.Table
+
         rows = self.text_csv_reader()
         column_names = next(rows)
-        self.rec_ids_mode = self.args.rec_ids_mode
         self.output_flat_column_names = (
             FLAT_COLUMN_NAMES
             if not self.rec_ids_mode
@@ -94,8 +150,6 @@ class CSVFlatten(CmkUtil):
             if column_names
             else 0  # for empty file case
         )
-
-        self.prettify = True if self.args.prettify else False
 
         if (
             self.args.max_field_length or self.args.max_field_length == 0
@@ -115,30 +169,9 @@ class CSVFlatten(CmkUtil):
         else:
             self.max_field_length = None
 
-        _eor = self.args.end_of_record_marker
-        if _eor == "none" or _eor == "":
-            self.end_of_record_marker = None
-        elif _eor:  # use default
-            self.end_of_record_marker = _eor
-        else:
-            # disable by default, if we're in rowid mode
-            if self.rec_ids_mode:
-                self.end_of_record_marker = None
-            else:
-                self.end_of_record_marker = "".join(
-                    DEFAULT_EOR_MARKER for i in range(self.max_column_name_length)
-                )
-
-        # if max_field_length is specified, then the pattern for chunking uses it
-        if self.max_field_length:
-            self.chunkpattern = lambda txt: textwrap.wrap(
-                txt, width=self.max_field_length
-            )
-        else:  # we just split newlines
-            self.chunkpattern = lambda txt: txt.splitlines()
-
         outrows = []
         for row_idx, row in enumerate(rows):
+            # TODO: wtf is this spagehtti:
             o_row = (
                 [
                     row_idx,
@@ -163,12 +196,12 @@ class CSVFlatten(CmkUtil):
                     else:
                         fieldname = (
                             f"{colname}__{chunk_idx}"
-                            if self.args.label_chunks_mode is True
+                            if self.label_chunks_mode is True
                             else None
                         )
                     outrows.append(o_row + [fieldname, chunk])
 
-        if self.args.prettify:
+        if self.prettify:
             outtable = agate.Table(
                 outrows,
                 column_names=self.output_flat_column_names,

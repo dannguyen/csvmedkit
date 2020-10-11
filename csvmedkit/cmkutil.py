@@ -18,6 +18,15 @@ class CmkUtil(CSVKitUtility):
     slightly adjusted version of standard CSVKitUtility
     """
 
+    @property
+    def column_offset(self) -> int:
+        """always either 1 or 0"""
+        return self.get_column_offset()
+
+    @property
+    def column_start_index(self) -> int:
+        return 0 if getattr(self.args, "zero_based", None) else 1
+
     def log_err(self, txt: str) -> typeNoReturn:
         stderr.write(f"{txt}\n")
 

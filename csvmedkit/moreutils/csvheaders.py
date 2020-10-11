@@ -70,9 +70,26 @@ class CSVHeaders(CmkUtil):
             help="""Output only the list of headers; use this to preview renamed or otherwise transformed headers without processing the entire input data file""",
         )
 
+    @property
+    def add_headers(self) -> bool:
+        return self.args.add_headers
+
+    @property
+    def zap_headers(self) -> bool:
+        return self.args.zap_headers
+
+    @property
+    def preview(self) -> bool:
+        return self.args.preview
+
+    @property
+    def slugify_mode(self) -> bool:
+        return self.args.slugify_mode
+
     @staticmethod
     def parse_rename_param(
-        txt: str, column_names: typeList[str], start_index: int = 1
+        txt: str,
+        column_names: typeList[str],
     ) -> typeList[typeTuple[str]]:
         """
         Converts:
@@ -91,7 +108,7 @@ class CSVHeaders(CmkUtil):
         """default behavior of csvheaders is called without any modifying flags"""
         outs = self.text_csv_writer()
         outs.writerow(("index", "field"))
-        for idx, colname in enumerate(column_names, self.start_index):
+        for idx, colname in enumerate(column_names, self.column_start_index):
             outs.writerow((idx, colname))
 
     def _prepare_headers(self) -> typeTuple[typeIterable]:
@@ -101,8 +118,8 @@ class CSVHeaders(CmkUtil):
         if not any(
             h
             for h in (
-                self.args.zap_headers,
-                self.args.add_headers,
+                self.zap_headers,
+                self.add_headers,
             )
         ):
             self.generic_columnized = False
@@ -111,7 +128,9 @@ class CSVHeaders(CmkUtil):
             self.generic_columnized = True
             # Peek at a row to get the number of columns.
             _row = next(rows)
-            column_names = [f"field_{i}" for i, _c in enumerate(_row, self.start_index)]
+            column_names = [
+                f"field_{i}" for i, _c in enumerate(_row, self.column_start_index)
+            ]
 
             if self.args.add_headers:
                 # then first row (_row) is actually data, not headers to be replaced
@@ -123,11 +142,12 @@ class CSVHeaders(CmkUtil):
         )
 
     def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
-        self.slugify_mode = True if self.args.slugify_mode else False
+
+        self.output_headers_only: bool
 
         if self.args.rename_headers:
             self.rename_headers = self.parse_rename_param(
-                self.args.rename_headers, column_names, self.start_index
+                self.args.rename_headers, column_names
             )
         else:
             self.rename_headers = False
@@ -139,7 +159,7 @@ class CSVHeaders(CmkUtil):
         else:
             self.sed_pattern = False
 
-        if self.args.preview:
+        if self.preview:
             self.output_headers_only = True
         elif any(
             m
@@ -159,7 +179,6 @@ class CSVHeaders(CmkUtil):
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
 
-        self.start_index = 0 if getattr(self.args, "zero_based", None) else 1
         rows, column_names = self._prepare_headers()
 
         # set up modes/arguments
@@ -169,7 +188,7 @@ class CSVHeaders(CmkUtil):
             for rh in self.rename_headers:
                 col, rename = rh
                 cid = cmk_parse_column_ids(
-                    col, column_names, column_offset=self.start_index
+                    col, column_names, column_offset=self.column_start_index
                 )
                 if len(cid) != 1:
                     raise ValueError(

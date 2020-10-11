@@ -155,6 +155,14 @@ class CSVSed(CmkMixedUtil):
         self.input_file = self._open_input_file(self.args.input_path)
         super().run()
 
+    @property
+    def literal_match_mode(self) -> bool:
+        return self.args.literal_match
+
+    @property
+    def like_grep(self) -> bool:
+        return self.args.like_grep
+
     def main(self):
         # TODO: THIS IS CRAP
         if self.additional_input_expected():
@@ -169,9 +177,6 @@ class CSVSed(CmkMixedUtil):
                 "No input file or piped data provided. Waiting for standard input:\n"
             )
 
-        self.column_offset = self.get_column_offset()
-        self.literal_match_mode = self.args.literal_match
-
         if self.writer_kwargs.pop("line_numbers", False):
             self.reader_kwargs["line_numbers"] = True
 
@@ -182,7 +187,7 @@ class CSVSed(CmkMixedUtil):
         self.expressions = self._handle_sed_expressions(column_names)
 
         # here's where we emulate csvrgrep...
-        if self.args.like_grep:
+        if self.like_grep:
             epattern = self.args.first_pattern
             ecolstring = self.args.columns
             xrows = cmk_filter_rows(

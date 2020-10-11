@@ -1,5 +1,9 @@
 # TODOS
 
+Left off: 
+    - added variable typehints
+    - refactored `self.thing = self.args.thing` into properties where possible
+        - look for more common properties that can be used by CmkUtil
 
 ## 0.1 
 
@@ -9,6 +13,9 @@
     - [ ] port tests
         - Left off with this broken: `test_agg_count_with_2_args_typecast`
     - [ ] documentation
+
+
+
 - csvflatten
     - documentation
         - [ ] write up common use cases

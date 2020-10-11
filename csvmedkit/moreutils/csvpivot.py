@@ -122,10 +122,11 @@ class CSVPivot(CmkUtil):
         super().run()
 
     def main(self):
+        intable: agate.Table
+        outtable: agate.Table
+
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
-
-        self.column_offset = self.get_column_offset()
 
         intable = agate.Table.from_csv(
             self.input_file,
