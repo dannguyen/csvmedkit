@@ -16,3 +16,7 @@ class ArgumentErrorTK(CustomException):
 
 class InvalidAggregation(CustomException):
     pass
+
+
+class ImplementationError(CustomException):
+    pass

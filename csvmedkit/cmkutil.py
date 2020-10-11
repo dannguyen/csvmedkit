@@ -11,11 +11,12 @@ from csvkit.grep import FilteringCSVReader
 from csvmedkit import CSVKitUtility, agate, parse_column_identifiers
 from csvmedkit import __title__, __version__
 from csvmedkit import re_std as re
+from csvmedkit.exceptions import *
 
 
-class CmkUtil(CSVKitUtility):
+class CmkProps:
     """
-    slightly adjusted version of standard CSVKitUtility
+    properties that provide convenient aliases for common and existing csvkit options
     """
 
     @property
@@ -24,16 +25,80 @@ class CmkUtil(CSVKitUtility):
         return self.get_column_offset()
 
     @property
+    def columns_filter(self) -> str:
+        """fix ambiguity with commands that use -c/--columns"""
+        return getattr(self.args, "columns", None)
+
+    @property
     def column_start_index(self) -> int:
         return 0 if getattr(self.args, "zero_based", None) else 1
+
+
+class UniformReader:
+    """
+    designates a class that has an expected read_input() method
+    """
+
+    @property
+    def filtered_column_ids(self) -> typeList[int]:
+        """convenience helper"""
+        return parse_column_identifiers(
+            self.columns_filter,
+            self.i_column_names,
+            self.column_offset,
+            excluded_columns=None,
+        )
+
+    @property
+    def is_empty(self):
+        return not self.i_column_names
+
+    @property
+    def i_rows(self):
+        if not self.is_input_read:
+            raise ImplementationError(
+                "read_input() method may be incorrectly implemented"
+            )
+        return self._rows
+
+    @property
+    def i_column_names(self) -> list:
+        if not self.is_input_read:
+            raise ImplementationError(
+                "read_input() method may be incorrectly implemented"
+            )
+        return self._column_names
+
+    @property
+    def is_input_read(self) -> bool:
+        return self._read_input_done
+
+    def read_input(self):
+        """
+        e.g.
+        self._rows = self.text_csv_reader()
+        self._column_names = next(self._rows)
+        self._read_input_done = True
+        """
+        raise ImplementationError(
+            "read_input() needs to be implemented by each subclass"
+        )
+
+
+class CmkUtil(CmkProps, CSVKitUtility):
+    """
+    slightly adjusted version of standard CSVKitUtility
+    """
 
     def log_err(self, txt: str) -> typeNoReturn:
         stderr.write(f"{txt}\n")
 
     def text_csv_reader(self) -> agate.csv.reader:
+        """TODO: deprecate"""
         return agate.csv.reader(self.skip_lines(), **self.reader_kwargs)
 
     def text_csv_writer(self) -> agate.csv.writer:
+        """TODO: deprecate"""
         return agate.csv.writer(self.output_file, **self.writer_kwargs)
 
     def _extract_csv_reader_kwargs(self):

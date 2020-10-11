@@ -18,6 +18,8 @@ from tests.mk import CmkTestCase, EmptyFileTests, stdin_as_string, skiptest
 class TestCSVFlatten(CmkTestCase, EmptyFileTests):
     Utility = CSVFlatten
 
+
+class TestInit(TestCSVFlatten, EmptyFileTests):
     def test_launch_new_instance(self):
         with patch.object(
             sys, "argv", [self.Utility.__name__.lower(), "examples/dummy.csv"]
@@ -100,6 +102,8 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
 
         input_file.close()
 
+
+class TestMaxLength(TestCSVFlatten):
     #########################################
     ## cmax length
     ##########################################
@@ -122,6 +126,9 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
                 ",ssee",
             ],
         )
+
+
+class TestChunkLabel(TestCSVFlatten):
 
     #########################################
     ## chop/chunk label
@@ -192,6 +199,9 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
                 "name__1,ssee",
             ],
         )
+
+
+class TestEor(TestCSVFlatten):
 
     #########################################
     ## end of record marker/separator
@@ -282,6 +292,9 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
             ],
         )
 
+
+class TestRowId(TestCSVFlatten):
+
     ###################################################################################################
     # row_id mode
     ###################################################################################################
@@ -336,6 +349,9 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
                 "1,c,10",
             ],
         )
+
+
+class TestPrettify(TestCSVFlatten):
 
     ###################################################################################################
     # prettify mode
@@ -436,6 +452,10 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
             ],
         )
 
+
+class TestPrettifyCombo(TestCSVFlatten):
+    """test prettify with other settings to make make sure side-effects don't conflict"""
+
     def test_prettify_multiline_records_disable_max_length(self):
         """newlines NOT converted to whitespace if we disable max chop length"""
         self.assertLines(
@@ -484,45 +504,38 @@ class TestCSVFlatten(CmkTestCase, EmptyFileTests):
             ],
         )
 
-    ###################################################################################################
-    ### Tests that verify my examples
-    ###################################################################################################
-    @skiptest("write out examples later")
-    def test_regular_hamlet_w_csvlook(self):
-        self.assertLines(["examples/hamlet.csv", "-P"], ["lines"])
 
-    ################################
-    # obsolete
-    ################################
-
-    @skiptest("obsolete: no longer need to force this")
-    def test_forced_quoting_in_max_length_mode(self):
-        self.assertLines(
-            [
-                "examples/dummy.csv",
-                "--max-length",
-                "42",
-            ],
-            [
-                '"field","value"',
-                '"a","1"',
-                '"b","2"',
-                '"c","3"',
-            ],
-        )
-        self.assertLines(
-            [
-                "examples/dummy.csv",
-                "-L",
-                "42",
-            ],
-            [
-                '"field","value"',
-                '"a","1"',
-                '"b","2"',
-                '"c","3"',
-            ],
-        )
+################################
+# obsolete
+################################
+@skiptest("obsolete: no longer need to force this")
+def test_forced_quoting_in_max_length_mode(self):
+    self.assertLines(
+        [
+            "examples/dummy.csv",
+            "--max-length",
+            "42",
+        ],
+        [
+            '"field","value"',
+            '"a","1"',
+            '"b","2"',
+            '"c","3"',
+        ],
+    )
+    self.assertLines(
+        [
+            "examples/dummy.csv",
+            "-L",
+            "42",
+        ],
+        [
+            '"field","value"',
+            '"a","1"',
+            '"b","2"',
+            '"c","3"',
+        ],
+    )
 
 
 ###################################################################################################
@@ -534,3 +547,7 @@ class TestDocExamples(TestCSVFlatten):
     @skiptest("write out examples later")
     def test_intro(self):
         pass
+
+    @skiptest("write out examples later")
+    def test_regular_hamlet_w_csvlook(self):
+        self.assertLines(["examples/hamlet.csv", "-P"], ["lines"])

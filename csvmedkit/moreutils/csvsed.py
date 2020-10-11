@@ -8,7 +8,7 @@ from csvmedkit.cmkutil import CmkMixedUtil, cmk_filter_rows, cmk_parse_column_id
 from csvmedkit.exceptions import *
 
 
-class CSVSed(CmkMixedUtil):
+class Parser:
     description = """Replaces all instances of [PATTERN] with [REPL]"""
 
     override_flags = [
@@ -20,7 +20,7 @@ class CSVSed(CmkMixedUtil):
             "-c",
             "--columns",
             dest="columns",
-            help='A comma separated list of column indices, names or ranges to be searched, e.g. "1,id,3-5". If not specified, csvsed will affect *all* columns',
+            help='A comma separated list of column indices, names or ranges to be affected, e.g. "1,id,3-5". If not specified, csvsed will affect *all* columns',
         )
 
         self.argparser.add_argument(
@@ -83,10 +83,22 @@ class CSVSed(CmkMixedUtil):
             # """,
         )
 
+
+class Props:
+    @property
+    def literal_match_mode(self) -> bool:
+        return self.args.literal_match
+
+    @property
+    def like_grep(self) -> bool:
+        return self.args.like_grep
+
+
+class CSVSed(Props, Parser, CmkMixedUtil):
     def _handle_sed_expressions(self, column_names: typeList[str]) -> typeList:
         # TODO: fix this spaghetti CRAP: maybe make expressions handle dicts/named typles instead of lists
 
-        first_col_str = self.args.columns if self.args.columns else ""
+        first_col_str = self.columns_filter or ""
         first_expr = [self.args.first_pattern, self.args.first_repl, first_col_str]
         expressions = [first_expr]
         if list_expressions := getattr(self.args, "expressions_list", []):
@@ -155,14 +167,6 @@ class CSVSed(CmkMixedUtil):
         self.input_file = self._open_input_file(self.args.input_path)
         super().run()
 
-    @property
-    def literal_match_mode(self) -> bool:
-        return self.args.literal_match
-
-    @property
-    def like_grep(self) -> bool:
-        return self.args.like_grep
-
     def main(self):
         # TODO: THIS IS CRAP
         if self.additional_input_expected():
@@ -189,11 +193,10 @@ class CSVSed(CmkMixedUtil):
         # here's where we emulate csvrgrep...
         if self.like_grep:
             epattern = self.args.first_pattern
-            ecolstring = self.args.columns
             xrows = cmk_filter_rows(
                 xrows,
                 epattern,
-                ecolstring,
+                self.columns_filter,
                 column_names,
                 column_ids,
                 literal_match=self.literal_match_mode,

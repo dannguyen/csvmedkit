@@ -4,7 +4,7 @@ Left off:
     - added variable typehints
     - refactored `self.thing = self.args.thing` into properties where possible
         - look for more common properties that can be used by CmkUtil
-
+    - csvflatten: drafted a common read_input/i_rows/i_column_names interface that other commands can use...
 ## 0.1 
 
 - csvpivot

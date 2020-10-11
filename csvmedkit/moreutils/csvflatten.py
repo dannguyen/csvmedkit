@@ -2,7 +2,7 @@
 
 
 from csvmedkit import agate
-from csvmedkit.cmkutil import CmkUtil
+from csvmedkit.cmkutil import CmkUtil, UniformReader
 from shutil import get_terminal_size
 import sys
 import textwrap
@@ -31,7 +31,7 @@ FLAT_COL_PADDING = 4
 FLAT_COL_WIDTH = len("field") + FLAT_COL_PADDING  # e.g. '| field |' and '| recid |'
 
 
-class CSVFlatten(CmkUtil):
+class CSVFlatten(UniformReader, CmkUtil):
     description = """Prints flattened records, such that each row represents a record's fieldname and corresponding value,
                      similar to transposing a record in spreadsheet format"""
 
@@ -128,27 +128,32 @@ class CSVFlatten(CmkUtil):
     def prettify(self):
         return self.args.prettify
 
+    def read_input(self):
+        self._rows = agate.csv.reader(self.skip_lines(), **self.reader_kwargs)
+        self._column_names = next(self._rows)
+        self._read_input_done = True
+
     def main(self):
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
 
-        rows: typeIterable
-        column_names: list
+        # UniformReader (DRY later)
+        self.read_input()
+        if self.is_empty:
+            return
+        # /UniformReader
+
         outrows: list
         outtable: agate.Table
 
-        rows = self.text_csv_reader()
-        column_names = next(rows)
         self.output_flat_column_names = (
             FLAT_COLUMN_NAMES
             if not self.rec_ids_mode
             else (REC_ID_COLUMN_NAME,) + FLAT_COLUMN_NAMES
         )
 
-        self.max_column_name_length = (
-            max(len(c) for c in (column_names + list(self.output_flat_column_names)))
-            if column_names
-            else 0  # for empty file case
+        self.max_column_name_length = max(
+            len(c) for c in (self.i_column_names + list(self.output_flat_column_names))
         )
 
         if (
@@ -170,7 +175,7 @@ class CSVFlatten(CmkUtil):
             self.max_field_length = None
 
         outrows = []
-        for row_idx, row in enumerate(rows):
+        for row_idx, row in enumerate(self.i_rows):
             # TODO: wtf is this spagehtti:
             o_row = (
                 [
@@ -185,7 +190,7 @@ class CSVFlatten(CmkUtil):
                 eor_row = [None] if self.rec_ids_mode else []
                 outrows.append(eor_row + [self.end_of_record_marker, None])
 
-            for col_idx, colname in enumerate(column_names):
+            for col_idx, colname in enumerate(self.i_column_names):
                 # value_lines = row[col_idx].strip().splitlines()
                 # for line in value_lines:
                 txt = row[col_idx].strip()
