@@ -3,15 +3,14 @@ from io import StringIO
 from subprocess import Popen, PIPE
 import sys
 
-from unittest import skip as skiptest
-from unittest.mock import patch
-from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests, stdin_as_string
+from tests.mk import CmkTestCase, ColumnsTests, EmptyFileTests, stdin_as_string, patch, skiptest
 
 from csvmedkit.exceptions import ColumnIdentifierError
 from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance
 
 
-class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
+
+class TestCSVSed(CmkTestCase, ColumnsTests, EmptyFileTests):
     Utility = CSVSed
     default_args = ["hello", "world"]
     columns_args = [
@@ -19,6 +18,8 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
         "y",
     ]
 
+
+class TestInit(TestCSVSed):
     def test_launch_new_instance(self):
         with patch.object(
             sys,
@@ -64,17 +65,10 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
             ],
         )
 
-    def test_outputs_non_pattern_matches_are_returned(self):
-        self.assertLines(
-            [r"([a-z])", r"\1!", "examples/tinyvals.csv"],
-            [
-                "alpha,omega",
-                "1,9",
-                "a!,z!",
-                "$,%",
-            ],
-        )
 
+
+
+class TestOptions(TestCSVSed):
     def test_column_choice(self):
         self.assertLines(
             ["-c", "b,c", r"(\w)", r"\1!", "examples/dummy.csv"],
@@ -112,21 +106,24 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
             ],
         )
 
-    def test_hacky_strip(self):
-        """obv you should use csvnorm, but this works in a pinch"""
+
+
+
+class TestLikeGrep(TestCSVSed):
+
+    def test_default_without_grep_mode(self):
+        """
+        like basic sed, shouldn't be filtering out lines that don't match for replacement
+        """
         self.assertLines(
-            [r"^\s*(.+?)\s*$", r"\1", "examples/ws_consec.csv"],
+            [r"([a-z])", r"\1!", "examples/tinyvals.csv"],
             [
-                "id,phrase",
-                "1,hello world",
-                "2,good   bye",
-                "3,a  ok",
+                "alpha,omega",
+                "1,9",
+                "a!,z!",
+                "$,%",
             ],
         )
-
-    ##############################
-    # like grep
-    ##############################
 
     def test_like_grep_mode(self):
         """
@@ -157,168 +154,15 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
             ],
         )
 
-    ######################################
-    # handling multiple expressions via -E
-    ######################################
 
-    def test_first_expression(self):
-        self.assertLines(
-            [r"my (\w{5,})", r"Your \1!", "examples/myway.csv", "-c", "value"],
-            [
-                "code,value",
-                "1,Your money!",
-                '2,"Your stuff!, my way"',
-                "3,your house has my car",
-            ],
-        )
 
-    def test_additional_expression(self):
-        """
-        note how additional expression will use -c setting, when
-        its own columns string is missing
-        """
-        self.assertLines(
-            [
-                "-c",
-                "value",
-                r"my (\w{5,})",
-                r"Your \1!",
-                "examples/myway.csv",
-                "-E",
-                r"(\w{3,}|\d+)",
-                r"_\1_",
-            ],
-            [
-                "code,value",
-                "1,_Your_ _money_!",
-                '2,"_Your_ _stuff_!, my _way_"',
-                "3,_your_ _house_ _has_ my _car_",
-            ],
-        )
+class TestExpressionArguments(TestCSVSed):
+    """
+    make sure first_patttern + first_replace are properly interpreted
+    """
 
-    def test_additional_expression_column_specified(self):
-        self.assertLines(
-            [
-                "-c",
-                "value",
-                r"my (\w{5,})",
-                r"Your \1!",
-                "examples/myway.csv",
-                "-E",
-                r"(\w{3,}|\d+)",
-                r"_\1_",
-                "value,code",
-            ],
-            [
-                "code,value",
-                "_1_,_Your_ _money_!",
-                '_2_,"_Your_ _stuff_!, my _way_"',
-                "_3_,_your_ _house_ _has_ my _car_",
-            ],
-        )
 
-    ########## order of operations
-
-    # [
-    # 'id,col_a,col_b',
-    # '1,hello,world',
-    # '2,Hey,you',
-    # '3,1,2',
-    # '4,9999999,777',
-    # '5,OK,Boomer',
-    # '6,memory,"Person,woman,man,camera,TV"',]
-
-    def test_order_expressions(self):
-        self.assertLines(
-            [
-                "-c",
-                "col_a,col_b",
-                r"^(.{1,2})$",  # first pattern
-                r"\1\1",  # second pattern
-                "-E",
-                r"^(.{4})$",
-                r"_\1_",
-                "id,col_a,col_b",
-                "-E",
-                r"^(.{6})",
-                r"\1, oxford and etc.",
-                "col_a",
-                "examples/ab.csv",
-            ],
-            [
-                "id,col_a,col_b",
-                "1,hello,world",
-                "2,Hey,you",
-                "3,11,22",
-                '4,"999999, oxford and etc.9",777',
-                '5,"_OKOK_, oxford and etc.",Boomer',
-                '6,"memory, oxford and etc.","Person,woman,man,camera,TV"',
-            ],
-        )
-
-    def test_order_expressions_literal(self):
-        self.assertLines(
-            [
-                "--match-literal",
-                "e",
-                "x",
-                "examples/ab.csv",
-                "-c",
-                "col_a,col_b",
-                "-E",
-                "o",
-                "e",
-                "col_a,col_b",
-                "-E",
-                "er",
-                "oz",
-                "col_a,col_b",
-            ],
-            [
-                "id,col_a,col_b",
-                "1,hxlle,wozld",
-                "2,Hxy,yeu",
-                "3,1,2",
-                "4,9999999,777",
-                "5,OK,Beemxr",
-                '6,mxmozy,"Pxrsen,weman,man,camxra,TV"',
-            ],
-        )
-
-    def test_order_expressions_plus_grep_mode(self):
-        """
-        grep_testing happens BEFORE the transformation, thus lines that are
-        transformed by the first expression and into something that matches the second
-        expression pattern will NOT be returned
-        """
-
-        self.assertLines(
-            [
-                r"^(\d{2,4})$",
-                r"\1\1",
-                "examples/ab.csv",
-                "-G",
-                "-E",
-                r"(\d{2})",
-                r"_\1_",
-                "col_a,col_b",
-            ],
-            [
-                "id,col_a,col_b",
-                # '1,hello,world',
-                # '2,Hey,you',
-                # '3,1,2',
-                "4,_99__99__99_9,_77__77__77_",
-                # '5,OK,Boomer',
-                # '6,memory,"Person,woman,man,camera,TV"',
-            ],
-        )
-
-    ######################################
-    # test intermixed args
-    ######################################
-
-    def test_intermix_just_required_args(self):
+    def test_basic_expression(self):
         """input_file always has to come after pattern and replace"""
         self.assertLines(
             [r"(\w)", r"\1!", "examples/dummy.csv"],
@@ -327,6 +171,28 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
                 "1!,2!,3!",
             ],
         )
+
+
+
+
+class TestEdgeCases(TestCSVSed):
+
+
+    ######################################
+    # test intermixed args
+    ######################################
+
+    def test_with_columns_opt_upfront(self):
+        self.assertLines(
+            ["-c", "value", r"my (\w{5,})", r"Your \1!", "examples/myway.csv",],
+            [
+                "code,value",
+                "1,Your money!",
+                '2,"Your stuff!, my way"',
+                "3,your house has my car",
+            ],
+        )
+
 
     def test_intermix_columns_option(self):
         # -c option before required args
@@ -520,5 +386,30 @@ class TestCSVSed(CSVKitTestCase, ColumnsTests, EmptyFileTests):
                 # '005,eggplants,"$3,987",$501',
                 # '006,figs,"$30,333","(777.66)"',
                 '006,grapes,"154,321.98","-X32,654"',
+            ],
+        )
+
+
+
+###################################################################################################
+### Tests that verify my documentation examples
+###################################################################################################
+class TestDocExamples(TestCSVSed):
+    """Tests that verify my documentation examples"""
+
+    @skiptest("write out examples later")
+    def test_intro(self):
+        pass
+
+
+    def test_hacky_strip(self):
+        """obv you should use csvnorm, but this works in a pinch"""
+        self.assertLines(
+            [r"^\s*(.+?)\s*$", r"\1", "examples/ws_consec.csv"],
+            [
+                "id,phrase",
+                "1,hello world",
+                "2,good   bye",
+                "3,a  ok",
             ],
         )

@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
+
+
 """
-Basically, a copy of csvkit/tests/utils.py, but with a different name for less confusion
+Basically, a copy of csvkit/tests/utils.py. It is not used directly by csvmedkit's test suite, but is
+imported and inherited from tests/mk.py
 """
+
+
 
 from contextlib import contextmanager
 import six

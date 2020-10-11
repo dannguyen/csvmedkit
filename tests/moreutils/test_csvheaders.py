@@ -1,20 +1,20 @@
 from io import StringIO
-from unittest.mock import patch
 from unittest import skip as skiptest
 import sys
 
-from csvmedkit.exceptions import *
 from csvmedkit.moreutils.csvheaders import (
     CSVHeaders,
     launch_new_instance,
 )
 
-from tests.tk import CSVKitTestCase, EmptyFileTests, stdin_as_string
+from tests.mk import CmkTestCase, EmptyFileTests, stdin_as_string, patch, skiptest
+from csvmedkit.exceptions import *
 
-
-class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
+class TestCSVHeaders(CmkTestCase):
     Utility = CSVHeaders
 
+
+class TestInit(TestCSVHeaders, EmptyFileTests):
     def test_launch_new_instance(self):
         with patch.object(
             sys, "argv", [self.Utility.__name__.lower(), "examples/dummy.csv"]
@@ -44,6 +44,8 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
+
+class TestGenericHeaders(TestCSVHeaders):
     def test_add_generic_headers(self):
         self.assertLines(
             ["--add-headers", "examples/dummy.csv"],
@@ -89,6 +91,10 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
                 "1,2,3",
             ],
         )
+
+
+
+class TestRename(TestCSVHeaders):
 
     def test_rename_mode_basic(self):
         self.assertLines(
@@ -198,11 +204,9 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
         """edge case"""
         pass
 
-    def test_sed(self):
-        self.assertLines(
-            ["-X", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
-        )
 
+
+class TestSlugify(TestCSVHeaders):
     def test_slugify_mode(self):
         self.assertLines(
             ["--slugify", "examples/heady.csv"],
@@ -213,11 +217,23 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-    def test_preview_mode(self):
+
+
+class TestRegex(TestCSVHeaders):
+    def test_regex(self):
+        self.assertLines(
+            ["-X", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
+        )
+
+        self.assertLines(
+            ["--regex", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
+        )
+
+class TestPreviewMode(TestCSVHeaders):
+    def test_default(self):
         """
         prints only headers, even if --slugify and/or --rename is used
         """
-
         # no different than basic default behavior
         self.assertLines(
             ["--preview", "examples/dummy.csv"],
@@ -229,6 +245,8 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
+
+    def test_add_headers(self):
         # when adding headers
         self.assertLines(
             ["-P", "--HA", "examples/dummy.csv"],
@@ -240,18 +258,9 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-        # when slugged
-        self.assertLines(
-            ["-P", "-S", "examples/heady.csv"],
-            [
-                "index,field",
-                "1,a",
-                "2,b_sharps",
-                "3,sea_shells",
-            ],
-        )
 
-        # when rename
+    def test_rename(self):
+        """prettify after renaming"""
         self.assertLines(
             ["-P", "-R", '"b|Bee,  B! "', "examples/dummy.csv"],
             [
@@ -262,7 +271,21 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-        # when sed
+    def test_slugify(self):
+        """prettify after slugify"""
+        self.assertLines(
+            ["-P", "-S", "examples/heady.csv"],
+            [
+                "index,field",
+                "1,a",
+                "2,b_sharps",
+                "3,sea_shells",
+            ],
+        )
+
+
+    def test_regexing(self):
+        """prettify after regexing"""
         self.assertLines(
             ["-P", "-X", "(a|c)", r"Foo, \1", "examples/dummy.csv"],
             [
@@ -273,9 +296,15 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ],
         )
 
-    ######################################
-    ### order of operations
-    ######################################
+
+
+######################################
+### order of operations
+######################################
+class TestOrderOps(TestCSVHeaders):
+    """
+    making sure the order of operations of transformations is what we expect
+    """
 
     def test_make_headers_no_added_effect_to_add_headers(self):
         self.assertLines(
@@ -326,9 +355,15 @@ class TestCSVHeaders(CSVKitTestCase, EmptyFileTests):
             ["a,f_o_b_o,f_o_c_o", "1,2,3"],
         )
 
-    ###################################################################################################
-    ### Tests that verify my examples
-    ###################################################################################################
+
+
+
+###################################################################################################
+### Tests that verify my documentation examples
+###################################################################################################
+class TestDocExamples(TestCSVHeaders):
+    """Tests that verify my documentation examples"""
+
     @skiptest("write out examples later")
-    def test_example(self):
+    def test_intro(self):
         pass

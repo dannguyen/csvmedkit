@@ -3,17 +3,15 @@
 # from subprocess import Popen, PIPE
 import sys
 
-from unittest import skip as skiptest, TestCase
-from unittest.mock import patch
 
 from csvmedkit.exceptions import InvalidAggregation
 from csvmedkit.moreutils.csvpivot import CSVPivot, launch_new_instance
 from csvmedkit.moreutils.csvpivot import Aggregates, parse_aggregate_string_arg
 
-from tests.tk import CSVKitTestCase, EmptyFileTests, stdin_as_string
+from tests.mk import CmkTestCase, EmptyFileTests, TestCase, stdin_as_string, skiptest, patch
 
 
-class TestCSVPivot(CSVKitTestCase):
+class TestCSVPivot(CmkTestCase):
     Utility = CSVPivot
     default_args = ["-r", "a"]
 
@@ -398,10 +396,18 @@ class TestAggParser(TestCase):
         self.assertEqual("Counts, are |Fun|", ag.name)
 
 
-#############################
-# Examples
-#############################
-class TestExamples(TestCSVPivot):
+
+###################################################################################################
+### Tests that verify my documentation examples
+###################################################################################################
+class TestDocExamples(TestCSVPivot):
+    """Tests that verify my documentation examples"""
+
+    @skiptest("write out examples later")
+    def test_intro(self):
+        pass
+
+
     def test_examples_count_rows(self):
         self.assertRows(
             ["-r", "race", "examples/peeps.csv"],

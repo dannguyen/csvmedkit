@@ -7,13 +7,156 @@ import contextlib
 from io import StringIO
 from subprocess import Popen, PIPE
 import sys
-from unittest import skip as skiptest
-from tests.tk import CSVKitTestCase, stdin_as_string
+
+from tests.mk import CmkTestCase, stdin_as_string, skiptest
 from csvmedkit.moreutils.csvsed import CSVSed
 
 
-class TestCSVSed(CSVKitTestCase):
+class TestCSVSed(CmkTestCase):
     Utility = CSVSed
+
+
+    def test_additional_expression(self):
+        """
+        note how additional expression will use -c setting, when
+        its own columns string is missing
+        """
+        self.assertLines(
+            [
+                "-c",
+                "value",
+                r"my (\w{5,})",
+                r"Your \1!",
+                "examples/myway.csv",
+                "-E",
+                r"(\w{3,}|\d+)",
+                r"_\1_",
+            ],
+            [
+                "code,value",
+                "1,_Your_ _money_!",
+                '2,"_Your_ _stuff_!, my _way_"',
+                "3,_your_ _house_ _has_ my _car_",
+            ],
+        )
+
+    def test_additional_expression_column_specified(self):
+        self.assertLines(
+            [
+                "-c",
+                "value",
+                r"my (\w{5,})",
+                r"Your \1!",
+                "examples/myway.csv",
+                "-E",
+                r"(\w{3,}|\d+)",
+                r"_\1_",
+                "value,code",
+            ],
+            [
+                "code,value",
+                "_1_,_Your_ _money_!",
+                '_2_,"_Your_ _stuff_!, my _way_"',
+                "_3_,_your_ _house_ _has_ my _car_",
+            ],
+        )
+
+    ########## order of operations
+
+    # [
+    # 'id,col_a,col_b',
+    # '1,hello,world',
+    # '2,Hey,you',
+    # '3,1,2',
+    # '4,9999999,777',
+    # '5,OK,Boomer',
+    # '6,memory,"Person,woman,man,camera,TV"',]
+
+    def test_order_expressions(self):
+        self.assertLines(
+            [
+                "-c",
+                "col_a,col_b",
+                r"^(.{1,2})$",  # first pattern
+                r"\1\1",  # second pattern
+                "-E",
+                r"^(.{4})$",
+                r"_\1_",
+                "id,col_a,col_b",
+                "-E",
+                r"^(.{6})",
+                r"\1, oxford and etc.",
+                "col_a",
+                "examples/ab.csv",
+            ],
+            [
+                "id,col_a,col_b",
+                "1,hello,world",
+                "2,Hey,you",
+                "3,11,22",
+                '4,"999999, oxford and etc.9",777',
+                '5,"_OKOK_, oxford and etc.",Boomer',
+                '6,"memory, oxford and etc.","Person,woman,man,camera,TV"',
+            ],
+        )
+
+    def test_order_expressions_literal(self):
+        self.assertLines(
+            [
+                "--match-literal",
+                "e",
+                "x",
+                "examples/ab.csv",
+                "-c",
+                "col_a,col_b",
+                "-E",
+                "o",
+                "e",
+                "col_a,col_b",
+                "-E",
+                "er",
+                "oz",
+                "col_a,col_b",
+            ],
+            [
+                "id,col_a,col_b",
+                "1,hxlle,wozld",
+                "2,Hxy,yeu",
+                "3,1,2",
+                "4,9999999,777",
+                "5,OK,Beemxr",
+                '6,mxmozy,"Pxrsen,weman,man,camxra,TV"',
+            ],
+        )
+
+    def test_order_expressions_plus_grep_mode(self):
+        """
+        grep_testing happens BEFORE the transformation, thus lines that are
+        transformed by the first expression and into something that matches the second
+        expression pattern will NOT be returned
+        """
+
+        self.assertLines(
+            [
+                r"^(\d{2,4})$",
+                r"\1\1",
+                "examples/ab.csv",
+                "-G",
+                "-E",
+                r"(\d{2})",
+                r"_\1_",
+                "col_a,col_b",
+            ],
+            [
+                "id,col_a,col_b",
+                # '1,hello,world',
+                # '2,Hey,you',
+                # '3,1,2',
+                "4,_99__99__99_9,_77__77__77_",
+                # '5,OK,Boomer',
+                # '6,memory,"Person,woman,man,camera,TV"',
+            ],
+        )
 
     def test_like_grep_mode_uses_first_expression_only(self):
         """

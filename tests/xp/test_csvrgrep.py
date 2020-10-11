@@ -6,11 +6,9 @@ import contextlib
 from io import StringIO
 
 import sys
-from unittest import skip as skiptest
-from unittest.mock import patch
 from subprocess import Popen, PIPE
 
-from tests.tk import CSVKitTestCase, ColumnsTests, EmptyFileTests, NamesTests
+from tests.mk import CmkTestCase, ColumnsTests, EmptyFileTests, NamesTests, patch, skiptest
 from csvmedkit.xutils.csvrgrep import CSVRgrep, launch_new_instance
 from csvmedkit.exceptions import *
 
@@ -18,7 +16,7 @@ from csvmedkit.exceptions import *
 CLI_PATH = "./csvmedkit/xutils/csvrgrep.py"
 
 
-class TestCSVRgrep(CSVKitTestCase, EmptyFileTests, ColumnsTests, NamesTests):
+class TestCSVRgrep(CmkTestCase, EmptyFileTests, ColumnsTests, NamesTests):
 
     Utility = CSVRgrep
     default_args = [

@@ -2,7 +2,6 @@ from collections import namedtuple
 import contextlib
 from io import StringIO
 from unittest.mock import patch
-from unittest import skip as skiptest
 import sys
 
 
@@ -12,10 +11,11 @@ from csvmedkit.moreutils.csvflatten import (
     launch_new_instance,
     DEFAULT_EOR_MARKER,
 )
-from tests.tk import CSVKitTestCase, EmptyFileTests, stdin_as_string
+
+from tests.mk import CmkTestCase, EmptyFileTests, stdin_as_string, skiptest
 
 
-class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
+class TestCSVFlatten(CmkTestCase, EmptyFileTests):
     Utility = CSVFlatten
 
     def test_launch_new_instance(self):
@@ -523,3 +523,15 @@ class TestCSVFlatten(CSVKitTestCase, EmptyFileTests):
                 '"c","3"',
             ],
         )
+
+
+
+###################################################################################################
+### Tests that verify my documentation examples
+###################################################################################################
+class TestDocExamples(TestCSVFlatten):
+    """Tests that verify my documentation examples"""
+
+    @skiptest("write out examples later")
+    def test_intro(self):
+        pass

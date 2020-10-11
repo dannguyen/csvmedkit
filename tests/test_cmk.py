@@ -8,7 +8,6 @@ import csvmedkit.__about__ as about
 
 from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
 
-
 class TestCMK(unittest.TestCase):
     def test_about(self):
         self.assertEqual("csvmedkit", about.__title__)
