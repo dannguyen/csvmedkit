@@ -3,11 +3,17 @@ from io import StringIO
 from subprocess import Popen, PIPE
 import sys
 
-from tests.mk import CmkTestCase, ColumnsTests, EmptyFileTests, stdin_as_string, patch, skiptest
+from tests.mk import (
+    CmkTestCase,
+    ColumnsTests,
+    EmptyFileTests,
+    stdin_as_string,
+    patch,
+    skiptest,
+)
 
 from csvmedkit.exceptions import ColumnIdentifierError
 from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance
-
 
 
 class TestCSVSed(CmkTestCase, ColumnsTests, EmptyFileTests):
@@ -66,8 +72,6 @@ class TestInit(TestCSVSed):
         )
 
 
-
-
 class TestOptions(TestCSVSed):
     def test_column_choice(self):
         self.assertLines(
@@ -107,10 +111,7 @@ class TestOptions(TestCSVSed):
         )
 
 
-
-
 class TestLikeGrep(TestCSVSed):
-
     def test_default_without_grep_mode(self):
         """
         like basic sed, shouldn't be filtering out lines that don't match for replacement
@@ -155,12 +156,10 @@ class TestLikeGrep(TestCSVSed):
         )
 
 
-
 class TestExpressionArguments(TestCSVSed):
     """
     make sure first_patttern + first_replace are properly interpreted
     """
-
 
     def test_basic_expression(self):
         """input_file always has to come after pattern and replace"""
@@ -173,10 +172,7 @@ class TestExpressionArguments(TestCSVSed):
         )
 
 
-
-
 class TestEdgeCases(TestCSVSed):
-
 
     ######################################
     # test intermixed args
@@ -184,7 +180,13 @@ class TestEdgeCases(TestCSVSed):
 
     def test_with_columns_opt_upfront(self):
         self.assertLines(
-            ["-c", "value", r"my (\w{5,})", r"Your \1!", "examples/myway.csv",],
+            [
+                "-c",
+                "value",
+                r"my (\w{5,})",
+                r"Your \1!",
+                "examples/myway.csv",
+            ],
             [
                 "code,value",
                 "1,Your money!",
@@ -192,7 +194,6 @@ class TestEdgeCases(TestCSVSed):
                 "3,your house has my car",
             ],
         )
-
 
     def test_intermix_columns_option(self):
         # -c option before required args
@@ -390,7 +391,6 @@ class TestEdgeCases(TestCSVSed):
         )
 
 
-
 ###################################################################################################
 ### Tests that verify my documentation examples
 ###################################################################################################
@@ -400,7 +400,6 @@ class TestDocExamples(TestCSVSed):
     @skiptest("write out examples later")
     def test_intro(self):
         pass
-
 
     def test_hacky_strip(self):
         """obv you should use csvnorm, but this works in a pinch"""

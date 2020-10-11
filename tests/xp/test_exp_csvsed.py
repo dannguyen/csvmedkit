@@ -15,7 +15,6 @@ from csvmedkit.moreutils.csvsed import CSVSed
 class TestCSVSed(CmkTestCase):
     Utility = CSVSed
 
-
     def test_additional_expression(self):
         """
         note how additional expression will use -c setting, when

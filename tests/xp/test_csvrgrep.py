@@ -8,7 +8,14 @@ from io import StringIO
 import sys
 from subprocess import Popen, PIPE
 
-from tests.mk import CmkTestCase, ColumnsTests, EmptyFileTests, NamesTests, patch, skiptest
+from tests.mk import (
+    CmkTestCase,
+    ColumnsTests,
+    EmptyFileTests,
+    NamesTests,
+    patch,
+    skiptest,
+)
 from csvmedkit.xutils.csvrgrep import CSVRgrep, launch_new_instance
 from csvmedkit.exceptions import *
 

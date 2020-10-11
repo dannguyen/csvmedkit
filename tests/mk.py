@@ -17,8 +17,8 @@ from csvmedkit import agate
 from csvmedkit.exceptions import *
 
 
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 class CmkTestCase(BaseCsvkitTestCase):
     pass

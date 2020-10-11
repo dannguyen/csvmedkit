@@ -10,6 +10,7 @@ from csvmedkit.moreutils.csvheaders import (
 from tests.mk import CmkTestCase, EmptyFileTests, stdin_as_string, patch, skiptest
 from csvmedkit.exceptions import *
 
+
 class TestCSVHeaders(CmkTestCase):
     Utility = CSVHeaders
 
@@ -93,9 +94,7 @@ class TestGenericHeaders(TestCSVHeaders):
         )
 
 
-
 class TestRename(TestCSVHeaders):
-
     def test_rename_mode_basic(self):
         self.assertLines(
             [
@@ -205,7 +204,6 @@ class TestRename(TestCSVHeaders):
         pass
 
 
-
 class TestSlugify(TestCSVHeaders):
     def test_slugify_mode(self):
         self.assertLines(
@@ -218,7 +216,6 @@ class TestSlugify(TestCSVHeaders):
         )
 
 
-
 class TestRegex(TestCSVHeaders):
     def test_regex(self):
         self.assertLines(
@@ -226,8 +223,10 @@ class TestRegex(TestCSVHeaders):
         )
 
         self.assertLines(
-            ["--regex", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
+            ["--regex", r"(\w)", r"_\1_", "examples/dummy.csv"],
+            ["_a_,_b_,_c_", "1,2,3"],
         )
+
 
 class TestPreviewMode(TestCSVHeaders):
     def test_default(self):
@@ -245,7 +244,6 @@ class TestPreviewMode(TestCSVHeaders):
             ],
         )
 
-
     def test_add_headers(self):
         # when adding headers
         self.assertLines(
@@ -257,7 +255,6 @@ class TestPreviewMode(TestCSVHeaders):
                 "3,field_3",
             ],
         )
-
 
     def test_rename(self):
         """prettify after renaming"""
@@ -283,7 +280,6 @@ class TestPreviewMode(TestCSVHeaders):
             ],
         )
 
-
     def test_regexing(self):
         """prettify after regexing"""
         self.assertLines(
@@ -295,7 +291,6 @@ class TestPreviewMode(TestCSVHeaders):
                 '3,"Foo, c"',
             ],
         )
-
 
 
 ######################################
@@ -354,8 +349,6 @@ class TestOrderOps(TestCSVHeaders):
             ["-S", "-X", "(c|b)", r" F O \1 O ", "examples/dummy.csv"],
             ["a,f_o_b_o,f_o_c_o", "1,2,3"],
         )
-
-
 
 
 ###################################################################################################
