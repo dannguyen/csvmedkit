@@ -5,11 +5,13 @@ from io import StringIO
 import sys
 
 
-from csvmedkit.exceptions import InvalidAggregation, ColumnIdentifierError
+from csvmedkit.exceptions import (
+    ColumnIdentifierError,
+    InvalidAggregationArgument,
+    InvalidAggregateName,
+)
 from csvmedkit.moreutils.csvpivot import CSVPivot, Parser, launch_new_instance
 from csvmedkit.cmk.aggs import Aggy, Aggregates
-
-parse_aggy_string = Parser.parse_aggy_string
 
 
 from tests.mk import (
@@ -255,31 +257,16 @@ class TestCountTypeCast(TestCSVPivot):
             ],
         )
 
-    def test_error_thrown_by_parse_aggy_string_when_invalid_count_column(self):
+    def test_error_when_typecast_of_count_second_arg_fails(self):
         """
-        b/c parse_aggy_string() has special handling for this count-2-args edge case,
-            it does its own lookup of a column name in the loaded self.intable, and
-            for now we emit a special error message
-        """
-        with self.assertRaises(ColumnIdentifierError) as e:
-            u = self.get_output(
-                ["-r", "a", "--agg", "count:XXX,YYY", "examples/dummy.csv"]
-            )
-        self.assertIn(
-            "'XXX' – from `count:XXX,YYY` – is expected to be a column name, but it was not found in the table:",
-            str(e.exception),
-        )
-
-    def test_error_thrown_by_parse_aggy_string_when_typecast_fails(self):
-        """
-        thrown by parse_aggy_string()
+        thrown by csvpivot.validate_thingy
         """
         with self.assertRaises(agate.CastError) as e:
             u = self.get_output(
                 ["-r", "a", "--agg", "count:b,Bert", "examples/dummy.csv"]
             )
         self.assertIn(
-            "You're attempting to count 'Bert' in column 'b', which has datatype 'Number",
+            "You attempted to count 'Bert' in column 'b', which has datatype Number",
             str(e.exception),
         )
 
@@ -392,30 +379,106 @@ class TestInferenceCompat(TestCSVPivot):
         )
 
 
+class TestMultiAgg(TestCSVPivot):
+    """
+    when --pivot-column is empty, but --agg
+    """
+
+    def test_simple_double(self):
+        """
+        essentially: data.groupby(gender).aggregate(count, sum:age)
+        """
+        self.assertLines(
+            [
+                "-r",
+                "gender",
+                "-a",
+                "count",
+                "-a",
+                "sum:age",
+                "examples/peeps.csv",
+            ],
+            [
+                "gender,count_of,sum_of_age",
+                "female,4,90",
+                "male,2,45",
+            ],
+        )
+
+    def test_triple(self):
+        self.assertLines(
+            [
+                "-r",
+                "gender,race",
+                "-a",
+                "count",
+                "-a",
+                "mean:age",
+                "-a",
+                "sum:age|The-Total-Age",
+                "examples/peeps.csv",
+            ],
+            [
+                "gender,race,count_of,mean_of_age,The-Total-Age",
+                "female,white,1,20,20",
+                "female,black,2,22.5,45",
+                "female,asian,1,25,25",
+                "male,asian,1,20,20",
+                "male,latino,1,25,25",
+            ],
+        )
+
+
 ##################################
 # error situations
 ###################################
 class TestErrors(TestCSVPivot):
-    def test_invalid_aggregation_specified(self):
-        with self.assertRaises(InvalidAggregation) as e:
+    def test_invalid_column_name_for_pivot_row(self):
+        with self.assertRaises(ColumnIdentifierError) as e:
+            u = self.get_output(["-r", "a, hey", "examples/dummy.csv"])
+        self.assertIn(
+            "Column ' hey' is invalid.",
+            str(e.exception),
+        )
+
+    def test_invalid_column_name_for_pivot_column(self):
+        with self.assertRaises(ColumnIdentifierError) as e:
+            u = self.get_output(["-c", "heycol", "examples/dummy.csv"])
+        self.assertIn(
+            "Column 'heycol' is invalid.",
+            str(e.exception),
+        )
+
+    def test_invalid_aggregation_method_specified(self):
+        with self.assertRaises(InvalidAggregateName) as e:
             u = self.get_output(["-c", "b", "-a", "just magic!", "examples/dummy.csv"])
         self.assertIn(
             """Invalid aggregation: "just magic!". Call command with option '--list-aggs' to get a list of available aggregations""",
             str(e.exception),
         )
 
-    def test_invalid_columns(self):
-        with self.assertRaises(ColumnIdentifierError) as e:
-            u = self.get_output(["-r", "hey", "examples/dummy.csv"])
+    def test_invalid_column_name_given_to_aggregation(self):
+        with self.assertRaises(InvalidAggregationArgument) as e:
+            u = self.get_output(
+                ["-r", "gender", "-a", "count:height", "examples/peeps.csv"]
+            )
         self.assertIn(
-            "Column 'hey' is invalid.",
+            """InvalidAggregationArgument: Attempted to perform `count('height', ...)`. But 'height' was expected to be a valid column name, i.e. from: ('name', 'race', 'gender', 'age')""",
             str(e.exception),
         )
 
-        with self.assertRaises(ColumnIdentifierError) as e:
-            u = self.get_output(["-c", "heycol", "examples/dummy.csv"])
+    def test_invalid_column_name_given_to_aggregation_first_of_2_args(self):
+        """
+        b/c csvpivot.validate_thingy() has special handling for this count-2-args edge case,
+            it does its own lookup of a column name in the loaded self.intable, and
+            for now we emit a special error message
+        """
+        with self.assertRaises(InvalidAggregationArgument) as e:
+            u = self.get_output(
+                ["-r", "a", "--agg", "count:XXX,YYY", "examples/dummy.csv"]
+            )
         self.assertIn(
-            "Column 'heycol' is invalid.",
+            """InvalidAggregationArgument: Attempted to perform `count('XXX', ...)`. But 'XXX' was expected to be a valid column name, i.e. from: ('a', 'b', 'c')""",
             str(e.exception),
         )
 
@@ -427,66 +490,6 @@ class TestErrors(TestCSVPivot):
 
         self.assertEqual(err.exception.code, 2)
         self.assertIn("Only one -c/--pivot-column is allowed, not 2", ioerr.getvalue())
-
-
-class TestParseAggyString(TestCase):
-    def test_basic(self):
-        ag = parse_aggy_string("count")
-        assert isinstance(ag, Aggy)
-        self.assertEqual(ag.slug, "count")
-        self.assertEqual(ag.title, "count_of")
-        self.assertEqual(ag.agg_args, [])
-        assert isinstance(ag.aggregation, agate.Aggregation)
-
-    def test_custom_title(self):
-        ag = parse_aggy_string("count|Hello")
-        self.assertEqual(ag.title, "Hello")
-        self.assertEqual(ag.agg_args, [])
-        self.assertEqual(ag.slug, "count")
-
-        ag = parse_aggy_string('count|"Hello,goodday|and bye"')
-        self.assertEqual(
-            ag.title,
-            "Hello,goodday|and bye",
-        )
-        self.assertEqual(ag.slug, "count")
-
-    def test_with_single_arg(self):
-        ag = parse_aggy_string("sum:c")
-        self.assertEqual(ag.agg_args, ["c"])
-        self.assertEqual(ag.slug, "sum")
-        self.assertEqual(ag.title, "sum_of_c")
-
-    def test_with_multiple_args(self):
-        ag = parse_aggy_string(r'count:hello,"foo, Bar!t"')
-        self.assertEqual(ag.agg_args, ["hello", "foo, Bar!t"])
-        self.assertEqual(ag.slug, "count")
-        self.assertEqual(ag.title, "count_of_hello_foo_bar_t")
-
-    def test_full_monty(self):
-        txt = "sum:c|Sum of Fun"
-        ag = parse_aggy_string(txt)
-        self.assertEqual(ag.slug, "sum")
-        self.assertEqual(ag.title, "Sum of Fun")
-        self.assertEqual(ag.agg_args, ["c"])
-
-        txt = 'count:a,"Hello,world"|"Counts, are |Fun|"'
-        ag = parse_aggy_string(txt)
-        self.assertEqual(ag.slug, "count")
-        self.assertEqual(ag.title, "Counts, are |Fun|")
-        self.assertEqual(ag.agg_args, ["a", "Hello,world"])
-
-
-class TestEdgeAggy(TestCase):
-    @skiptest(
-        "Need to revisit how cmkutil.cmk_parse_delimited_str handles escaped chars"
-    )
-    def test_pipes_everywhere(self):
-        txt = 'count:hello,"foo|bar"|"Actual Title|really"'
-        ag = parse_aggy_string(txt)
-        self.assertEqual(ag.slug, "count")
-        self.assertEqual(ag.agg_args, ["hello", "foo|bar"])
-        self.assertEqual(ag.title, "Actual Title|really")
 
 
 ###################################################################################################

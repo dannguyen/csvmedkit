@@ -1,6 +1,6 @@
 from csvmedkit import agate
-from csvmedkit.cmk.helpers import cmk_slugify
-from csvmedkit.exceptions import InvalidAggregation
+from csvmedkit.cmk.helpers import *
+from csvmedkit.exceptions import InvalidAggregateName
 from typing import (
     List as typeList,
     NoReturn as typeNoReturn,
@@ -82,8 +82,28 @@ class Aggy(object):
         try:
             agg = Aggregates[slug]
         except KeyError as err:
-            raise InvalidAggregation(
+            raise InvalidAggregateName(
                 f"""Invalid aggregation: "{slug}". Call command with option '--list-aggs' to get a list of available aggregations"""
             )
         else:
             return agg
+
+    @classmethod
+    def parse_aggy_string(klass, argtext: str):
+        """
+        argtext is something like:
+
+        - 'count'
+        - 'sum(age)'
+        - 'mean|The Average'
+        - 'count:state,NY|New Yorker count'
+        """
+        rtext: str = argtext
+        # extract agg_slug
+        rtext, output_name = cmk_parse_delimited_str(rtext, delimiter="|", minlength=2)
+        # extract agg_args
+        agg_slug, agg_args = cmk_parse_delimited_str(rtext, delimiter=":", minlength=2)
+        # parse any individual agg_args
+        agg_args = cmk_parse_delimited_str(agg_args)
+
+        return klass(agg_slug, agg_args, output_name)

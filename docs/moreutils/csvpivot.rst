@@ -72,3 +72,21 @@ https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pi
 https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-to-sum
 
 (can't do this) https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-to-percent-of-total
+
+
+
+
+Usecases
+========
+
+
+Counting Congress demographics::
+
+    $ csvpivot -r party -c gender  examples/congress.csv  | csvlook
+
+    | party       |   M |   F |
+    | ----------- | --- | --- |
+    | Democrat    | 174 | 107 |
+    | Independent |   2 |   0 |
+    | Republican  | 229 |  24 |
+    | Libertarian |   1 |   0 |

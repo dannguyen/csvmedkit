@@ -4,17 +4,16 @@
 ## 0.1 
 
 - csvpivot
-    - [ ] implementation
-        - [ ] handle multiple aggregations if user doesn't specify column
-            - does that make groupby obsolete?
+    - [ ] documentation
+    - [x] implementation
+        - [X] handle multiple aggregations if user doesn't specify column
+            - [YES] does that make groupby obsolete?
         - [x] refactored aggy
         - [x] add UniformReader to interface
             - [NO] use `@filtered_column_ids` instead of `cmk_parse_col_ids` -- filtered_column_ides only works with `-c/--columns`
-        - [ ] should throw warning if user has custom name aggregation when `--pivot-column` is set
-    - [ ] port tests
-        - [x] `test_agg_count_with_2_args_typecast`
-            - added edgecase handling in parse_aggy_string
-    - [ ] documentation
+        - [x] needs better error message:
+            - csvpivot examples/real/denver-pot-sales.csv -r YEAR -a sum:GROSS `KeyError: 'GROSS'`
+    - [x] port tests
 
 
 - csvflatten
@@ -80,12 +79,11 @@
 
 
 
-## 0.0
+- csvpivot
+- [ ] should throw warning if user has custom name aggregation when `--pivot-column` is set
+- [ ] when an aggregation involves calculation, fill the targeted column with non-nulls 
 
-- fix setup.py, add dependencies, test utils, etc
-- add csvmedkitutil, and other baseclasses
-- set up pypi
-- did cookiecutter stuff
+
 
 
 
@@ -111,3 +109,15 @@
         - [ ] finish up isatty hangups
     - [ ] clean up filter_rows
     - [ ] does implicit stdin pipe work? write test
+
+
+
+## Old
+
+
+### 0.0
+
+- fix setup.py, add dependencies, test utils, etc
+- add csvmedkitutil, and other baseclasses
+- set up pypi
+- did cookiecutter stuff

@@ -1,21 +1,8 @@
-import re
-
-import csvmedkit
-import csvmedkit.__about__ as about
-
 from tests.mk import TestCase, skiptest
-
-from csvmedkit.cmk.cmkutil import CmkUtil
-from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_parse_delimited_str
+from csvmedkit.cmk.helpers import *
 
 
-class TestCMK(TestCase):
-    def test_about(self):
-        self.assertEqual("csvmedkit", about.__title__)
-
-    def test_version(self):
-        assert re.match(r"\d+\.\d+\.\d+", about.__version__)
-
+class TestParseColIds(TestCase):
     def test_cmk_parse_column_ids(self):
         """probably redundant"""
         cols = ["a", "b", "c"]

@@ -14,7 +14,20 @@ class ArgumentErrorTK(CustomException):
     pass
 
 
-class InvalidAggregation(CustomException):
+class InvalidAggregateName(CustomException):
+    """
+    this is used when a name for an aggregation isn't found in aggy.Aggregates
+    """
+
+    pass
+
+
+class InvalidAggregationArgument(CustomException):
+    """
+    this is used when there is a failure in an agate.Aggregation, e.g. a reference to
+      a non-existent column in an agate.Table
+    """
+
     pass
 
 
