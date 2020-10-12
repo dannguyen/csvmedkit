@@ -1,26 +1,19 @@
 # TODOS
 
-Left off: 
-    - added variable typehints
-    - refactored `self.thing = self.args.thing` into properties where possible
-        - look for more common properties that can be used by CmkUtil
-    - csvflatten: drafted a common read_input/i_rows/i_column_names interface that other commands can use...
-
-
 
 ## 0.1 
 
 - csvpivot
     - [ ] implementation
-        - [x] refactored aggy
-        - [ ] add UniformReader to interface
-            - use `@filtered_column_ids` instead of `cmk_parse_col_ids`
-        - [ ] handle multiple grouping
-        - [ ] should throw warning if user has custom name aggregation when `--pivot-column` is set
         - [ ] handle multiple aggregations if user doesn't specify column
             - does that make groupby obsolete?
+        - [x] refactored aggy
+        - [x] add UniformReader to interface
+            - [NO] use `@filtered_column_ids` instead of `cmk_parse_col_ids` -- filtered_column_ides only works with `-c/--columns`
+        - [ ] should throw warning if user has custom name aggregation when `--pivot-column` is set
     - [ ] port tests
-        - Left off with this broken and skipped: `test_agg_count_with_2_args_typecast`
+        - [x] `test_agg_count_with_2_args_typecast`
+            - added edgecase handling in parse_aggy_string
     - [ ] documentation
 
 

@@ -83,7 +83,7 @@ class Aggy(object):
             agg = Aggregates[slug]
         except KeyError as err:
             raise InvalidAggregation(
-                f'Invalid aggregation: "{slug}". Call `-L/--list-aggs` to get a list of available aggregations'
+                f"""Invalid aggregation: "{slug}". Call command with option '--list-aggs' to get a list of available aggregations"""
             )
         else:
             return agg

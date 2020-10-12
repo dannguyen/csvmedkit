@@ -1,17 +1,16 @@
-# import contextlib
 # from io import StringIO
 # from subprocess import Popen, PIPE
+import contextlib
+from io import StringIO
 import sys
 
 
-from csvmedkit.exceptions import InvalidAggregation
-from csvmedkit.moreutils.csvpivot import CSVPivot, launch_new_instance
-from csvmedkit.moreutils.csvpivot import Parser
-from csvmedkit.moreutils.csvpivot import Aggy
-
-from csvmedkit.aggs import Aggregates
+from csvmedkit.exceptions import InvalidAggregation, ColumnIdentifierError
+from csvmedkit.moreutils.csvpivot import CSVPivot, Parser, launch_new_instance
+from csvmedkit.cmk.aggs import Aggy, Aggregates
 
 parse_aggy_string = Parser.parse_aggy_string
+
 
 from tests.mk import (
     agate,
@@ -43,7 +42,7 @@ class TestInit(TestCSVPivot, EmptyFileTests):
             f"- {a}" for a in Aggregates.keys()
         ]
         self.assertLines(["--list-aggs"], list(expected_output))
-        self.assertLines(["-L"], list(expected_output))
+        # self.assertLines(["-L"], list(expected_output)) # -L is now used for --locale
         self.assertLines(["-a", ""], list(expected_output))
 
 
@@ -212,10 +211,17 @@ class TestAggCount(TestCSVPivot):
             ],
         )
 
-    @skiptest(
-        "Need to implement typecasting of second argument to count, especially when number"
-    )
-    def test_agg_count_with_2_args_typecast(self):
+
+class TestCountTypeCast(TestCSVPivot):
+    """
+    special edge case when passing 2 args into count, with the first arg pointing to a non-text column,
+        but the 2nd arg interpreted from command-line as string by default
+    """
+
+    # @skiptest(
+    #     "Need to implement typecasting of second argument to count, especially when number"
+    # )
+    def test_agg_count_with_second_arg_intended_as_age(self):
         self.assertRows(
             ["-a", "count:age,25", "-r", "gender", "examples/peeps.csv"],
             [
@@ -225,8 +231,60 @@ class TestAggCount(TestCSVPivot):
             ],
         )
 
+    def test_agg_count_with_second_arg_intended_as_date(self):
+        self.assertLines(
+            ["-a", "count:when,1950-01-01", "-r", "where", "examples/pdates.csv"],
+            [
+                "where,count_of_when_1950_01_01",
+                "TX,1",
+                "CA,2",
+                "NY,0",
+            ],
+        )
+        # works with non iso format too, via agate's typecasting
 
-class TestAggs(TestCSVPivot):
+        # TODO: ...and the derived slugged title should reflect this typecasting
+        # - is that desirable? Leaving it as such for now b/c don't want to mangle with Aggy class
+        self.assertLines(
+            ["-a", 'count:when,"Jan. 1, 1950"', "-r", "where", "examples/pdates.csv"],
+            [
+                "where,count_of_when_1950_01_01",
+                "TX,1",
+                "CA,2",
+                "NY,0",
+            ],
+        )
+
+    def test_error_thrown_by_parse_aggy_string_when_invalid_count_column(self):
+        """
+        b/c parse_aggy_string() has special handling for this count-2-args edge case,
+            it does its own lookup of a column name in the loaded self.intable, and
+            for now we emit a special error message
+        """
+        with self.assertRaises(ColumnIdentifierError) as e:
+            u = self.get_output(
+                ["-r", "a", "--agg", "count:XXX,YYY", "examples/dummy.csv"]
+            )
+        self.assertIn(
+            "'XXX' – from `count:XXX,YYY` – is expected to be a column name, but it was not found in the table:",
+            str(e.exception),
+        )
+
+    def test_error_thrown_by_parse_aggy_string_when_typecast_fails(self):
+        """
+        thrown by parse_aggy_string()
+        """
+        with self.assertRaises(agate.CastError) as e:
+            u = self.get_output(
+                ["-r", "a", "--agg", "count:b,Bert", "examples/dummy.csv"]
+            )
+        self.assertIn(
+            "You're attempting to count 'Bert' in column 'b', which has datatype 'Number",
+            str(e.exception),
+        )
+
+
+class TestNonCountAggregates(TestCSVPivot):
     """basic sanity check on all available aggs"""
 
     def test_agg_sum(self):
@@ -316,6 +374,24 @@ class TestAggs(TestCSVPivot):
         )
 
 
+class TestInferenceCompat(TestCSVPivot):
+    """make sure csvpivot honors --no-inference disabling"""
+
+    def test_no_inference_obeyed(self):
+        """
+        normally, trying to count 'WHAT' in age:Number would throw an error, but not
+        if it's treated like text
+        """
+        self.assertRows(
+            ["-I", "-a", "count:age,WHAT", "-r", "gender", "examples/peeps.csv"],
+            [
+                ["gender", "count_of_age_what"],
+                ["female", "0"],
+                ["male", "0"],
+            ],
+        )
+
+
 ##################################
 # error situations
 ###################################
@@ -324,9 +400,33 @@ class TestErrors(TestCSVPivot):
         with self.assertRaises(InvalidAggregation) as e:
             u = self.get_output(["-c", "b", "-a", "just magic!", "examples/dummy.csv"])
         self.assertIn(
-            'Invalid aggregation: "just magic!". Call `-L/--list-aggs` to get a list of available aggregations',
+            """Invalid aggregation: "just magic!". Call command with option '--list-aggs' to get a list of available aggregations""",
             str(e.exception),
         )
+
+    def test_invalid_columns(self):
+        with self.assertRaises(ColumnIdentifierError) as e:
+            u = self.get_output(["-r", "hey", "examples/dummy.csv"])
+        self.assertIn(
+            "Column 'hey' is invalid.",
+            str(e.exception),
+        )
+
+        with self.assertRaises(ColumnIdentifierError) as e:
+            u = self.get_output(["-c", "heycol", "examples/dummy.csv"])
+        self.assertIn(
+            "Column 'heycol' is invalid.",
+            str(e.exception),
+        )
+
+    def test_more_than_one_pivot_col_specified(self):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as err:
+                u = self.get_output(["-c", "1,3", "examples/dummy.csv"])
+
+        self.assertEqual(err.exception.code, 2)
+        self.assertIn("Only one -c/--pivot-column is allowed, not 2", ioerr.getvalue())
 
 
 class TestParseAggyString(TestCase):

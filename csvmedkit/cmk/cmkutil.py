@@ -42,6 +42,17 @@ class UniformReader:
     designates a class that has an expected read_input() method
     """
 
+    def read_input(self):
+        """
+        e.g.
+        self._rows = self.text_csv_reader()
+        self._column_names = next(self._rows)
+        self._read_input_done = True
+        """
+        raise ImplementationError(
+            "read_input() needs to be implemented by each subclass"
+        )
+
     @property
     def filtered_column_ids(self) -> typeList[int]:
         """convenience helper"""
@@ -75,17 +86,6 @@ class UniformReader:
     @property
     def is_input_read(self) -> bool:
         return self._read_input_done
-
-    def read_input(self):
-        """
-        e.g.
-        self._rows = self.text_csv_reader()
-        self._column_names = next(self._rows)
-        self._read_input_done = True
-        """
-        raise ImplementationError(
-            "read_input() needs to be implemented by each subclass"
-        )
 
 
 class CmkUtil(CmkProps, CSVKitUtility):

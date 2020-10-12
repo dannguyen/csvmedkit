@@ -96,5 +96,5 @@ def cmk_parse_delimited_str(
 def cmk_slugify(txt: typeUnion[str, typeSequence]) -> str:
     if not isinstance(txt, str):
         # e.g a list of strings
-        txt = " ".join(txt)
+        txt = " ".join(str(t) for t in txt)
     return pyslugify(txt, separator="_")

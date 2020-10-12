@@ -23,7 +23,9 @@ from agate.aggregations import (
 import pandas as pd
 
 
-from csvmedkit.cmkutil import *
+from csvmedkit.cmk.cmkutil import *
+from csvmedkit.cmk.helpers import *
+from csvmedkit.cmk.aggs import *
 
 DATA_PATHS = {
     "dummy": Path("examples/dummy.csv"),
