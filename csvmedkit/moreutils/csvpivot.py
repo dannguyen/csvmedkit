@@ -6,15 +6,68 @@ from typing import (
     List as typeList,
     NoReturn as typeNoReturn,
     Tuple as typeTuple,
-    Union as typeUnion,
+    Optional as typeOptional,
 )
 
 from csvmedkit import agate, slugify
 from csvmedkit.aggs import Aggregates
 from csvmedkit.exceptions import *
-from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
+from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids, parse_delimited_str
 
-Aggy = namedtuple("Aggy", ["agg", "agg_args", "name"], defaults=(None, None, None))
+
+class Aggy(object):
+    """
+    a happy agate-aware data-unaware object, blissfully oblivious about the dataset it will be applied to
+    e.g. it doesn't know or care whether `args` refers to a column name, nevermind whether it is a valid column name for a
+        given dataset
+    """
+
+    def __init__(self, slug: str, args: list, output_name: typeOptional[str]):
+        self._slug = slug
+        self._args = args
+        self._output_name = output_name
+
+        self._aggregate = self.get_agg(self.slug)
+
+    @property
+    def aggregate_class(self) -> type:
+        return self._aggregate
+
+    @property
+    def aggregation(self) -> agate.Aggregation:
+        return self.aggregate_class(*self._args)
+
+    @property
+    def agg_args(self) -> typeList[str]:
+        d = self._args.copy()
+        return d
+
+    @property
+    def title(self) -> str:
+        if self._output_name:
+            """specific name was specified"""
+            _name = self._output_name
+        else:
+            """derive from aggregate function and given arguments"""
+            _name = [self.slug, "of", *self._args]
+            _name = slugify(" ".join(_name))
+
+        return _name
+
+    @property
+    def slug(self) -> str:
+        return self._slug.lower()
+
+    @staticmethod
+    def get_agg(slug: str) -> type:
+        try:
+            agg = Aggregates[slug]
+        except KeyError as err:
+            raise InvalidAggregation(
+                f'Invalid aggregation: "{name}". Call `-L/--list-aggs` to get a list of available aggregations'
+            )
+        else:
+            return agg
 
 
 class Parser:
@@ -81,57 +134,19 @@ class Parser:
         )
 
     @staticmethod
-    def parse_aggregate_string_arg(arg: str, valid_columns: typeList[str] = []) -> Aggy:
+    def parse_agg_string(argtext: str) -> Aggy:
         """
-        TODO: this is ugly as heck
-
-        `arg` looks like:
-            - just the aggregate:
-                'sum', 'count'
-            - the aggregate, colon, comma-delimited list of arguments:
-                'sum:colname' 'count:col_name,other_arg'  (only `count` has more than one arg)
-            - optional pipe-separated argument for the output header name:
-                'count|The Count'  'sum:colname|Summation'
+        this should replace clunky old parse_aggregate_string_arg()
         """
+        rtext: str = argtext
+        # extract agg_slug
+        rtext, output_name = parse_delimited_str(rtext, delimiter="|", minlength=2)
+        # extract agg_args
+        agg_slug, agg_args = parse_delimited_str(rtext, delimiter=":", minlength=2)
+        # parse any individual agg_args
+        agg_args = parse_delimited_str(agg_args)
 
-        def get_agg(name: str) -> typeTuple[type, str]:
-            try:
-                proper_name: str = name.lower()
-                agg = Aggregates[proper_name]
-            except KeyError as err:
-                raise InvalidAggregation(
-                    f'Invalid aggregation: "{name}". Call `-L/--list-aggs` to get a list of available aggregations'
-                )
-            else:
-                return agg, proper_name
-
-        # first we parse out the name, if specified
-        argio = StringIO(arg)
-        xarg, *name_arg = next(
-            csv.reader(argio, delimiter="|")
-        )  # _cname is either [] or ['Column Name']
-
-        agg_name, *yarg = next(csv.reader(StringIO(xarg), delimiter=":"))
-        foo, agg_proper_name = get_agg(agg_name)
-        foo_args = next(csv.reader(StringIO(yarg[0]))) if yarg else []
-
-        # if args[0] exists, assume it is a column identifier and
-        # validate it
-        if foo_args and valid_columns:
-            if foo_args[0] not in valid_columns:
-                raise ColumnIdentifierError(
-                    f"Expected column name '{foo_args[0]}' to refer to a column name as an argument for {foo.__name__} aggregation. But it was not found among the list of valid column names: {valid_columns}"
-                )
-        # finally, we can figure out the intended output column header
-        if name_arg:
-            # then user specified it explicitly
-            out_column_name = name_arg[0]
-        else:
-            out_column_name = slugify(
-                f'{agg_proper_name}_of {"_".join(foo_args)}'.strip()
-            )
-
-        return Aggy(agg=foo, agg_args=foo_args, name=out_column_name)
+        return Aggy(agg_slug, agg_args, output_name)
 
 
 class Props:
@@ -167,7 +182,7 @@ class Props:
         return _pids
 
     @property
-    def pivot_row_names(self) -> typeUnion[list, None]:
+    def pivot_row_names(self) -> typeOptional[list]:
         """
         prereqs:
          - self.pivot_row_ids
@@ -181,7 +196,7 @@ class Props:
         return names
 
     @property
-    def pivot_column_name(self) -> typeUnion[str, None]:
+    def pivot_column_name(self) -> typeOptional[str]:
         _pids = (
             cmk_parse_column_ids(
                 self.args.pivot_column,
@@ -201,21 +216,25 @@ class Props:
         return pcname
 
     @property
-    def aggregate(self) -> Aggy:
-        par = self.parse_aggregate_string_arg(
-            self.args.pivot_aggregate, valid_columns=self.in_column_names
-        )
-        return par
+    def aggy(self) -> Aggy:
+        return self.parse_agg_string(self.args.pivot_aggregate)
+
+    # TKILL        Aggy.parse_agg_arg(self.args.pivot_aggregate)
+    # TKILL
+    # par = self.parse_aggregate_string_arg(
+    #     self.args.pivot_aggregate, valid_columns=self.in_column_names
+    # )
+    # return par
 
     @property
-    def aggregate_name(self) -> str:
-        return self.aggregate.name
+    def pivot_title(self) -> str:
+        return self.aggy.title
 
     @property
-    def pivot_aggregation(self):
+    def pivot_aggregation(self) -> agate.Aggregation:
         """specific to agate.Table.pivot argument"""
-        p = self.aggregate
-        return p.agg(*p.agg_args)
+
+        return self.aggy.aggregation
 
 
 class CSVPivot(Props, Parser, CmkUtil):
@@ -267,7 +286,7 @@ class CSVPivot(Props, Parser, CmkUtil):
         if not self.pivot_column_name:
             _onames = list(outtable.column_names)
             # replace the last column name in the outgoing column names
-            _onames[-1] = self.aggregate_name
+            _onames[-1] = self.pivot_title
             outtable = outtable.rename(column_names=_onames)
 
         outtable.to_csv(self.output_file, **self.writer_kwargs)
@@ -282,3 +301,79 @@ def launch_new_instance():
 
 if __name__ == "__main__":
     launch_new_instance()
+
+
+def group_by(table: agate.Table, colnames: typeList[str]) -> agate.TableSet:
+    for col in colnames:
+        table = table.group_by(key=col)
+    return table
+
+
+# def compile_aggregates(aggs:typeList[Aggy]):
+
+#         g_aggs = []
+#         for a in self.aggregates:
+#             if a.colname:
+#                 colname = a.colname
+#             else:
+#                 if a.args:
+#                     colname = f'{a.foo.__name__}_of_{slugify(a.args)}'
+#                 else:
+#                     colname = a.foo.__name__
+#             agg = a.foo(*a.args)
+#             g_aggs.append((colname, agg))
+
+
+# @staticmethod
+# def parse_aggregate_string_arg(arg: str, valid_columns: typeList[str] = []) -> Aggy:
+#     """
+#     TODO: this is ugly as heck
+#     TODO: deprecate, or otherwise simplify, since aggy does a lot of this...
+
+#     `arg` looks like:
+#         - just the aggregate:
+#             'sum', 'count'
+#         - the aggregate, colon, comma-delimited list of arguments:
+#             'sum:colname' 'count:col_name,other_arg'  (only `count` has more than one arg)
+#         - optional pipe-separated argument for the output header name:
+#             'count|The Count'  'sum:colname|Summation'
+#     """
+
+#     def get_agg(name: str) -> typeTuple[type, str]:
+#         try:
+#             proper_name: str = name.lower()
+#             agg = Aggregates[proper_name]
+#         except KeyError as err:
+#             raise InvalidAggregation(
+#                 f'Invalid aggregation: "{name}". Call `-L/--list-aggs` to get a list of available aggregations'
+#             )
+#         else:
+#             return agg, proper_name
+
+#     # first we parse out the name, if specified
+#     argio = StringIO(arg)
+#     xarg, *name_arg = next(
+#         csv.reader(argio, delimiter="|")
+#     )  # _cname is either [] or ['Column Name']
+
+#     agg_name, *yarg = next(csv.reader(StringIO(xarg), delimiter=":"))
+#     foo, agg_proper_name = get_agg(agg_name)
+#     foo_args = next(csv.reader(StringIO(yarg[0]))) if yarg else []
+
+#     # if args[0] exists, assume it is a column identifier and
+#     # validate it
+#     if foo_args and valid_columns:
+#         if foo_args[0] not in valid_columns:
+#             raise ColumnIdentifierError(
+#                 f"Expected column name '{foo_args[0]}' to refer to a column name as an argument for {foo.__name__} aggregation. But it was not found among the list of valid column names: {valid_columns}"
+#             )
+#     # finally, we can figure out the intended output column header
+#     if name_arg:
+#         # then user specified it explicitly
+#         out_column_name = name_arg[0]
+#     else:
+#         out_column_name = slugify(
+#             f'{agg_proper_name}_of {"_".join(foo_args)}'.strip()
+#         )
+
+#     return Aggy(agg=foo, agg_args=foo_args, name=out_column_name)

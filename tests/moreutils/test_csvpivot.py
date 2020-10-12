@@ -7,10 +7,14 @@ import sys
 from csvmedkit.exceptions import InvalidAggregation
 from csvmedkit.moreutils.csvpivot import CSVPivot, launch_new_instance
 from csvmedkit.moreutils.csvpivot import Parser
+from csvmedkit.moreutils.csvpivot import Aggy
 
-parse_aggregate_string_arg = Parser.parse_aggregate_string_arg
+from csvmedkit.aggs import Aggregates
+
+parse_agg_string = Parser.parse_agg_string
 
 from tests.mk import (
+    agate,
     CmkTestCase,
     EmptyFileTests,
     TestCase,
@@ -325,84 +329,62 @@ class TestErrors(TestCSVPivot):
         )
 
 
-##################################
-# parse_aggregate_string_arg
-##################################
-class TestAggParser(TestCase):
-    def test_agg_name(self):
-        """just the aggregate name, no arguments or column names to check against"""
-        ag = parse_aggregate_string_arg("count")
-        self.assertEqual(Aggregates["count"], ag.agg)
-        self.assertEqual("count_of", ag.name)
-        self.assertEqual([], ag.agg_args)
+class TestAggnew(TestCase):
+    def test_basic(self):
+        ag = parse_agg_string("count")
+        assert isinstance(ag, Aggy)
+        self.assertEqual(ag.slug, "count")
+        self.assertEqual(ag.title, "count_of")
+        self.assertEqual(ag.agg_args, [])
+        assert isinstance(ag.aggregation, agate.Aggregation)
 
-    def test_agg_name_rename(self):
-        ag = parse_aggregate_string_arg("count|Hello")
-        self.assertEqual(Aggregates["count"], ag.agg)
-        self.assertEqual("Hello", ag.name)
-        self.assertEqual([], ag.agg_args)
+    def test_custom_title(self):
+        ag = parse_agg_string("count|Hello")
+        self.assertEqual(ag.title, "Hello")
+        self.assertEqual(ag.agg_args, [])
+        self.assertEqual(ag.slug, "count")
 
-        ag = parse_aggregate_string_arg('count|"Hello,goodday|and bye"')
-        self.assertEqual(Aggregates["count"], ag.agg)
-        self.assertEqual("Hello,goodday|and bye", ag.name)
-
-    def test_agg_and_args(self):
-        colnames = [
-            "a",
-            "b",
-            "Hello,world",
-            "c",
-        ]
-        ag = parse_aggregate_string_arg("sum:c", valid_columns=colnames)
-        self.assertEqual(Aggregates["sum"], ag.agg)
-        self.assertEqual("sum_of_c", ag.name)
+        ag = parse_agg_string('count|"Hello,goodday|and bye"')
         self.assertEqual(
-            [
-                "c",
-            ],
-            ag.agg_args,
+            ag.title,
+            "Hello,goodday|and bye",
         )
+        self.assertEqual(ag.slug, "count")
 
-        ag = parse_aggregate_string_arg('count:b,"Hello,world"', colnames)
-        self.assertEqual(Aggregates["count"], ag.agg)
-        self.assertEqual("count_of_b_hello_world", ag.name)
-        self.assertEqual(
-            [
-                "b",
-                "Hello,world",
-            ],
-            ag.agg_args,
-        )
+    def test_with_single_arg(self):
+        ag = parse_agg_string("sum:c")
+        self.assertEqual(ag.agg_args, ["c"])
+        self.assertEqual(ag.slug, "sum")
+        self.assertEqual(ag.title, "sum_of_c")
+
+    def test_with_multiple_args(self):
+        ag = parse_agg_string(r'count:hello,"foo, Bar!t"')
+        self.assertEqual(ag.agg_args, ["hello", "foo, Bar!t"])
+        self.assertEqual(ag.slug, "count")
+        self.assertEqual(ag.title, "count_of_hello_foo_bar_t")
 
     def test_full_monty(self):
-        colnames = [
-            "a",
-            "b",
-            "Hello,world",
-            "c",
-        ]
-        ag = parse_aggregate_string_arg("sum:c|Sum of C", valid_columns=colnames)
-        self.assertEqual(Aggregates["sum"], ag.agg)
-        self.assertEqual(
-            [
-                "c",
-            ],
-            ag.agg_args,
-        )
-        self.assertEqual("Sum of C", ag.name)
+        txt = "sum:c|Sum of Fun"
+        ag = parse_agg_string(txt)
+        self.assertEqual(ag.slug, "sum")
+        self.assertEqual(ag.title, "Sum of Fun")
+        self.assertEqual(ag.agg_args, ["c"])
 
-        ag = parse_aggregate_string_arg(
-            'count:a,"Hello,world"|"Counts, are |Fun|"', valid_columns=colnames
-        )
-        self.assertEqual(Aggregates["count"], ag.agg)
-        self.assertEqual(
-            [
-                "a",
-                "Hello,world",
-            ],
-            ag.agg_args,
-        )
-        self.assertEqual("Counts, are |Fun|", ag.name)
+        txt = 'count:a,"Hello,world"|"Counts, are |Fun|"'
+        ag = parse_agg_string(txt)
+        self.assertEqual(ag.slug, "count")
+        self.assertEqual(ag.title, "Counts, are |Fun|")
+        self.assertEqual(ag.agg_args, ["a", "Hello,world"])
+
+
+class TestEdgeAggy(TestCase):
+    @skiptest("Need to revisit how cmkutil.parse_delimited_str handles escaped chars")
+    def test_pipes_everywhere(self):
+        txt = 'count:hello,"foo|bar"|"Actual Title|really"'
+        ag = parse_agg_string(txt)
+        self.assertEqual(ag.slug, "count")
+        self.assertEqual(ag.agg_args, ["hello", "foo|bar"])
+        self.assertEqual(ag.title, "Actual Title|really")
 
 
 ###################################################################################################
@@ -480,3 +462,83 @@ class TestDocExamples(TestCSVPivot):
                 ],
             ],
         )
+
+
+# ##################################
+# # parse_aggregate_string_arg
+# ##################################
+# class TestAggParser(TestCase):
+#     def test_agg_name(self):
+#         """just the aggregate name, no arguments or column names to check against"""
+#         ag = parse_aggregate_string_arg("count")
+#         self.assertEqual(Aggregates["count"], ag.agg)
+#         self.assertEqual("count_of", ag.name)
+#         self.assertEqual([], ag.agg_args)
+
+#     def test_agg_name_rename(self):
+#         ag = parse_aggregate_string_arg("count|Hello")
+#         self.assertEqual(Aggregates["count"], ag.agg)
+#         self.assertEqual("Hello", ag.name)
+#         self.assertEqual([], ag.agg_args)
+
+#         ag = parse_aggregate_string_arg('count|"Hello,goodday|and bye"')
+#         self.assertEqual(Aggregates["count"], ag.agg)
+#         self.assertEqual("Hello,goodday|and bye", ag.name)
+
+#     def test_agg_and_args(self):
+#         colnames = [
+#             "a",
+#             "b",
+#             "Hello,world",
+#             "c",
+#         ]
+#         ag = parse_aggregate_string_arg("sum:c", valid_columns=colnames)
+#         self.assertEqual(Aggregates["sum"], ag.agg)
+#         self.assertEqual("sum_of_c", ag.name)
+#         self.assertEqual(
+#             [
+#                 "c",
+#             ],
+#             ag.agg_args,
+#         )
+
+#         ag = parse_aggregate_string_arg('count:b,"Hello,world"', colnames)
+#         self.assertEqual(Aggregates["count"], ag.agg)
+#         self.assertEqual("count_of_b_hello_world", ag.name)
+#         self.assertEqual(
+#             [
+#                 "b",
+#                 "Hello,world",
+#             ],
+#             ag.agg_args,
+#         )
+
+#     def test_full_monty(self):
+#         colnames = [
+#             "a",
+#             "b",
+#             "Hello,world",
+#             "c",
+#         ]
+#         ag = parse_aggregate_string_arg("sum:c|Sum of C", valid_columns=colnames)
+#         self.assertEqual(Aggregates["sum"], ag.agg)
+#         self.assertEqual(
+#             [
+#                 "c",
+#             ],
+#             ag.agg_args,
+#         )
+#         self.assertEqual("Sum of C", ag.name)
+
+#         ag = parse_aggregate_string_arg(
+#             'count:a,"Hello,world"|"Counts, are |Fun|"', valid_columns=colnames
+#         )
+#         self.assertEqual(Aggregates["count"], ag.agg)
+#         self.assertEqual(
+#             [
+#                 "a",
+#                 "Hello,world",
+#             ],
+#             ag.agg_args,
+#         )
+#         self.assertEqual("Counts, are |Fun|", ag.name)

@@ -1,8 +1,15 @@
 """Main module."""
 import argparse
 from collections import namedtuple
+import csv
+from io import StringIO
 import sys
-from typing import List as typeList, NoReturn as typeNoReturn, Iterable as typeIterable
+from typing import (
+    List as typeList,
+    NoReturn as typeNoReturn,
+    Iterable as typeIterable,
+    Union as typeUnion,
+)
 import warnings
 
 from csvkit.grep import FilteringCSVReader
@@ -393,3 +400,29 @@ def cmk_filter_rows(
         any_match=any_match,
     )
     return filtered_rows
+
+
+def parse_delimited_str(
+    txt: str,
+    delimiter: str = ",",
+    minlength: int = 0,
+    escapechar=None,
+    **csvreader_kwargs,
+) -> typeList[typeUnion[str]]:
+    """
+    minlength: expected minimum number of elements. If csv.reader returns a row shorter than minlength, it
+        will pad the row with empty strings ''
+    """
+    row: typeList
+    with StringIO(txt) as src:
+        kwargs = csvreader_kwargs.copy()
+        kwargs["delimiter"] = delimiter
+        kwargs["escapechar"] = escapechar
+
+        data = csv.reader(src, **kwargs)
+        row = next(data, [])
+
+    for i in range(len(row), minlength):
+        row.append("")
+
+    return row

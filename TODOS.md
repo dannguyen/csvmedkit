@@ -10,10 +10,13 @@ Left off:
 - csvpivot
     - [ ] implementation
         - [ ] should throw warning if user has custom name aggregation when `--pivot-column` is set
+        - [ ] handle multiple aggregations if user doesn't specify column
+            - does that make groupby obsolete?
     - [ ] port tests
         - Left off with this broken: `test_agg_count_with_2_args_typecast`
     - [ ] documentation
-
+    - add UniformReader to interface
+        - use `@filtered_column_ids` instead of `cmk_parse_col_ids`
 
 
 - csvflatten
