@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-
 from csvmedkit import agate
-from csvmedkit.cmkutil import CmkUtil, UniformReader
+from csvmedkit.cmk.cmkutil import CmkUtil, UniformReader
 from shutil import get_terminal_size
 import sys
 import textwrap

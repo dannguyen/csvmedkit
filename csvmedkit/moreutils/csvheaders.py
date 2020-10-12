@@ -8,8 +8,9 @@ from typing import (
     Tuple as typeTuple,
 )
 
-from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids
-from csvmedkit import re_plus as re, slugify
+from csvmedkit import re_plus as re
+from csvmedkit.cmk.cmkutil import CmkUtil
+from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_slugify
 
 
 class CSVHeaders(CmkUtil):
@@ -203,7 +204,7 @@ class CSVHeaders(CmkUtil):
 
         if self.slugify_mode:
             for i, colname in enumerate(column_names):
-                column_names[i] = slugify(colname)
+                column_names[i] = cmk_slugify(colname)
 
         ## time to output
         if self.output_headers_only:

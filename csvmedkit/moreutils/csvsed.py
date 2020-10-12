@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List as typeList
 
 from csvmedkit import re_std as re
-from csvmedkit.cmkutil import CmkMixedUtil, cmk_filter_rows, cmk_parse_column_ids
+from csvmedkit.cmk.cmkutil import CmkMixedUtil
+from csvmedkit.cmk.helpers import cmk_filter_rows, cmk_parse_column_ids
 from csvmedkit.exceptions import *
 
 

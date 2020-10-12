@@ -5,7 +5,8 @@ import csvmedkit.__about__ as about
 
 from tests.mk import TestCase, skiptest
 
-from csvmedkit.cmkutil import CmkUtil, cmk_parse_column_ids, parse_delimited_str
+from csvmedkit.cmk.cmkutil import CmkUtil
+from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_parse_delimited_str
 
 
 class TestCMK(TestCase):
@@ -27,18 +28,18 @@ class TestParseDelims(TestCase):
         txt = "hello,world"
         self.assertEqual(
             ["hello", "world"],
-            parse_delimited_str(txt),
+            cmk_parse_delimited_str(txt),
         )
 
     def test_empty_string(self):
-        self.assertEqual([], parse_delimited_str(""))
+        self.assertEqual([], cmk_parse_delimited_str(""))
 
     def test_custom_delim(self):
         txt = "hello|foo,bar|world"
         # positional
         self.assertEqual(
             ["hello", "foo,bar", "world"],
-            parse_delimited_str(
+            cmk_parse_delimited_str(
                 txt,
                 "|",
             ),
@@ -47,7 +48,7 @@ class TestParseDelims(TestCase):
         # keyword
         self.assertEqual(
             ["hello", "foo,bar", "world"],
-            parse_delimited_str(
+            cmk_parse_delimited_str(
                 txt,
                 delimiter="|",
             ),
@@ -55,13 +56,13 @@ class TestParseDelims(TestCase):
 
     def test_minlength_basic(self):
         txt = "hello,world"
-        a, b, c = parse_delimited_str(txt, minlength=3)
+        a, b, c = cmk_parse_delimited_str(txt, minlength=3)
         assert a == "hello"
         assert b == "world"
         assert c == ""
 
     def test_minlength_too_small(self):
-        d = parse_delimited_str(
+        d = cmk_parse_delimited_str(
             "hello|foo,bar",
             "|",
             1,
@@ -69,7 +70,7 @@ class TestParseDelims(TestCase):
         assert d == ["hello", "foo,bar"]
 
     def test_minlength_too_big(self):
-        d = parse_delimited_str(
+        d = cmk_parse_delimited_str(
             "hello",
             ",",
             3,
@@ -81,7 +82,7 @@ class TestParseDelims(TestCase):
         ]
 
     def test_minlength_pads_empty_input(self):
-        d = parse_delimited_str(
+        d = cmk_parse_delimited_str(
             "",
             ",",
             3,

@@ -9,7 +9,8 @@ from os import isatty
 import sys
 from typing import Iterable as typeIterable, List as typeList
 
-from csvmedkit.cmkutil import CmkMixedUtil, cmk_filter_rows
+from csvmedkit.cmk.cmkutil import CmkMixedUtil
+from csvmedkit.cmk.helpers import cmk_filter_rows
 
 
 class CSVRgrep(CmkMixedUtil):
