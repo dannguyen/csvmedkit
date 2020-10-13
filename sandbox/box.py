@@ -45,8 +45,6 @@ def main():
 
     peeps = agate.Table.from_object(DATA["peeps"])
     # , column_types=[agate.Text(cast_nulls=False) for k in DATA['stuff'][0].keys()])
-
-
     pot = agate.Table.from_object(DATA['pot'])
     gpot = pot.group_by(key='YEAR')
     vpot = pot.pivot(key=['YEAR'])
@@ -58,6 +56,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+path = Path('examples/drafts/fed-judges-service.csv')
+jt = agate.Table.from_csv(path)
+
+
+"""
 
 
 

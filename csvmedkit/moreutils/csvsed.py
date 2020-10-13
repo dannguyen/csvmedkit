@@ -97,8 +97,14 @@ class Props:
 
 class CSVSed(Props, Parser, CmkMixedUtil):
     def _handle_sed_expressions(self, column_names: typeList[str]) -> typeList:
-        # TODO: fix this spaghetti CRAP: maybe make expressions handle dicts/named typles instead of lists
+        """
+        Standard usage of csvsed expects only a single sed expression, so in practice, this
+            method returns a list of 1
 
+        Experimental: `-E` can be used to add extra expressions
+        """
+
+        # TODO: fix this spaghetti CRAP: maybe make expressions handle dicts/named typles instead of lists
         first_col_str = self.columns_filter or ""
         first_expr = [self.args.first_pattern, self.args.first_repl, first_col_str]
         expressions = [first_expr]
@@ -130,8 +136,14 @@ class CSVSed(Props, Parser, CmkMixedUtil):
 
         return expressions
 
-    def run(self):
-        self.last_expr = []
+    def _experimental_multiple_expression_handling(self):
+        """
+        support of multiple expressions is an experimental feature and may be cut (look at this spaghetti!)
+        """
+
+        # this should be a property
+        self.last_expr: list = []
+
         if not self.args.input_path:
             # then it must have been eaten by an -E flag; we assume the input file is in last_expr[-1],
             # where `last_expr` is the last member of expressions_list
@@ -165,19 +177,26 @@ class CSVSed(Props, Parser, CmkMixedUtil):
                     # input_path is hopefully stdin
                     self.args.input_path = None
 
+            # this was originally handled in main; need to rethink and refactor
+            # if self.additional_input_expected():
+            #     if len(self.last_expr) == 2:
+            #         stderr.write(
+            #             f"""WARNING: the last positional argument – {self.last_expr[0]} – is interpreted as the first and only argument to -E/--expr, i.e. the pattern to search for.\n"""
+            #         )
+            #         stderr.write(
+            #             "Make sure that it isn't meant to be the name of your input file!\n\n"
+            #         )
+            #     stderr.write(
+            #         "No input file or piped data provided. Waiting for standard input:\n"
+            #     )
+
+    def run(self):
+        self._experimental_multiple_expression_handling()
         self.input_file = self._open_input_file(self.args.input_path)
         super().run()
 
     def main(self):
-        # TODO: THIS IS CRAP
         if self.additional_input_expected():
-            if len(self.last_expr) == 2:
-                stderr.write(
-                    f"""WARNING: the last positional argument – {self.last_expr[0]} – is interpreted as the first and only argument to -E/--expr, i.e. the pattern to search for.\n"""
-                )
-                stderr.write(
-                    "Make sure that it isn't meant to be the name of your input file!\n\n"
-                )
             stderr.write(
                 "No input file or piped data provided. Waiting for standard input:\n"
             )

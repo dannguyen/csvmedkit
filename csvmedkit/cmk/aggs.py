@@ -62,6 +62,11 @@ class Aggy(object):
         return d
 
     @property
+    def column_name(self) -> typeOptional[str]:
+        """basically, agg_args[0]"""
+        return self._args[0] if self._args else None
+
+    @property
     def title(self) -> str:
         if self._output_name:
             """specific name was specified"""

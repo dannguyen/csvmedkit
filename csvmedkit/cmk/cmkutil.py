@@ -104,6 +104,31 @@ class CmkUtil(CmkProps, CSVKitUtility):
         """TODO: deprecate"""
         return agate.csv.writer(self.output_file, **self.writer_kwargs)
 
+    def get_rows_and_column_names_and_column_ids(self, **kwargs):
+        """same as csvkit, except use of getattr(self.args, 'line_numbers', None)"""
+        rows = agate.csv.reader(self.skip_lines(), **kwargs)
+
+        if self.args.no_header_row:
+            # Peek at a row to get the number of columns.
+            row = next(rows)
+            rows = itertools.chain([row], rows)
+            column_names = make_default_headers(len(row))
+        else:
+            column_names = next(rows)
+
+        column_offset = self.get_column_offset()
+        if getattr(self.args, "line_numbers", None):
+            column_offset -= 1
+
+        column_ids = parse_column_identifiers(
+            self.args.columns,
+            column_names,
+            column_offset,
+            getattr(self.args, "not_columns", None),
+        )
+
+        return rows, column_names, column_ids
+
     def _extract_csv_reader_kwargs(self):
         """
         Extracts those from the command-line arguments those would should be passed through to the input CSV reader(s).

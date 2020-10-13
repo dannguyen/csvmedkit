@@ -33,3 +33,9 @@ class InvalidAggregationArgument(CustomException):
 
 class ImplementationError(CustomException):
     pass
+
+
+class ColumnNameError(CustomException):
+    """ different than ColumnIdentifierError in that it only refers to column names"""
+
+    pass

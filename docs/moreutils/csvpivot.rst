@@ -90,3 +90,22 @@ Counting Congress demographics::
     | Independent |   2 |   0 |
     | Republican  | 229 |  24 |
     | Libertarian |   1 |   0 |
+
+
+Federal judges::
+
+    $ csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President' -c 'ABA Rating'
+
+    https://www.pewresearch.org/fact-tank/2020/07/15/how-trump-compares-with-other-recent-presidents-in-appointing-federal-judges/
+
+Limitations/future fixes
+========================
+
+If there are any NULL or irregular values in a column that is being summed/max/min/most aggregations, agate.Table will throw an error.
+
+See more info about that issue here: https://github.com/wireservice/agate/issues/714#issuecomment-681176978
+
+Assuming that agate's behavior can't/won't be changed, a possible solution is filling a to-be-aggregated column with non-null values (i.e. ``0``). However, we should give the user the option of specifying that value. Also, it should probably require explicit enabling, so users who aren't aware their data contains non-null/numeric values are noisily informed.
+
+
+

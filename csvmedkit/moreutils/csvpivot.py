@@ -1,5 +1,7 @@
+from argparse import _AppendAction as argAppendAction, _copy_items as arg_copy_items
 import csv
 from collections import namedtuple
+from io import StringIO
 import sys
 from typing import (
     List as typeList,
@@ -13,6 +15,16 @@ from csvmedkit.exceptions import *
 from csvmedkit.cmk.aggs import Aggy, Aggregates
 from csvmedkit.cmk.cmkutil import CmkUtil, UniformReader
 from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_parse_delimited_str
+
+
+class AppendAggreAction(argAppendAction):
+    def __call__(self, parser, namespace, values, option_string=None):
+        aggy = Aggy.parse_aggy_string(values)
+        super().__call__(parser, namespace, aggy, option_string)
+        # items = getattr(namespace, self.dest, None)
+        # items = arg_copy_items(items)
+        # items.append(values)
+        # setattr(namespace, self.dest, items)
 
 
 class Parser:
@@ -79,7 +91,7 @@ class Parser:
         self.argparser.add_argument(
             "-a",
             "--agg",
-            action="append",
+            action=AppendAggreAction,
             dest="aggregates_list",
             # dest="pivot_aggregate",
             # type=str,
@@ -103,11 +115,6 @@ class Props:
     """
     Bespoke properties
     """
-
-    @property
-    def intable(self) -> agate.Table:
-        """same as i_rows, just a better name specific to this command, which uses agate.Table"""
-        return self.i_rows
 
     @property
     def pivot_column_name(self) -> typeOptional[str]:
@@ -161,29 +168,23 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
         for a in Aggregates.keys():
             outs.write(f"- {a}\n")
 
-    def run(self):
-        # don't bother going into main
-        if self.args.list_aggs or (
-            self.args.aggregates_list and self.args.aggregates_list[0] == ""
-        ):
-            self.print_available_aggregates()
-            return
+    #     def _extract_aggies(self) -> typeList[Aggy]:
+    #         aggies:list = []
 
-        if not self.args.pivot_rows and not self.args.pivot_column:
-            self.argparser.error(
-                "Either -r/--pivot-rows or -c/--pivot-column must be specified. Both cannot be left unspecified."
-            )
+    #         if not self.args.aggregates_list:
+    #             aggies = [Aggy.parse_aggy_string('count')]
+    #         else:
+    #             aggies = self.args.aggregates_list.copy()
 
-        if self.args.pivot_column and (
-            self.args.aggregates_list and len(self.args.aggregates_list) > 1
-        ):
-            self.argparser.error(
-                f"""Cannot specify --pivot-column '{self.pivot_column_name}' and have more than one aggregation; you specified {len(self.args.aggregates_list)}: {self.args.aggregates_list}"""
-            )
+    #         for a in aggies:
+    #             # aggy = Aggy.parse_aggy_string(txt)
+    #             self._validate_aggy_column_arguments(a)
+    # #            aggies.append(aggy)
+    #         return aggies
 
-        super().run()
-
-    def validate_aggy_column_arguments(self, aggy: Aggy):
+    def _validate_aggy_column_arguments(
+        self, aggy: Aggy, table: agate.Table
+    ) -> typeNoReturn:
         """
         Aggy is csvpivot/agate.Table agnostic, so this method:
 
@@ -191,7 +192,6 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
         - typecasts the second argument of count() to match the datatype of the column that it counts
 
         """
-        table = self.intable
 
         ############################
         # checking valid column name
@@ -204,7 +204,6 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
                     + f"Attempted to perform `{aggy.slug}('{_col}', ...)`. "
                     + f"But '{_col}' was expected to be a valid column name, i.e. from: {table.column_names}",
                 )
-
         ############################
         # if the aggregation is count(), and there are 2 arguments
         #   then the 2nd argument is typecasted against the table.column
@@ -236,16 +235,61 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
             else:
                 aggy._args[1] = dval
 
-    def read_input(self):
-        self._rows = agate.Table.from_csv(
-            self.input_file,
+    def _filter_input(self) -> agate.Table:
+        """
+        trim self.i_rows to the actually used columns
+        """
+        # trim self.intable to the relevant, i.e. actually used columns
+        used_cols: list = self.pivot_row_names or []
+        if self.pivot_column_name:
+            used_cols.append(self.pivot_column_name)
+        if self.args.aggregates_list:
+            used_cols.extend(
+                [a.column_name for a in self.args.aggregates_list if a.column_name]
+            )
+
+        used_cols = list(set(used_cols))
+        for c in used_cols:
+            if not c in self.i_column_names:
+                raise ColumnNameError(
+                    f"'{c}' is not a valid column name; column names are: {self.i_column_names}"
+                )
+
+        ftxt = StringIO()
+        fd = csv.DictWriter(ftxt, fieldnames=used_cols)
+        fd.writeheader()
+
+        # ftxt:StringIO = StringIO()
+        for row in self.i_rows:
+            fd.writerow({c: row[c] for c in used_cols})
+
+        ftxt.seek(0)
+        table = agate.Table.from_csv(
+            ftxt,
             skip_lines=self.args.skip_lines,
             sniff_limit=self.args.sniff_limit,
             column_types=self.get_column_types(),
             **self.reader_kwargs,
         )
-        self._column_names = self._rows.column_names
+
+        #        table = agate.Table.from_object(f)
+        #        import IPython; IPython.embed()
+
+        return table
+
+    def read_input(self):
+        self._rows = agate.csv.DictReader(self.skip_lines(), **self.reader_kwargs)
+        self._column_names = self._rows.fieldnames
         self._read_input_done = True
+
+        # self._rows = agate.Table.from_csv(
+        #     self.input_file,
+        #     skip_lines=self.args.skip_lines,
+        #     sniff_limit=self.args.sniff_limit,
+        #     column_types=self.get_column_types(),
+        #     **self.reader_kwargs,
+        # )
+        # self._column_names = self._rows.column_names
 
     def main(self):
         if self.additional_input_expected():
@@ -256,49 +300,33 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
         if self.is_empty:
             return
 
+        self.ftable = self._filter_input()
+
+        self.aggies: list
         if not self.args.aggregates_list:
-            aggtextlist = ["count"]
+            # set default aggregation if there were none
+            self.aggies = [Aggy.parse_aggy_string("count")]
         else:
-            aggtextlist = self.args.aggregates_list.copy()
+            self.aggies = self.args.aggregates_list.copy()
 
-        self.aggies: list = []
-        for txt in aggtextlist:
-            aggy = Aggy.parse_aggy_string(txt)
-            self.validate_aggy_column_arguments(aggy)
-            self.aggies.append(aggy)
+        for a in self.aggies:
+            self._validate_aggy_column_arguments(a, table=self.ftable)
 
+        outtable: agate.Table
         if self.pivot_column_name:
             # in this mode, only one aggregation is allowed. This is enforced inside run()
             # Also, this aggregation:
             # - is performed for each group i.e. cell of the aggregated data
             # - aggy.title is not used and thus ignored
             #   - TODO: warn user that title is ignored?
-
-            aggy: Aggy = self.aggies[0]
-            pivot_aggregation: agate.Aggregation = aggy.aggregation
-
-            outtable: agate.Table
-            outtable = self.i_rows.pivot(
+            outtable = self.ftable.pivot(
                 key=self.pivot_row_names,
                 pivot=self.pivot_column_name,
-                aggregation=pivot_aggregation,
+                aggregation=self.aggies[0].aggregation,
             )
-            # if `pivot`/pivot_col_name isn't set, then the result is a list of row combinations
-            # and a final aggregation column. We want to rename the final aggregation column,
-            # e.g. from agate's default 'Count' to 'count_of'...
-            #  or whatever the user has explicitly set via -a/--agg
-            if not self.pivot_column_name:
-                _onames = list(outtable.column_names)
-                # replace the last column name in the outgoing column names
-                _onames[-1] = pivot_title
-                outtable = outtable.rename(column_names=_onames)
-
         else:
             # user wants multiple aggregations for rows, so this is essentially a groupby
-
-            # throw error on:             if not self.pivot_column_name:
-            outtable: agate.Table
-            outtable = self.intable
+            outtable = self.ftable
             for rcol in self.pivot_row_names:
                 outtable = outtable.group_by(key=rcol)
 
@@ -309,6 +337,28 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
         outtable.to_csv(self.output_file, **self.writer_kwargs)
 
         return 0
+
+    def run(self):
+        # don't bother going into main
+        if self.args.list_aggs or (
+            self.args.aggregates_list and self.args.aggregates_list[0] == ""
+        ):
+            self.print_available_aggregates()
+            return
+
+        if not self.args.pivot_rows and not self.args.pivot_column:
+            self.argparser.error(
+                "Either -r/--pivot-rows or -c/--pivot-column must be specified. Both cannot be left unspecified."
+            )
+
+        if self.args.pivot_column and (
+            self.args.aggregates_list and len(self.args.aggregates_list) > 1
+        ):
+            self.argparser.error(
+                f"""Cannot specify --pivot-column '{self.pivot_column_name}' and have more than one aggregation; you specified {len(self.args.aggregates_list)}: {self.args.aggregates_list}"""
+            )
+
+        super().run()
 
 
 def launch_new_instance():

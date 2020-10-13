@@ -7,6 +7,7 @@ import sys
 
 from csvmedkit.exceptions import (
     ColumnIdentifierError,
+    ColumnNameError,
     InvalidAggregationArgument,
     InvalidAggregateName,
 )
@@ -45,7 +46,7 @@ class TestInit(TestCSVPivot, EmptyFileTests):
         ]
         self.assertLines(["--list-aggs"], list(expected_output))
         # self.assertLines(["-L"], list(expected_output)) # -L is now used for --locale
-        self.assertLines(["-a", ""], list(expected_output))
+        # self.assertLines(["-a", ""], list(expected_output))
 
 
 class TestDefaultCount(TestCSVPivot):
@@ -458,12 +459,12 @@ class TestErrors(TestCSVPivot):
         )
 
     def test_invalid_column_name_given_to_aggregation(self):
-        with self.assertRaises(InvalidAggregationArgument) as e:
+        with self.assertRaises(ColumnNameError) as e:
             u = self.get_output(
                 ["-r", "gender", "-a", "count:height", "examples/peeps.csv"]
             )
         self.assertIn(
-            """InvalidAggregationArgument: Attempted to perform `count('height', ...)`. But 'height' was expected to be a valid column name, i.e. from: ('name', 'race', 'gender', 'age')""",
+            """'height' is not a valid column name; column names are: ['name', 'race', 'gender', 'age']""",
             str(e.exception),
         )
 
@@ -473,12 +474,12 @@ class TestErrors(TestCSVPivot):
             it does its own lookup of a column name in the loaded self.intable, and
             for now we emit a special error message
         """
-        with self.assertRaises(InvalidAggregationArgument) as e:
+        with self.assertRaises(ColumnNameError) as e:
             u = self.get_output(
                 ["-r", "a", "--agg", "count:XXX,YYY", "examples/dummy.csv"]
             )
         self.assertIn(
-            """InvalidAggregationArgument: Attempted to perform `count('XXX', ...)`. But 'XXX' was expected to be a valid column name, i.e. from: ('a', 'b', 'c')""",
+            """'XXX' is not a valid column name; column names are: ['a', 'b', 'c']""",
             str(e.exception),
         )
 

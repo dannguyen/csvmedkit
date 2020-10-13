@@ -3,8 +3,14 @@
 
 ## 0.1 
 
+
 - csvpivot
+    - performance
+        - [x] created filtered table to remove all columns not specified in the arguments
     - [ ] documentation
+        - [ ] look up pandas equivalent
+        - [ ] benchmarking
+            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
     - [x] implementation
         - [X] handle multiple aggregations if user doesn't specify column
             - [YES] does that make groupby obsolete?
@@ -15,6 +21,16 @@
             - csvpivot examples/real/denver-pot-sales.csv -r YEAR -a sum:GROSS `KeyError: 'GROSS'`
     - [x] port tests
 
+
+- csvsed
+    - [ ] documentation
+    - [ ] cmk_filter_rows should be refactored into a class instance method, and have its signature minimized
+    - [x] use cmkmixutil class
+    - [x] sans replacement flag
+    - [x] port old tests
+    - [x] implicit stdin pipe isn't working; fix broken test
+    - moved -E functionality to experimental phase for now
+        - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
 
 - csvflatten
     - documentation
@@ -44,15 +60,6 @@
         - [x] validate given indexes
         - [x] write tests
 
-
-- csvsed
-    - [ ] documentation
-    - [x] use cmkmixutil class
-    - [x] sans replacement flag
-    - [x] port old tests
-    - [x] implicit stdin pipe isn't working; fix broken test
-    - moved -E functionality to experimental phase for now
-        - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
 
 
 - Overall documentation
