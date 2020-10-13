@@ -7,10 +7,12 @@
 - csvpivot
     - performance
         - [x] created filtered table to remove all columns not specified in the arguments
+        - [x] benchmarking
+            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
+                - was 10s, now 0.5s
     - [ ] documentation
         - [ ] look up pandas equivalent
-        - [ ] benchmarking
-            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
+
     - [x] implementation
         - [X] handle multiple aggregations if user doesn't specify column
             - [YES] does that make groupby obsolete?
