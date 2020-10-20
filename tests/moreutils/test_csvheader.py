@@ -2,8 +2,8 @@ from io import StringIO
 from unittest import skip as skiptest
 import sys
 
-from csvmedkit.moreutils.csvheaders import (
-    CSVHeaders,
+from csvmedkit.moreutils.csvheader import (
+    CSVHeader,
     launch_new_instance,
 )
 
@@ -11,11 +11,11 @@ from tests.mk import CmkTestCase, EmptyFileTests, stdin_as_string, patch, skipte
 from csvmedkit.exceptions import *
 
 
-class TestCSVHeaders(CmkTestCase):
-    Utility = CSVHeaders
+class TestCSVHeader(CmkTestCase):
+    Utility = CSVHeader
 
 
-class TestInit(TestCSVHeaders, EmptyFileTests):
+class TestInit(TestCSVHeader, EmptyFileTests):
     def test_launch_new_instance(self):
         with patch.object(
             sys, "argv", [self.Utility.__name__.lower(), "examples/dummy.csv"]
@@ -46,10 +46,10 @@ class TestInit(TestCSVHeaders, EmptyFileTests):
         )
 
 
-class TestGenericHeaders(TestCSVHeaders):
+class TestGenericHeaders(TestCSVHeader):
     def test_add_generic_headers(self):
         self.assertLines(
-            ["--add-headers", "examples/dummy.csv"],
+            ["--add-header", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -58,7 +58,7 @@ class TestGenericHeaders(TestCSVHeaders):
         )
 
         self.assertLines(
-            ["--HA", "--zero", "examples/dummy.csv"],
+            ["--AH", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "a,b,c",
@@ -71,14 +71,14 @@ class TestGenericHeaders(TestCSVHeaders):
         infile = StringIO(f"{txt}\n")
         with stdin_as_string(infile):
             self.assertLines(
-                ["--add-headers"],
+                ["--add-header"],
                 [",".join(f"field_{i}" for i in range(1, 101)), txt],
             )
         infile.close()
 
     def test_zap_headers(self):
         self.assertLines(
-            ["--zap-headers", "examples/dummy.csv"],
+            ["--zap-header", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "1,2,3",
@@ -86,7 +86,7 @@ class TestGenericHeaders(TestCSVHeaders):
         )
 
         self.assertLines(
-            ["--HZ", "--zero", "examples/dummy.csv"],
+            ["--ZH", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "1,2,3",
@@ -94,7 +94,7 @@ class TestGenericHeaders(TestCSVHeaders):
         )
 
 
-class TestRename(TestCSVHeaders):
+class TestRename(TestCSVHeader):
     def test_rename_mode_basic(self):
         self.assertLines(
             [
@@ -204,7 +204,7 @@ class TestRename(TestCSVHeaders):
         pass
 
 
-class TestSlugify(TestCSVHeaders):
+class TestSlugify(TestCSVHeader):
     def test_slugify_mode(self):
         self.assertLines(
             ["--slugify", "examples/heady.csv"],
@@ -216,7 +216,7 @@ class TestSlugify(TestCSVHeaders):
         )
 
 
-class TestRegex(TestCSVHeaders):
+class TestRegex(TestCSVHeader):
     def test_regex(self):
         self.assertLines(
             ["-X", r"(\w)", r"_\1_", "examples/dummy.csv"], ["_a_,_b_,_c_", "1,2,3"]
@@ -228,7 +228,7 @@ class TestRegex(TestCSVHeaders):
         )
 
 
-class TestPreviewMode(TestCSVHeaders):
+class TestPreviewMode(TestCSVHeader):
     def test_default(self):
         """
         prints only headers, even if --slugify and/or --rename is used
@@ -247,7 +247,7 @@ class TestPreviewMode(TestCSVHeaders):
     def test_add_headers(self):
         # when adding headers
         self.assertLines(
-            ["-P", "--HA", "examples/dummy.csv"],
+            ["-P", "--AH", "examples/dummy.csv"],
             [
                 "index,field",
                 "1,field_1",
@@ -296,14 +296,14 @@ class TestPreviewMode(TestCSVHeaders):
 ######################################
 ### order of operations
 ######################################
-class TestOrderOps(TestCSVHeaders):
+class TestOrderOps(TestCSVHeader):
     """
     making sure the order of operations of transformations is what we expect
     """
 
     def test_make_headers_no_added_effect_to_add_headers(self):
         self.assertLines(
-            ["--HZ", "--HA", "examples/dummy.csv"],
+            ["--ZH", "--AH", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -313,7 +313,7 @@ class TestOrderOps(TestCSVHeaders):
 
     def test_make_headers_precedence_over_rename(self):
         self.assertLines(
-            ["--HZ", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["--ZH", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
             ["x,y,z", "1,2,3"],
         )
 
@@ -351,12 +351,59 @@ class TestOrderOps(TestCSVHeaders):
         )
 
 
+class TestHelpStringExamples(TestCSVHeader):
+    def test_rename_helpdoc(self):
+        self.assertLines(
+            [
+                "-R",
+                "a|Apples,2|hello,3|world",
+                "examples/dummy.csv",
+            ],
+            ["Apples,hello,world", "1,2,3"],
+        )
+
+    def test_slugify_helpdoc(self):
+
+        ifile = StringIO('APPLES,"Date - Time "\n')
+        with stdin_as_string(ifile):
+            self.assertLines(
+                [
+                    "-S",
+                ],
+                [
+                    "apples,date_time",
+                ],
+            )
+
+
 ###################################################################################################
 ### Tests that verify my documentation examples
 ###################################################################################################
-class TestDocExamples(TestCSVHeaders):
+class TestDocExamples(TestCSVHeader):
     """Tests that verify my documentation examples"""
 
-    @skiptest("write out examples later")
-    def test_intro(self):
-        pass
+    @property
+    def idata(self):
+        return StringIO("Case #,X,Y,I.D.\n1,2,3,4\n5,6,7,8\n")
+
+    def test_slugify_intro_example(self):
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["-S"],
+                [
+                    "case,x,y,i_d",
+                    "1,2,3,4",
+                    "5,6,7,8",
+                ],
+            )
+
+    def test_rename_intro_example(self):
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["-R", "1|Case Num,4|ID,X|lat,Y|lng"],
+                [
+                    "Case Num,lat,lng,ID",
+                    "1,2,3,4",
+                    "5,6,7,8",
+                ],
+            )

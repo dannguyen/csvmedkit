@@ -25,6 +25,7 @@ For example, given the following table:
 
 The "flattened" view of its 2 records would look like this:
 
+
 .. csv-table::
    :header: field,value
 

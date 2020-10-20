@@ -13,7 +13,7 @@ from csvmedkit.cmk.cmkutil import CmkUtil
 from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_slugify
 
 
-class CSVHeaders(CmkUtil):
+class CSVHeader(CmkUtil):
     description = """Prints flattened records, such that each row represents a record's fieldname and corresponding value,
                      similar to transposing a record in spreadsheet format"""
 
@@ -24,17 +24,17 @@ class CSVHeaders(CmkUtil):
 
     def add_arguments(self):
         self.argparser.add_argument(
-            "--HA",
-            "--add-headers",
-            dest="add_headers",
+            "--AH",
+            "--add-header",
+            dest="add_header",
             action="store_true",
-            help="""Add/prepend headers to the given data, in generic 'field_%%d' format, e.g. 'field_1', 'field_2', etc.""",
+            help="""Given a dataset with no header, this flag adds generic fieldnames for each column, numbered starting from 1, e.g. field_1, field_2, and so on.""",
         )
 
         self.argparser.add_argument(
-            "--HZ",
-            "--zap-headers",
-            dest="zap_headers",
+            "--ZH",
+            "--zap-header",
+            dest="zap_header",
             action="store_true",
             help="""Similar to `--HA/--add-headers`, but instead of adding a generic header row, completely replace (i.e. "zap") the current headers""",
         )
@@ -43,8 +43,14 @@ class CSVHeaders(CmkUtil):
             "-R",
             "--rename",
             dest="rename_headers",
+            metavar="<renamed_column_pairs>",
             type=str,
-            help="""Comma-delimited list of pipe-delimited pairs:  (existing) column names/ids, and their replacement, e.g. 'col_a|new_a,2|new_b,"3|New C Col"'  """,
+            help="""Rename individual columns. The required argument is a comma-delimited string of pipe-delimited pairs — column id/name and the new name.
+
+            For example, to rename the "a" column to "Apples"; and also, the 2nd and 3rd columns to "hello" and "world", respectively, the quoted argument string would be:
+
+                'a|Apples,2|hello,3|world'
+            """,
         )
 
         self.argparser.add_argument(
@@ -52,7 +58,7 @@ class CSVHeaders(CmkUtil):
             "--slugify",
             dest="slugify_mode",
             action="store_true",
-            help="""Convert all the headers into snakecase, e.g. 'Date-Time ' becomes 'date_time' """,
+            help="""Converts the existing column names to snake_case style. For example, APPLES and 'Date - Time ' are converted, respectively, to 'apples' and 'date_time'""",
         )
 
         self.argparser.add_argument(
@@ -60,24 +66,25 @@ class CSVHeaders(CmkUtil):
             "--regex",
             dest="regex_headers",
             nargs=2,
+            metavar="<arg>",
             type=str,
-            help="""Apply a regex replacement to each header: '[PATTERN]' '[REPLACEMENT]'""",
+            help="""In the existing column names, replace all occurrences of a regular expression <pattern> (1st arg) with <replacement> (2nd arg).""",
         )
 
         self.argparser.add_argument(
             "-P",
             "--preview",
             action="store_true",
-            help="""Output only the list of headers; use this to preview renamed or otherwise transformed headers without processing the entire input data file""",
+            help="""When no options are invoked, only the existing header is printed as a comma-delimited list. Invoking any of the aforementioned options prints the transformed header and the data. In the latter case, use the --preview flag to see only what the transformed headers look like.""",
         )
 
     @property
-    def add_headers(self) -> bool:
-        return self.args.add_headers
+    def add_header(self) -> bool:
+        return self.args.add_header
 
     @property
-    def zap_headers(self) -> bool:
-        return self.args.zap_headers
+    def zap_header(self) -> bool:
+        return self.args.zap_header
 
     @property
     def preview(self) -> bool:
@@ -119,8 +126,8 @@ class CSVHeaders(CmkUtil):
         if not any(
             h
             for h in (
-                self.zap_headers,
-                self.add_headers,
+                self.zap_header,
+                self.add_header,
             )
         ):
             self.generic_columnized = False
@@ -133,7 +140,7 @@ class CSVHeaders(CmkUtil):
                 f"field_{i}" for i, _c in enumerate(_row, self.column_start_index)
             ]
 
-            if self.args.add_headers:
+            if self.args.add_header:
                 # then first row (_row) is actually data, not headers to be replaced
                 rows = itertools.chain([_row], rows)
 
@@ -168,7 +175,7 @@ class CSVHeaders(CmkUtil):
                 self.slugify_mode,
                 self.rename_headers,
                 self.sed_pattern,
-                self.args.add_headers,
+                self.args.add_header,
                 self.generic_columnized,
             )
         ):
@@ -216,7 +223,7 @@ class CSVHeaders(CmkUtil):
 
 
 def launch_new_instance():
-    utility = CSVHeaders()
+    utility = CSVHeader()
     utility.run()
 
 

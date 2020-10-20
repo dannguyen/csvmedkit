@@ -9,7 +9,7 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
    :caption: The utilities:
    :titlesonly:
 
-   moreutils/csvheaders
+   moreutils/csvheader
    moreutils/csvflatten
    moreutils/csvpivot
    moreutils/csvsed
@@ -50,5 +50,4 @@ Indices and tables
 
    authors
    history
-   modules
 

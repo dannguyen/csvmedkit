@@ -65,7 +65,7 @@ setup(
     entry_points={
         "console_scripts": [
             "csvflatten = csvmedkit.moreutils.csvflatten:launch_new_instance",
-            "csvheaders = csvmedkit.moreutils.csvheaders:launch_new_instance",
+            "csvheader = csvmedkit.moreutils.csvheader:launch_new_instance",
             "csvpivot   = csvmedkit.moreutils.csvpivot:launch_new_instance",
             "csvsed     = csvmedkit.moreutils.csvsed:launch_new_instance",
 

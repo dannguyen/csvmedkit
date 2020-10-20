@@ -4,14 +4,38 @@
 ## 0.1 
 
 
-- csvpivot
-    - performance
-        - [x] created filtered table to remove all columns not specified in the arguments
-        - [x] benchmarking
-            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
-                - was 10s, now 0.5s
+- csvheader
     - [ ] documentation
-        - [ ] look up pandas equivalent
+       - [x] write nutgraf and intro examples and test those examples
+        - [x] write options/flags section
+        - [ ] write high level overview
+        - [ ] write comparison section
+        - [ ] write scenarios/use-cases 
+
+    - [x] default preview headers listing
+    - [x] `--HA/--add-headers`
+    - [x] `--HM/--make-generic-headers` 
+    - sed headers (replace)
+        - [x] renamed it to: `-X/--regex`
+        - [x] basic
+        - [x] write tests
+    - slugify headers
+        - [x] basic
+        - [x] fix tests from --slug to --slugify
+    - rename headers
+        - [x] basic
+        - [x] validate given indexes
+        - [x] write tests
+
+
+- csvpivot
+    - [ ] documentation
+        - [ ] write nutgraf and intro examples and test those examples
+        - [ ] write options/flags section
+        - [ ] write high level overview
+        - [ ] write comparison section
+            - [ ] look up pandas equivalent
+        - [ ] write scenarios/use-cases 
 
     - [x] implementation
         - [X] handle multiple aggregations if user doesn't specify column
@@ -22,10 +46,20 @@
         - [x] needs better error message:
             - csvpivot examples/real/denver-pot-sales.csv -r YEAR -a sum:GROSS `KeyError: 'GROSS'`
     - [x] port tests
+    - performance
+        - [x] created filtered table to remove all columns not specified in the arguments
+        - [x] benchmarking
+            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
+                - was 10s, now 0.5s
 
 
 - csvsed
     - [ ] documentation
+        - [ ] write nutgraf and intro examples and test those examples
+        - [ ] write options/flags section
+        - [ ] write high level overview
+        - [ ] write comparison section
+        - [ ] write scenarios/use-cases 
     - [ ] cmk_filter_rows should be refactored into a class instance method, and have its signature minimized
     - [x] use cmkmixutil class
     - [x] sans replacement flag
@@ -45,24 +79,6 @@
     - [x] is default prettify markdown-table compatible? 
         - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
 
-- csvheader
-    - [ ] documentation
-    - [x] default preview headers listing
-    - [x] `--HA/--add-headers`
-    - [x] `--HM/--make-generic-headers` 
-    - sed headers (replace)
-        - [x] renamed it to: `-X/--regex`
-        - [x] basic
-        - [x] write tests
-    - slugify headers
-        - [x] basic
-        - [x] fix tests from --slug to --slugify
-    - rename headers
-        - [x] basic
-        - [x] validate given indexes
-        - [x] write tests
-
-
 
 - Overall documentation
     - [ ] Write intro
@@ -74,6 +90,22 @@
 - [ ] Census selected characteristics, for csvheaders
 
 ## 0.2
+
+
+- csvmelt:
+    - tidyr: gather/pivot_longer https://tidyr.tidyverse.org/reference/pivot_longer.html
+    - 
+    - pt.normalize('gender', ['white', 'black', 'asian', 'latino'])
+    | gender | property | value |
+    | ------ | -------- | ----- |
+    | female | white    |     1 |
+    | female | black    |     2 |
+    | female | asian    |     1 |
+    | female | latino   |     0 |
+    | male   | white    |     0 |
+    | male   | black    |     0 |
+    | male   | asian    |     1 |
+    | male   | latino   |     1 |
 
 - csvpose: transposing
     - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.transpose.html
