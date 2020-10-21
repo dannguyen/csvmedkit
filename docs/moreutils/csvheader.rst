@@ -7,8 +7,7 @@ csvheader
 :command:`csvheader` is a command for listing and changing the headers of CSV-formatted data.
 
 
-For example, given a "data.csv" that contains this:
-
+For example, given a ``data.csv`` containing this::
 
 .. code-block:: text
 
@@ -36,8 +35,10 @@ And/or selectively rename them::
    :local:
    :depth: 3
 
-Options reference
-=================
+
+Usage reference
+===============
+
 
 ``--AH, --add-header``
 ----------------------

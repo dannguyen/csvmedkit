@@ -13,11 +13,18 @@ Figuring out what's in the NHTSA's safety-related defect complaint database
 .. xsv sample -d '\t' 100 ~/Downloads/sample-data-csvmedkit/nhtsa/FLAT_CMPL.txt | csvformat -e latin1 -T > examples/real/nhtsa-complaints.txt
 
 
+======================
+Skimming the structure
+======================
 
 TKTKTK
 
-Looking at the first record::
+Looking at the first record:
 
+
+.. code-block:: text
+
+    source
         $ head -n 1 examples/real/nhtsa-complaints.txt | csvformat -t | csvheaders --HM | csvflatten -P
 
 

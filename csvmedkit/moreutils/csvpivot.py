@@ -67,6 +67,15 @@ class Parser:
             help="Disable type inference when parsing the input.",
         )
 
+
+################# unique arguments
+
+        self.argparser.add_argument(
+            "--list-aggs",
+            action="store_true",
+            help="""List the available aggregate functions""",
+        )
+
         self.argparser.add_argument(
             "-r",
             "--pivot-rows",
@@ -96,12 +105,6 @@ class Parser:
 
                                     To see a list, run `csvpivot --list-aggs`
                                     """,
-        )
-
-        self.argparser.add_argument(
-            "--list-aggs",
-            action="store_true",
-            help="""List the available aggregate functions""",
         )
 
 

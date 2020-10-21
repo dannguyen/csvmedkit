@@ -80,6 +80,10 @@
         - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
 
 
+- csvnorm
+    - [ ] implementation
+    - [ ] port tests
+
 - Overall documentation
     - [ ] Write intro
     - [ ] Write tutorial
@@ -130,6 +134,11 @@
 
 
 ## Future
+
+- csvdate:
+    - normalize any/all datefields to isoformat
+    - set time zone
+    - given a series of columns, create a single column
 
 - csvswitch: case/switch transform
 

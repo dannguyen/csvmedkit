@@ -4,11 +4,97 @@ csvflatten
 
 :command:`csvflatten` is a command for producing "flattened" records. Useful for quickly getting a view of records with numerous fields, and for documenting data examples in Markdown-compatible format.
 
-.. contents:: :local:
+For example, given a ``data.csv`` containing this::
+
+    id,product,price,description
+    001,apples,1.50,"An apple is an edible fruit produced by an apple tree (Malus domestica)"
+    002,oranges,2.25,"An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C."
 
 
-Description
-===========
+— :command:`csvflatten` can be used to transform the data into a "narrow" 2-column denormalized format::
+
+
+    $ csvflatten data.csv
+    field,value
+    id,001
+    product,apples
+    price,1.50
+    description,An apple is an edible fruit produced by an apple tree (Malus domestica)
+    ~~~~~~~~~~~,
+    id,002
+    product,oranges
+    price,2.25
+    description,An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C.
+
+
+A common use case is to produce "pretty" output — e.g. Markdown-table format — which can be easier to skim than a spreadsheet, especially for very *wide* data::
+
+    $ csvflatten -P data.csv
+    | field       | value                                                 |
+    | ----------- | ----------------------------------------------------- |
+    | id          | 001                                                   |
+    | product     | apples                                                |
+    | price       | 1.50                                                  |
+    | description | An apple is an edible fruit produced by an apple tree |
+    |             | (Malus domestica)                                     |
+    | ~~~~~~~~~~~ |                                                       |
+    | id          | 002                                                   |
+    | product     | oranges                                               |
+    | price       | 2.25                                                  |
+    | description | An orange is a type of citrus fruit that people often |
+    |             | eat. Oranges are a very good source of vitamin C.     |
+
+.. contents:: Table of contents
+   :local:
+   :depth: 3
+
+
+
+Usage reference
+===============
+
+
+``-P, --prettify``
+------------------
+
+Print output in Markdown tabular format instead of CSV
+
+TK
+
+
+``-L, --max-length <max_length_of_field>``
+------------------------------------------
+
+TK Split up values longer than [max_field_length] into multiple row-values as needed.
+
+
+
+``-R, --rec-id``
+----------------
+
+TK Include a `_recid_` column for each row, for easier tracking the 0-based index of each record
+
+
+``-B, --label-chunks``
+----------------------
+
+When a long value is split into multiple "chunks", the `field` (i.e. first column) is left blank after the first chunk.
+
+Setting the --chunk-labels flag will fill the `field` column with: "field~n", where `n` indicates the n-th chunk of a chopped value
+
+
+``-E, --eor <end_of_record_divider>``
+-------------------------------------
+
+TK end of record; When flattening multiple records, separate each records with a row w/ fieldname of [marker]. Set to '' or 'none' to disable.
+
+By default, the EOR marker is a series of tildes (~~~~~).
+
+Note: this setting defaults to 'none' if `-R/--rowid` flag is used
+
+
+High level overview
+===================
 
 For every input record, :command:`csvflatten`'s output will contain 2-column rows — ``field,value`` — for each of the record's key-value pairs. This is useful for viewing records one at a time, especially if each row contains many columns.
 
@@ -32,7 +118,7 @@ The "flattened" view of its 2 records would look like this:
    id,001
    product,apples
    price,1.50
-   ~~~~~,
+   ~TK~~~~,
    id,002
    product,oranges
    price,2.25

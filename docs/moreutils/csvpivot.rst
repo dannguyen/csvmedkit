@@ -4,12 +4,52 @@ csvpivot
 
 :command:`csvpivot` is a command for producing simple pivot tables
 
-.. contents:: :local:
+.. contents:: Table of contents
+   :local:
+   :depth: 3
 
 
 
-Description
-===========
+
+Usage reference
+===============
+
+``--list-aggs``
+---------------
+
+List the available aggregate functions
+
+
+
+``-r, --pivot-rows PIVOT_ROWNAMES``
+-----------------------------------
+
+The column name(s) on which to use as pivot rows.
+Should be either one name (or index) or a comma-
+separated list with one name (or index)
+
+
+``-c, --pivot-column PIVOT_COLNAME``
+------------------------------------
+
+Optionally, a column name/id to use as a pivot
+column. Only one is allowed
+
+
+``-a, --agg AGGREGATES_LIST``
+-----------------------------
+
+The name of an aggregation to perform on each group
+of data in the pivot table. For aggregations that
+require an argument (i.e. a column name), pass in
+the aggregation name, followed by a colon, followed
+by comma-delimited arguments, e.g. `-a "sum:age"`
+and `-a "count:name,hello" To see a list, run
+`csvpivot --list-aggs`
+
+
+High level overview
+===================
 
 Pivot Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,

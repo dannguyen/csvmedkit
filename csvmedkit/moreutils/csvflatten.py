@@ -36,11 +36,20 @@ class CSVFlatten(UniformReader, CmkUtil):
 
     def add_arguments(self):
         self.argparser.add_argument(
+            "-P",
+            "--prettify",
+            dest="prettify",
+            action="store_true",
+            help="""Print output in Markdown tabular format instead of CSV""",
+        )
+
+        self.argparser.add_argument(
             "-L",
             "--max-length",
             dest="max_field_length",
+            metavar='<max_length_of_field>'
             type=int,
-            help="""Split up values longer than [max_field_length] into multiple row-values as needed.""",
+            help="""Split up values longer than <max_length_of_field> into multiple row-values as needed.""",
         )
 
         self.argparser.add_argument(
@@ -53,7 +62,7 @@ class CSVFlatten(UniformReader, CmkUtil):
 
         self.argparser.add_argument(
             "-B",
-            "--chunk-labels",
+            "--label-chunks",
             dest="label_chunks_mode",
             action="store_true",
             help="""When a long value is split into multiple "chunks", the `field` (i.e. first column) is left blank after the first chunk.
@@ -69,13 +78,6 @@ class CSVFlatten(UniformReader, CmkUtil):
                     the EOR marker is a series of tildes (~~~~~). However, this setting defaults to 'none' if `-R/--rowid` mode is true. """,
         )
 
-        self.argparser.add_argument(
-            "-P",
-            "--prettify",
-            dest="prettify",
-            action="store_true",
-            help="""Print output in tabular format instead of CSV""",
-        )
 
     @property
     def chunkpattern(self) -> typeCallable:
