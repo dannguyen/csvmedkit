@@ -10,6 +10,7 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
 
    moreutils/csvheader
    moreutils/csvflatten
+   moreutils/csvnorm
    moreutils/csvpivot
    moreutils/csvsed
 

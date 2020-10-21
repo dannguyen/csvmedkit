@@ -47,7 +47,7 @@ class CSVFlatten(UniformReader, CmkUtil):
             "-L",
             "--max-length",
             dest="max_field_length",
-            metavar='<max_length_of_field>',
+            metavar="<max_length_of_field>",
             type=int,
             help="""Split up values longer than <max_length_of_field> into multiple row-values as needed.""",
         )
@@ -77,7 +77,6 @@ class CSVFlatten(UniformReader, CmkUtil):
             help="""end of record; When flattening multiple records, separate each records with a row w/ fieldname of [marker]. Set to '' or 'none' to disable. By default,
                     the EOR marker is a series of tildes (~~~~~). However, this setting defaults to 'none' if `-R/--rowid` mode is true. """,
         )
-
 
     @property
     def chunkpattern(self) -> typeCallable:

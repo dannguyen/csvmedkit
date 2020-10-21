@@ -67,8 +67,7 @@ class Parser:
             help="Disable type inference when parsing the input.",
         )
 
-
-################# unique arguments
+        ################# unique arguments
 
         self.argparser.add_argument(
             "--list-aggs",

@@ -3,6 +3,24 @@
 
 ## 0.1 
 
+- csvnorm
+    - [X] implementation (0.0.9.10)
+    - [x] port tests (0.0.9.10)
+    - [ ] documentation
+    - [ ] find real world data with multiline narratives etc.
+
+- csvflatten
+    - [ ] have error cases been tested?
+    - documentation
+        - [ ] write up common use cases
+    - [X] how to deal with extremely long headers?
+        - if `-L` isn't specified, and max header is bigger than terminal, then throw error/warning
+    - [X] add agate.print_table internally, i.e. `--prettify`
+    - [X] add ``--row_ids``
+    - [x] general tests
+    - [x] is default prettify markdown-table compatible? 
+        - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
+
 
 - csvheader
     - [ ] documentation
@@ -68,21 +86,8 @@
     - moved -E functionality to experimental phase for now
         - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
 
-- csvflatten
-    - documentation
-        - [ ] write up common use cases
-    - [X] how to deal with extremely long headers?
-        - if `-L` isn't specified, and max header is bigger than terminal, then throw error/warning
-    - [X] add agate.print_table internally, i.e. `--prettify`
-    - [X] add ``--row_ids``
-    - [x] general tests
-    - [x] is default prettify markdown-table compatible? 
-        - seems to be yes? https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3
 
 
-- csvnorm
-    - [ ] implementation
-    - [ ] port tests
 
 - Overall documentation
     - [ ] Write intro

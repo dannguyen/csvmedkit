@@ -106,37 +106,73 @@ However, enabling any of its renaming options, such as ``--slug``, will reproduc
 
 
 
-How csvheader compares with existing tools
-==========================================
+How csvheader compares to existing tools
+========================================
 
-Compared to ``csvcut --names``
-------------------------------
 
-TK Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+
+
+Adding a header row with ``csvformat --no-header-row``
+------------------------------------------------------
 
 
 ::
 
-    $ csvcut --names examples/heady.csv
-      1: A
-      2:  B Sharps
-      3: SEA, shells!
+    $ echo '1,2,3,4' | csvformat --no-header-row
+    a,b,c,d
+    1,2,3,4
 
-Compared to ``xsv headers``
----------------------------
 
 ::
 
-    $ xsv headers examples/heady.csv
+    $ echo '1,2,3,4' | csvheader --add-header
+    field_1,field_2,field_3,field_4
+    1,2,3,4
 
-    1   A
-    2    B Sharps
-    3   SEA, shells!
+
+.. note:: csvformat 1.0.6 bug
+
+    In the latest release of csvkit — 1.0.6 — csvformat's ``-H/--no-header-row`` does not work as expected. See issue/pull request `here <https://github.com/wireservice/csvkit/pull/1092>`_
+
+
+Listing column names with ``csvcut --names``
+--------------------------------------------
+
+TK Lorem ipsum dolor sit amet, consectetur adipisicing elit
+
+
+::
+
+    $ echo 'a,b, c ,d  ' | csvcut --names
+      1: a
+      2: b
+      3:  c
+      4: d
+
+
+In contrast, because ``csvheader`` outputs the header as CSV, its output can be piped into, say, ``csvformat``, which, if you want, *can* produce quoted values to make the whitespace more obvious::
+
+
+    $ echo 'a,b, c ,d  ' | csvheader | csvformat -U 1
+    "index","field"
+    "1","a"
+    "2","b"
+    "3"," c "
+    "4","d  "
+
+
+Listing column names with ``xsv headers``
+-----------------------------------------
+
+::
+
+    $ echo 'a,b, c ,d  ' | xsv headers
+    1   a
+    2   b
+    3    c
+    4   d
 
 
 Compared to ``sed``
