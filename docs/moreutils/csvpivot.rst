@@ -132,11 +132,29 @@ Counting Congress demographics::
     | Libertarian |   1 |   0 |
 
 
-Federal judges::
+Federal judges
 
-    $ csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President' -c 'ABA Rating'
+https://www.pewresearch.org/fact-tank/2020/07/15/how-trump-compares-with-other-recent-presidents-in-appointing-federal-judges/
 
-    https://www.pewresearch.org/fact-tank/2020/07/15/how-trump-compares-with-other-recent-presidents-in-appointing-federal-judges/
+
+.. code-block:: text
+
+    $ csvpivot examples/real/fed-judges-service.csv -r 'Appointing President' -c 'ABA Rating' \
+        | csvheader -R '1|President' \
+        | csvcut -C 4 \
+        | csvlook
+
+    | President          | Qualified | Well Qualified | None | Not Qualified |
+    | ------------------ | --------- | -------------- | ---- | ------------- |
+    | Barack Obama       |       124 |            206 |    0 |             0 |
+    | Ronald Reagan      |       182 |            175 |   25 |             0 |
+    | Jimmy Carter       |       110 |            130 |   18 |             3 |
+    | Gerald Ford        |        37 |             27 |    3 |             0 |
+    | William J. Clinton |       143 |            237 |    0 |             3 |
+    | George W. Bush     |        93 |            230 |    0 |             4 |
+    | Richard M. Nixon   |       105 |             87 |   17 |             0 |
+    | Donald J. Trump    |        56 |            158 |    0 |             7 |
+    | George H.W. Bush   |        80 |            113 |    1 |             0 |
 
 Limitations/future fixes
 ========================
