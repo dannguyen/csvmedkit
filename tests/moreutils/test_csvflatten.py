@@ -134,11 +134,11 @@ class TestChunkLabel(TestCSVFlatten):
     ## chop/chunk label
     ##########################################
 
-    def test_chunk_label_basic(self):
+    def test_label_chunks_basic(self):
         """
         Even without -L set, multilines values are split into different records.
 
-        Note that unlike prior versions, -B/--chunk-labels can be set without -L
+        Note that unlike prior versions, -B/--label-chunks can be set without -L
         """
         self.assertLines(
             [
@@ -158,13 +158,13 @@ class TestChunkLabel(TestCSVFlatten):
             ],
         )
 
-    def test_chunk_label_and_max_length(self):
+    def test_label_chunks_and_max_length(self):
         """
-        --chunk-labels adds label to every chunk
+        --label-chunks adds label to every chunk
         """
         eor = "~~~~~"
         self.assertLines(
-            ["examples/statecodes.csv", "--max-length", "5", "--chunk-labels"],
+            ["examples/statecodes.csv", "--max-length", "5", "--label-chunks"],
             [
                 "field,value",
                 "code,IA",

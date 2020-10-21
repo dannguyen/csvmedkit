@@ -2,7 +2,10 @@
 csvpivot
 ********
 
-:command:`csvpivot` is a command for producing simple pivot tables
+:command:`csvpivot` is a command for producing simple pivot tables.
+
+TK TK TK  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+
 
 .. contents:: Table of contents
    :local:
@@ -17,8 +20,19 @@ Usage reference
 ``--list-aggs``
 ---------------
 
-List the available aggregate functions
+List the available aggregate functions.
 
+The available aggregate functions are a subset of those implemented in `Agate's Aggregations API <https://agate.readthedocs.io/en/latest/api/aggregations.html>`_
+
+- count
+- max
+- maxlength
+- min
+- mean
+- median
+- mode
+- stdev
+- sum
 
 
 ``-r, --pivot-rows PIVOT_ROWNAMES``
@@ -141,20 +155,20 @@ https://www.pewresearch.org/fact-tank/2020/07/15/how-trump-compares-with-other-r
 
     $ csvpivot examples/real/fed-judges-service.csv -r 'Appointing President' -c 'ABA Rating' \
         | csvheader -R '1|President' \
-        | csvcut -C 4 \
+        | csvcut -c 1,3,2,5,6 \
         | csvlook
 
-    | President          | Qualified | Well Qualified | None | Not Qualified |
-    | ------------------ | --------- | -------------- | ---- | ------------- |
-    | Barack Obama       |       124 |            206 |    0 |             0 |
-    | Ronald Reagan      |       182 |            175 |   25 |             0 |
-    | Jimmy Carter       |       110 |            130 |   18 |             3 |
-    | Gerald Ford        |        37 |             27 |    3 |             0 |
-    | William J. Clinton |       143 |            237 |    0 |             3 |
-    | George W. Bush     |        93 |            230 |    0 |             4 |
-    | Richard M. Nixon   |       105 |             87 |   17 |             0 |
-    | Donald J. Trump    |        56 |            158 |    0 |             7 |
-    | George H.W. Bush   |        80 |            113 |    1 |             0 |
+    | President          | Well Qualified | Qualified | None | Not Qualified |
+    | ------------------ | -------------- | --------- | ---- | ------------- |
+    | Barack Obama       |            206 |       124 |    0 |             0 |
+    | Ronald Reagan      |            175 |       182 |   25 |             0 |
+    | Jimmy Carter       |            130 |       110 |   18 |             3 |
+    | Gerald Ford        |             27 |        37 |    3 |             0 |
+    | William J. Clinton |            237 |       143 |    0 |             3 |
+    | George W. Bush     |            230 |        93 |    0 |             4 |
+    | Richard M. Nixon   |             87 |       105 |   17 |             0 |
+    | Donald J. Trump    |            158 |        56 |    0 |             7 |
+    | George H.W. Bush   |            113 |        80 |    1 |             0 |
 
 Limitations/future fixes
 ========================

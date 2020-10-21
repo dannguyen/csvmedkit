@@ -47,7 +47,7 @@ class CSVFlatten(UniformReader, CmkUtil):
             "-L",
             "--max-length",
             dest="max_field_length",
-            metavar='<max_length_of_field>'
+            metavar='<max_length_of_field>',
             type=int,
             help="""Split up values longer than <max_length_of_field> into multiple row-values as needed.""",
         )
