@@ -31,6 +31,10 @@ class InvalidAggregationArgument(CustomException):
     pass
 
 
+class InvalidRange(CustomException):
+    pass
+
+
 class IncorrectlyFormattedString(CustomException):
     pass
 

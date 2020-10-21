@@ -10,6 +10,7 @@ from tests.mk import (
     skiptest,
 )
 
+from csvmedkit.exceptions import *
 from csvmedkit.moreutils.csvslice import CSVSlice, launch_new_instance
 
 
@@ -22,13 +23,41 @@ class TestCSVSlice(CmkTestCase):
 
 
 class TestInit(TestCSVSlice, EmptyFileTests):
-    default_args = []
+    default_args = ["-i", "1"]
 
     def test_launch_new_instance(self):
         with patch.object(
-            sys, "argv", [self.Utility.__name__.lower(), "examples/dummy.csv"]
+            sys,
+            "argv",
+            [self.Utility.__name__.lower(), *self.default_args, "examples/dummy.csv"],
         ):
             launch_new_instance()
+
+
+class TestBasics(TestCSVSlice):
+    def test_dummy(self):
+        self.assertLines(
+            ["-i", "0-99999", "examples/dummy.csv"],
+            [
+                "a,b,c",
+                "1,2,3",
+            ],
+        )
+
+    def test_0_index(self):
+        self.assertLines(
+            ["--intervals", "0", "examples/dummy.csv"],
+            [
+                "a,b,c",
+                "1,2,3",
+            ],
+        )
+        self.assertLines(
+            ["-i", "1", "examples/dummy.csv"],
+            [
+                "a,b,c",
+            ],
+        )
 
 
 class TestRangesIndexes(TestCSVSlice):
@@ -39,20 +68,20 @@ class TestRangesIndexes(TestCSVSlice):
     def test_single_index(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "0"],
+                ["-i", "0"],
                 ["id", "0"],
             )
 
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["--ranges", "9"],
+                ["--intervals", "9"],
                 ["id", "9"],
             )
 
     def test_several_indexes(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "2,0,9,2"],
+                ["-i", "2,0,9,2"],
                 [
                     "id",
                     "0",
@@ -66,7 +95,7 @@ class TestRangesClosedIntervals(TestCSVSlice):
     def test_single_interval(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "3-5"],
+                ["-i", "3-5"],
                 [
                     "id",
                     "3",
@@ -77,7 +106,7 @@ class TestRangesClosedIntervals(TestCSVSlice):
 
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "8-10000"],
+                ["-i", "8-10000"],
                 [
                     "id",
                     "8",
@@ -88,7 +117,7 @@ class TestRangesClosedIntervals(TestCSVSlice):
     def test_multi_intervals(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "4-7,0-1,6-8"],
+                ["-i", "4-7,0-1,6-8"],
                 [
                     "id",
                     "0",
@@ -106,7 +135,7 @@ class TestRangesOpenIntervals(TestCSVSlice):
     def test_lower_bound(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "7-"],
+                ["-i", "7-"],
                 [
                     "id",
                     "7",
@@ -117,7 +146,7 @@ class TestRangesOpenIntervals(TestCSVSlice):
 
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "0-2,6-8,7-"],
+                ["-i", "0-2,6-8,7-"],
                 [
                     "id",
                     "0",
@@ -136,7 +165,7 @@ class TestRangesOpenIntervals(TestCSVSlice):
         """
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["-r", "9-,8,9,7-,8-"],
+                ["-i", "9-,8,9,7-,8-"],
                 [
                     "id",
                     "7",
@@ -149,7 +178,7 @@ class TestRangesOpenIntervals(TestCSVSlice):
     # def test_upper_bounded(self):
     #     with stdin_as_string(self.ifile):
     #         self.assertLines(
-    #         ['-r', '-4'],
+    #         ['-i', '-4'],
     #             [
     #                 'id',
     #                 '0',
@@ -163,7 +192,7 @@ class TestRangesOpenIntervals(TestCSVSlice):
 
     #     with stdin_as_string(self.ifile):
     #         self.assertLines(
-    #              ['-r', '-3,2-3,9,0'],
+    #              ['-i', '-3,2-3,9,0'],
     #             [
     #                 'id',
     #                 '0',
@@ -175,74 +204,58 @@ class TestRangesOpenIntervals(TestCSVSlice):
     #         )
 
 
-class TestBasics(TestCSVSlice):
-    def test_dummy(self):
-        self.assertLines(
-            ["examples/dummy.csv"],
-            [
-                "a,b,c",
-                "1,2,3",
-            ],
-        )
-
-    def test_0_index(self):
-        self.assertLines(
-            ["--index", "0", "examples/dummy.csv"],
-            [
-                "a,b,c",
-                "1,2,3",
-            ],
-        )
-        self.assertLines(
-            ["-i", "1", "examples/dummy.csv"],
-            [
-                "a,b,c",
-            ],
-        )
-
-
-class TestLengthOption(TestCSVSlice):
-    @property
-    def ifile(self):
-        return StringIO("a,b,c\n1,2,3\n4,5,6\n,7,8,9\n10,11,12\n")
-
-    def test_length_starts_from_0(self):
-        """with no --index set, --length assumes user wants n records from the start"""
-        with stdin_as_string(self.ifile):
-            self.assertLines(
-                [
-                    "--length",
-                    "2",
-                ],
-                [
-                    "a,b,c",
-                    "1,2,3",
-                    "4,5,6",
-                ],
-            )
-
-
 class TestEdgeCases(TestCSVSlice):
     pass
 
 
 class TestErrors(TestCSVSlice):
-    @skiptest("not sure if this is needed...")
-    def test_either_index_or_length_must_be_set(self):
-        pass
+    def test_ranges_is_required(self):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as e:
+                u = self.get_output(["examples/dummy.csv"])
+        self.assertEqual(e.exception.code, 2)
+        self.assertIn(
+            r"the following arguments are required: -i/--intervals", ioerr.getvalue()
+        )
 
-    @skiptest("TODO")
-    def test_length_is_more_than_zero(self):
-        pass
+    def test_invalid_interval_strings(self):
+        with self.assertRaises(IncorrectlyFormattedString) as e:
+            u = self.get_output(["-i", "1,a", "examples/dummy.csv"])
+        self.assertIn(
+            r"Your --intervals argument, '1,a', has an incorrectly formatted value: 'a'",
+            str(e.exception),
+        )
 
-    # def test_upper_and_lower_cannot_both_be_set(self):
-    #     ioerr = StringIO()
-    #     with contextlib.redirect_stderr(ioerr):
-    #         with self.assertRaises(SystemExit) as e:
-    #             u = self.get_output(["-TK", "examples/dummy.csv"])
+        with self.assertRaises(IncorrectlyFormattedString) as e:
+            u = self.get_output(["-i", "20--20", "examples/dummy.csv"])
+        self.assertIn(
+            r"Your --intervals argument, '20--20', has an incorrectly formatted value: '20--20'",
+            str(e.exception),
+        )
 
-    #     self.assertEqual(e.exception.code, 2)
-    #     self.assertIn(r"TKWHATEVER", ioerr.getvalue())
+        with self.assertRaises(IncorrectlyFormattedString) as e:
+            u = self.get_output(["-i", "-5", "examples/dummy.csv"])
+        self.assertIn(
+            r"Your --intervals argument, '-5', has an incorrectly formatted value: '-5'",
+            str(e.exception),
+        )
+
+        with self.assertRaises(IncorrectlyFormattedString) as e:
+            u = self.get_output(["-i", "1,-5", "examples/dummy.csv"])
+        self.assertIn(
+            r"Your --intervals argument, '1,-5', has an incorrectly formatted value: '-5'",
+            str(e.exception),
+        )
+
+    def test_be_whiny_about_invalid_ranges(self):
+        """
+        technically, a range of 6-3, i.e. range(6, 3), is valid – but user should be nosily told about the problem
+        """
+        with self.assertRaises(InvalidRange) as e:
+            u = self.get_output(["-i", "6-3", "examples/dummy.csv"])
+
+        self.assertIn(r"Invalid range specified: 6-3", str(e.exception))
 
 
 ###################################################################################################

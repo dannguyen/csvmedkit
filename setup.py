@@ -13,7 +13,7 @@ with open("README.rst", "r") as f:
     README = f.read()
 
 install_requires = [
-    "csvkit>=1.0.5",
+    "csvkit>=1.0.6",
     "python-slugify>=4.0",
     "regex>=2020.7.14",
 ]

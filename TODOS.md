@@ -9,6 +9,12 @@
     - [ ] documentation
     - [ ] find real world data with multiline narratives etc.
 
+- csvslice
+    - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
+    - [x] tests (0.0.9.11)
+    - [ ] documentation
+
+
 - csvflatten
     - [ ] have error cases been tested?
     - documentation

@@ -11,38 +11,27 @@ from typing import (
 )
 
 from csvmedkit import agate, re_std as re
-from csvmedkit.exceptions import IncorrectlyFormattedString
-from csvmedkit.cmk.cmkutil import CmkUtil, UniformReader
+from csvmedkit.exceptions import IncorrectlyFormattedString, InvalidRange
+from csvmedkit.cmk.cmkutil import CmkMixedUtil, UniformReader
 from csvmedkit.cmk.helpers import cmk_parse_delimited_str
 
 
-class CSVSlice(UniformReader, CmkUtil):
+class CSVSlice(UniformReader, CmkMixedUtil):
     description = """Returns the dataset's header and any rows in the specified 0-index inclusive ranges"""
     override_flags = [
         "L",
     ]
 
     def add_arguments(self):
+
         self.argparser.add_argument(
             "-i",
-            "--index",
-            dest="slice_index",
-            type=int,
-            default=0,
-            help="0-based index of single record to slice and extract. Can be combined with -l/--length <length> option",
-        )
-
-        self.argparser.add_argument(
-            "-L",
-            "--length",
-            dest="slice_length",
-            type=int,
-            default=1,
-            help="Length of slice. TK Incompatible with -E/--end",
-        )
-
-        self.argparser.add_argument(
-            "-r", "--ranges", dest="slice_ranges_str", type=str, help="TKTK"
+            "--intervals",
+            dest="slice_ranges_str",
+            metavar="<intervals>",
+            required=True,
+            type=str,
+            help="""Comma-delimited string of intervals to slice, including individual indexes and ranges, e.g. '0' or '0-6,12', or '0-6,12-'""",
         )
 
     def calculate_slice_ranges(self) -> typeNoReturn:
@@ -51,50 +40,34 @@ class CSVSlice(UniformReader, CmkUtil):
             int, float
         ] = INFINITY  # type float is allowed because INFINITY is a float
 
-        if self.args.slice_ranges_str:
-            indexes = []
-            intervals = []
+        indexes = []
+        intervals = []
 
-            for txt in cmk_parse_delimited_str(self.args.slice_ranges_str):
-                rtxt = re.sub(r"\s+", "", txt).strip()
-                if not re.match(r"^(?:\d+|\d+-|\d+-\d+)$", rtxt):
-                    raise IncorrectlyFormattedString(
-                        f"Your --ranges argument, `{self.args.slice_ranges_str}`, contains an incorrectly formatted value: `{txt}`"
-                    )
+        for txt in cmk_parse_delimited_str(self.args.slice_ranges_str):
+            rtxt = re.sub(r"\s+", "", txt).strip()
+            if not re.match(r"^(?:\d+|\d+-|\d+-\d+)$", rtxt):
+                raise IncorrectlyFormattedString(
+                    f"Your --intervals argument, '{self.args.slice_ranges_str}', has an incorrectly formatted value: '{txt}'"
+                )
 
-                if "-" not in rtxt:
-                    # just a regular index
-                    indexes.append(int(rtxt))
-                else:
-                    # i_start, i_end = [int(i) if i else 0 for i in mx.groups()]
-                    i_start, i_end = [int(i) if i else 0 for i in rtxt.split("-")]
-                    if i_start and i_end:
-                        intervals.append(range(i_start, i_end + 1))
-                    else:
-                        if i_end:
-                            # interpret '-42' as: everything from 0 to 42
-                            intervals.append(range(0, i_end + 1))
-
-                        elif i_start:
-                            # interpret '9-' as '9 and everything bigger'
-                            self.slice_lower_bound = min(
-                                self.slice_lower_bound, i_start
-                            )
-
-            ranges = [sorted(indexes)] + intervals
-
-        else:
-            if self.args.slice_length:
-                ranges = [
-                    range(self.args.slice_index, self.args.slice_length),
-                ]
+            if "-" not in rtxt:
+                # just a regular index
+                indexes.append(int(rtxt))
             else:
-                # just a slice index
-                ranges = [
-                    [self.args.slice_index],
-                ]
+                i_start, i_end = [int(i) if i else 0 for i in rtxt.split("-")]
+                if i_start and i_end:
+                    if i_end <= i_start:
+                        raise InvalidRange(f"Invalid range specified: {rtxt}")
+                    else:
+                        intervals.append(range(i_start, i_end + 1))
+                elif i_end:
+                    # interpret '-42' as: everything from 0 to 42
+                    intervals.append(range(0, i_end + 1))
+                elif i_start:
+                    # interpret '9-' as '9 and everything bigger'
+                    self.slice_lower_bound = min(self.slice_lower_bound, i_start)
 
-        self.slice_ranges = ranges
+        self.slice_ranges = [sorted(indexes)] + intervals
 
     def read_input(self):
         self._rows = agate.csv.reader(self.skip_lines(), **self.reader_kwargs)
@@ -117,6 +90,10 @@ class CSVSlice(UniformReader, CmkUtil):
         for i, row in enumerate(self.i_rows):
             if i >= self.slice_lower_bound or any(i in r for r in self.slice_ranges):
                 writer.writerow(row)
+
+    def run(self):
+        self.input_file = self._open_input_file(self.args.input_path)
+        super().run()
 
 
 def launch_new_instance():
