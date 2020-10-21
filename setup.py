@@ -69,6 +69,7 @@ setup(
             "csvnorm   = csvmedkit.moreutils.csvnorm:launch_new_instance",
             "csvpivot   = csvmedkit.moreutils.csvpivot:launch_new_instance",
             "csvsed     = csvmedkit.moreutils.csvsed:launch_new_instance",
+            "csvslice     = csvmedkit.moreutils.csvslice:launch_new_instance",
 
 
         ]
