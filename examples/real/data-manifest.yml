@@ -1,0 +1,39 @@
+boardings.csv:
+  landing_page: https://github.com/storydrivendatasets/faa_airport_boardings
+  direct: https://raw.githubusercontent.com/storydrivendatasets/faa_airport_boardings/master/data/wrangled/boardings.csv
+  wrangling: |
+    csvgrep -c 5 -r 'ATL|LAX|ORD|DFW|DEN|SFO|SEA|LAS' boardings.csv
+
+
+cdph-env-inspections.csv:
+  landing_page: https://data.cityofchicago.org/Environment-Sustainable-Development/CDPH-Environmental-Inspections/i9rk-duva
+  direct: https://data.cityofchicago.org/api/views/i9rk-duva/rows.csv?accessType=DOWNLOAD
+  gsheet: 'https://docs.google.com/spreadsheets/d/1GYe3XuUI_jsnWbMz17FtT6A5xZ8GPSV1IO6srhjy1v8/edit#gid=0'
+  wrangling: |
+    csvcut -c 'INSPECTION ID,ADDRESS,INSPECTION CATEGORY,INSPECTION SUB CATEGORY,INSPECTION DATE,NARRATIVE,LATITUDE,LONGITUDE,MODIFIED DATE'
+
+
+
+
+census-econ-survey.csv:
+  landing_page: https://data.census.gov/cedsci/table?q=selected&g=0100000US.04000.001&tid=ACSDP5Y2018.DP03&hidePreview=true
+
+
+census-econ-survey-meta.csv:
+  landing_page: https://data.census.gov/cedsci/table?q=selected&g=0100000US.04000.001&tid=ACSDP5Y2018.DP03&hidePreview=true
+
+
+chicago-crimes.csv:
+  gsheet: https://docs.google.com/spreadsheets/d/1KtDbUxo2Y-IqSl_bYUwyVSorJwhRh3KMgdQD-C0-XUk/edit#gid=0
+
+
+
+surnames.csv:
+  landing_page: https://www.census.gov/topics/population/genealogy/data/2010_surnames.html
+  direct: https://www2.census.gov/topics/genealogy/2010surnames/names.zip
+  wrangling:
+    head -n 1000 Names_2010Census.csv
+
+white-house-salaries.csv:
+  landing_page: https://github.com/storydrivendatasets/white_house_salaries
+  direct: https://raw.githubusercontent.com/storydrivendatasets/white_house_salaries/master/data/wrangled/white_house_salaries.csv

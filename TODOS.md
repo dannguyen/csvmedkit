@@ -5,10 +5,11 @@
 
 - csvnorm
     - [X] implementation (0.0.9.10)
-    - [x] port tests (0.0.9.10)
+    - [X] port tests (0.0.9.10)
     - [ ] documentation
     - [ ] find real world data with multiline narratives etc.
-
+        - cdph-env-inspections
+        - 
 - csvslice
     - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
     - [x] tests (0.0.9.11)
@@ -159,9 +160,6 @@
     - [ ] grand total column and row?
     - Table.pivot() params to consider:
       - default_value – Value to be used for missing values in the pivot table. Defaults to Decimal(0). If performing non-mathematical aggregations you may wish to set this to None.
-
-
-
 
 - csvrgrep 
     - [?] port over
