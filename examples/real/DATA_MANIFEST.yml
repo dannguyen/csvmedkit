@@ -1,3 +1,8 @@
+babynames.csv:
+  wrangling: |
+    cp yob1907.txt babynames.csv
+
+
 boardings.csv:
   landing_page: https://github.com/storydrivendatasets/faa_airport_boardings
   direct: https://raw.githubusercontent.com/storydrivendatasets/faa_airport_boardings/master/data/wrangled/boardings.csv
@@ -12,12 +17,8 @@ cdph-env-inspections.csv:
   wrangling: |
     csvcut -c 'INSPECTION ID,ADDRESS,INSPECTION CATEGORY,INSPECTION SUB CATEGORY,INSPECTION DATE,NARRATIVE,LATITUDE,LONGITUDE,MODIFIED DATE'
 
-
-
-
 census-econ-survey.csv:
   landing_page: https://data.census.gov/cedsci/table?q=selected&g=0100000US.04000.001&tid=ACSDP5Y2018.DP03&hidePreview=true
-
 
 census-econ-survey-meta.csv:
   landing_page: https://data.census.gov/cedsci/table?q=selected&g=0100000US.04000.001&tid=ACSDP5Y2018.DP03&hidePreview=true
@@ -25,7 +26,6 @@ census-econ-survey-meta.csv:
 
 chicago-crimes.csv:
   gsheet: https://docs.google.com/spreadsheets/d/1KtDbUxo2Y-IqSl_bYUwyVSorJwhRh3KMgdQD-C0-XUk/edit#gid=0
-
 
 
 surnames.csv:

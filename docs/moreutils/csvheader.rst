@@ -46,7 +46,7 @@ Usage reference
 Given a dataset with no header, this flag adds generic fieldnames for each column, numbered starting from ``1``, e.g. ``field_1``, ``field_2``, and so on.
 
 
-``--ZH, --zap-header``
+``--BH, ---i``
 ----------------------
 
 Similar to ``--add-header``, except that instead of *adding* a header, this flag causes the existing header to be **overwritten**. This generally means that the first row of the dataset is replaced.
@@ -227,3 +227,72 @@ Common scenarios and use cases
 ==============================
 
 TK TK
+
+
+Adding a header to the Social Security babynames data
+-----------------------------------------------------
+
+
+The nationwide baby names data comes as a zip file of comma-delimited text files, one for each year, e.g. ``yob1880.txt`` and ``yob2015.txt``:
+
+TK-IMG
+
+
+
+
+Each file contains the same 3 columns — name, sex, and count — but *sans* header row. Here are the first 3 rows in ``yob1880.txt``
+
+    Mary,F,7065
+    Anna,F,2604
+    Emma,F,2003
+
+
+Invoking ``csvheader`` with the ``--AH/add-headers`` flag will add generic column names to the data of each individual file, e.g.::
+
+
+    $ csvheader --AH yob1880.txt
+    field_1,field_2,field_3
+    Mary,F,7065
+    Anna,F,2604
+    Emma,F,2003
+
+    ...
+
+
+But it's not much more work to add our own useful column names using the ``--CH/--create-header`` option::
+
+    $ csvheader yob1880.txt --CH 'name,sex,count'
+    name,sex,count
+    Mary,F,7065
+    Anna,F,2604
+    Emma,F,2003
+
+
+
+(TODONOTE: only when writing this example did I realize I should create this option; resume documentation writing here)
+
+
+Of course, doing that for every file would be extremely tedious. You should be using ``csvstack`` with the ``-H/--no-header-row`` option to collate all the files into a single file and header::
+
+    $ csvstack *.txt -H yob*.txt > babynames.csv
+
+The more important reason to use ``csvstack`` is its ``--filenames`` option, which prepends a 'group' column to the data that contains the *filename* for each record::
+
+    $ csvstack *.txt -H --filenames yob.txt > babynames.csv
+
+
+This is *absolutely* critical, because the rows in each ``yob****.txt`` file don't include the year of the data file — which makes the compiled ``babynames.csv`` completely useless.
+
+However, with ``csvstack --filenames``, that vital year context is included in the compiled ``babynames.csv``::
+
+    group,a,b,c
+    yob1880.txt,Mary,F,7065
+    yob1880.txt,Anna,F,2604
+    yob1880.txt,Emma,F,2003
+    ...
+    yob2018.txt,Zyrie,M,5
+    yob2018.txt,Zyron,M,5
+    yob2018.txt,Zzyzx,M,5
+
+
+So where does

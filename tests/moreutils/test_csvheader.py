@@ -78,7 +78,7 @@ class TestGenericHeaders(TestCSVHeader):
 
     def test_zap_headers(self):
         self.assertLines(
-            ["--zap-header", "examples/dummy.csv"],
+            ["--bash-header", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "1,2,3",
@@ -86,7 +86,7 @@ class TestGenericHeaders(TestCSVHeader):
         )
 
         self.assertLines(
-            ["--ZH", "--zero", "examples/dummy.csv"],
+            ["--BH", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "1,2,3",
@@ -303,7 +303,7 @@ class TestOrderOps(TestCSVHeader):
 
     def test_make_headers_no_added_effect_to_add_headers(self):
         self.assertLines(
-            ["--ZH", "--AH", "examples/dummy.csv"],
+            ["--BH", "--AH", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -313,7 +313,7 @@ class TestOrderOps(TestCSVHeader):
 
     def test_make_headers_precedence_over_rename(self):
         self.assertLines(
-            ["--ZH", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["--BH", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
             ["x,y,z", "1,2,3"],
         )
 
@@ -405,5 +405,24 @@ class TestDocExamples(TestCSVHeader):
                     "Case Num,lat,lng,ID",
                     "1,2,3,4",
                     "5,6,7,8",
+                ],
+            )
+
+class TestDocExamplesBabyNames(TestCSVHeader):
+
+    @property
+    def idata(self):
+        return StringIO("Mary,F,7065\nAnna,F,2604\nEmma,F,2003\n")
+
+
+    def test_babynames_create_header(self):
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["--CH", 'name,sex,count'],
+                [
+                    "name,sex,count",
+                    'Mary,F,7065',
+                    'Anna,F,2604',
+                    'Emma,F,2003',
                 ],
             )

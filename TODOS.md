@@ -9,7 +9,8 @@
     - [ ] documentation
     - [ ] find real world data with multiline narratives etc.
         - cdph-env-inspections
-        - 
+
+
 - csvslice
     - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
     - [x] tests (0.0.9.11)
@@ -36,10 +37,18 @@
         - [ ] write high level overview
         - [ ] write comparison section
         - [ ] write scenarios/use-cases 
+        - make sure help doc is up to date with `--AH/--BH/--CH`
 
-    - [x] default preview headers listing
-    - [x] `--HA/--add-headers`
-    - [x] `--HM/--make-generic-headers` 
+    - [ ] `--CH/--create-header`: like `--add-header`, but provide a comma-delimited list
+        - [need test] throw error if number of custom column names does not match data
+        - [ ] write tests
+    - [x] `--BH/--bash-header` (renamed from `--ZH/--zap-header`)
+    - [x] `--AH/--add-header`
+    - should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH`
+    - throw error if more than one of `--AH/--BH/--CH` is invoked
+
+    (older stuff)
+    - [x] default `--preview` headers listing
     - sed headers (replace)
         - [x] renamed it to: `-X/--regex`
         - [x] basic

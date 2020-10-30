@@ -5,6 +5,7 @@ from typing import (
     List as typeList,
     Iterable as typeIterable,
     NoReturn as typeNoReturn,
+    Optional as typeOptional,
     Tuple as typeTuple,
 )
 
@@ -28,16 +29,28 @@ class CSVHeader(CmkUtil):
             "--add-header",
             dest="add_header",
             action="store_true",
-            help="""Given a dataset with no header, this flag adds generic fieldnames for each column, numbered starting from 1, e.g. field_1, field_2, and so on.""",
+            help="""Add a header row of generic, numbered column names, starting from 1, e.g. field_1, field_2, and so on.""",
+        )
+
+
+        self.argparser.add_argument(
+            "--BH",
+            "--bash-header",
+            dest="bash_header",
+            action="store_true",
+            help="""Bash — i.e. completely replace — the current header row with generic column names""",
         )
 
         self.argparser.add_argument(
-            "--ZH",
-            "--zap-header",
-            dest="zap_header",
-            action="store_true",
-            help="""Similar to `--HA/--add-headers`, but instead of adding a generic header row, completely replace (i.e. "zap") the current headers""",
+            "--CH",
+            "--create-header",
+            dest="create_header",
+            metavar="<column_names>",
+            type=str,
+            help="""Similar to `--add-header`, but specify column names with a comma-delimited string, e.g. 'ID,cost,"name, proper"'"""
         )
+
+
 
         self.argparser.add_argument(
             "-R",
@@ -83,9 +96,15 @@ class CSVHeader(CmkUtil):
         return self.args.add_header
 
     @property
-    def zap_header(self) -> bool:
-        return self.args.zap_header
+    def bash_header(self) -> bool:
+        return self.args.bash_header
 
+    @property
+    def create_header(self) -> typeOptional[list]:
+        if self.args.create_header:
+            return self.args.create_header.split(',') # TK: do proper delimitation
+        else:
+            return None
     @property
     def preview(self) -> bool:
         return self.args.preview
@@ -123,31 +142,57 @@ class CSVHeader(CmkUtil):
         """besides returning (rows, column_names,), this sets self.generic_columnized to True/False """
 
         rows = self.text_csv_reader()
-        if not any(
-            h
-            for h in (
-                self.zap_header,
-                self.add_header,
-            )
-        ):
-            self.generic_columnized = False
-            column_names = next(rows)
+
+        if self.add_header or self.bash_header or self.create_header:
+            # sample first row to get a count of columns
+            c_row = next(rows)
+            if self.create_header:
+                column_names = self.create_header
+                if len(column_names) != len(c_row):
+                    raise ValueError(
+                        f"The data has {len(c_row)} columns, but only {len(column_names)} were parsed from: {self.create_header}"
+                    )
+            else:
+                # then it's generic column names
+                column_names = [
+                    f"field_{i}" for i, _c in enumerate(c_row, self.column_start_index)
+                ]
+
+            # add_header and create_header assume the data had no header
+            # which means c_row is actually data and needs to be added back in
+            if self.add_header or self.create_header:
+               rows = itertools.chain([c_row], rows)
+
+        # all other options assume the data is "normal",
+        # i.e. the first row is the header row
         else:
-            self.generic_columnized = True
-            # Peek at a row to get the number of columns.
-            _row = next(rows)
-            column_names = [
-                f"field_{i}" for i, _c in enumerate(_row, self.column_start_index)
-            ]
+            column_names = next(rows)
 
-            if self.args.add_header:
-                # then first row (_row) is actually data, not headers to be replaced
-                rows = itertools.chain([_row], rows)
+        return (rows, column_names,)
 
-        return (
-            rows,
-            column_names,
-        )
+
+
+        # if not any(
+        #     h
+        #     for h in (
+        #         self.bash_header,
+        #         self.add_header,
+        #     )
+        # ):
+        #     self.generic_columnized = False
+        #     column_names = next(rows)
+        # else:
+        #     self.generic_columnized = True
+        #     # Peek at a row to get the number of columns.
+        #     _row = next(rows)
+        #     column_names = [
+        #         f"field_{i}" for i, _c in enumerate(_row, self.column_start_index)
+        #     ]
+
+        #     if self.args.add_header:
+        #         # then first row (_row) is actually data, not headers to be replaced
+        #         rows = itertools.chain([_row], rows)
+
 
     def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
 
@@ -172,11 +217,14 @@ class CSVHeader(CmkUtil):
         elif any(
             m
             for m in (
-                self.slugify_mode,
+                self.add_header,
+                self.bash_header,
+                self.create_header,
                 self.rename_headers,
+                self.slugify_mode,
                 self.sed_pattern,
-                self.args.add_header,
-                self.generic_columnized,
+                # self.generic_columnized,  # i.e. a add_header or bash_header
+                # self.args.create_header,
             )
         ):
             self.output_headers_only = False
