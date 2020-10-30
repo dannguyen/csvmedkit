@@ -25,32 +25,29 @@ class CSVHeader(CmkUtil):
 
     def add_arguments(self):
         self.argparser.add_argument(
-            "--AH",
-            "--add-header",
+            "-A",
+            "--add",
             dest="add_header",
             action="store_true",
             help="""Add a header row of generic, numbered column names, starting from 1, e.g. field_1, field_2, and so on.""",
         )
 
-
         self.argparser.add_argument(
-            "--BH",
-            "--bash-header",
+            "-B",
+            "--bash",
             dest="bash_header",
             action="store_true",
             help="""Bash — i.e. completely replace — the current header row with generic column names""",
         )
 
         self.argparser.add_argument(
-            "--CH",
-            "--create-header",
+            "-C",
+            "--create",
             dest="create_header",
             metavar="<column_names>",
             type=str,
-            help="""Similar to `--add-header`, but specify column names with a comma-delimited string, e.g. 'ID,cost,"name, proper"'"""
+            help="""Similar to `--add`, but specify column names with a comma-delimited string, e.g. 'ID,cost,"name, proper"'""",
         )
-
-
 
         self.argparser.add_argument(
             "-R",
@@ -102,9 +99,10 @@ class CSVHeader(CmkUtil):
     @property
     def create_header(self) -> typeOptional[list]:
         if self.args.create_header:
-            return self.args.create_header.split(',') # TK: do proper delimitation
+            return self.args.create_header.split(",")  # TK: do proper delimitation
         else:
             return None
+
     @property
     def preview(self) -> bool:
         return self.args.preview
@@ -161,16 +159,17 @@ class CSVHeader(CmkUtil):
             # add_header and create_header assume the data had no header
             # which means c_row is actually data and needs to be added back in
             if self.add_header or self.create_header:
-               rows = itertools.chain([c_row], rows)
+                rows = itertools.chain([c_row], rows)
 
         # all other options assume the data is "normal",
         # i.e. the first row is the header row
         else:
             column_names = next(rows)
 
-        return (rows, column_names,)
-
-
+        return (
+            rows,
+            column_names,
+        )
 
         # if not any(
         #     h
@@ -192,7 +191,6 @@ class CSVHeader(CmkUtil):
         #     if self.args.add_header:
         #         # then first row (_row) is actually data, not headers to be replaced
         #         rows = itertools.chain([_row], rows)
-
 
     def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
 

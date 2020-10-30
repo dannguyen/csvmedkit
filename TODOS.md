@@ -42,10 +42,12 @@
     - [ ] `--CH/--create-header`: like `--add-header`, but provide a comma-delimited list
         - [need test] throw error if number of custom column names does not match data
         - [ ] write tests
-    - [x] `--BH/--bash-header` (renamed from `--ZH/--zap-header`)
-    - [x] `--AH/--add-header`
-    - should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH`
-    - throw error if more than one of `--AH/--BH/--CH` is invoked
+    - [ ] throw error if more than one of `--AH/--BH/--CH` is invoked
+
+    - Should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH` (0.0.9.12)
+        - [X] in fact, it can be simplified to `-A -B -C`, since csvkit doesn't use them. Also, `--add` is enough for the name, given that the entire context of the tool is operating on a `header`
+          - [x] `-B/--bash` renamed from `--ZH/--zap-header`
+          - [x] `-A/--add` renamed `--AH/--add-header`
 
     (older stuff)
     - [x] default `--preview` headers listing

@@ -49,7 +49,7 @@ class TestInit(TestCSVHeader, EmptyFileTests):
 class TestGenericHeaders(TestCSVHeader):
     def test_add_generic_headers(self):
         self.assertLines(
-            ["--add-header", "examples/dummy.csv"],
+            ["--add", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -58,7 +58,7 @@ class TestGenericHeaders(TestCSVHeader):
         )
 
         self.assertLines(
-            ["--AH", "--zero", "examples/dummy.csv"],
+            ["-A", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "a,b,c",
@@ -71,14 +71,14 @@ class TestGenericHeaders(TestCSVHeader):
         infile = StringIO(f"{txt}\n")
         with stdin_as_string(infile):
             self.assertLines(
-                ["--add-header"],
+                ["--add"],
                 [",".join(f"field_{i}" for i in range(1, 101)), txt],
             )
         infile.close()
 
     def test_zap_headers(self):
         self.assertLines(
-            ["--bash-header", "examples/dummy.csv"],
+            ["--bash", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "1,2,3",
@@ -86,7 +86,7 @@ class TestGenericHeaders(TestCSVHeader):
         )
 
         self.assertLines(
-            ["--BH", "--zero", "examples/dummy.csv"],
+            ["-B", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "1,2,3",
@@ -247,7 +247,7 @@ class TestPreviewMode(TestCSVHeader):
     def test_add_headers(self):
         # when adding headers
         self.assertLines(
-            ["-P", "--AH", "examples/dummy.csv"],
+            ["-P", "-A", "examples/dummy.csv"],
             [
                 "index,field",
                 "1,field_1",
@@ -303,7 +303,7 @@ class TestOrderOps(TestCSVHeader):
 
     def test_make_headers_no_added_effect_to_add_headers(self):
         self.assertLines(
-            ["--BH", "--AH", "examples/dummy.csv"],
+            ["-B", "-A", "examples/dummy.csv"],
             [
                 "field_1,field_2,field_3",
                 "a,b,c",
@@ -313,7 +313,7 @@ class TestOrderOps(TestCSVHeader):
 
     def test_make_headers_precedence_over_rename(self):
         self.assertLines(
-            ["--BH", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["-B", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
             ["x,y,z", "1,2,3"],
         )
 
@@ -408,21 +408,20 @@ class TestDocExamples(TestCSVHeader):
                 ],
             )
 
-class TestDocExamplesBabyNames(TestCSVHeader):
 
+class TestDocExamplesBabyNames(TestCSVHeader):
     @property
     def idata(self):
         return StringIO("Mary,F,7065\nAnna,F,2604\nEmma,F,2003\n")
 
-
     def test_babynames_create_header(self):
         with stdin_as_string(self.idata):
             self.assertLines(
-                ["--CH", 'name,sex,count'],
+                ["-C", "name,sex,count"],
                 [
                     "name,sex,count",
-                    'Mary,F,7065',
-                    'Anna,F,2604',
-                    'Emma,F,2003',
+                    "Mary,F,7065",
+                    "Anna,F,2604",
+                    "Emma,F,2003",
                 ],
             )
