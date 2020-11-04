@@ -140,7 +140,7 @@ class TestCSVSed(CmkTestCase):
                 r"^(\d{2,4})$",
                 r"\1\1",
                 "examples/ab.csv",
-                "-G",
+                "-F",
                 "-E",
                 r"(\d{2})",
                 r"_\1_",
@@ -157,14 +157,14 @@ class TestCSVSed(CmkTestCase):
             ],
         )
 
-    def test_like_grep_mode_uses_first_expression_only(self):
+    def test_filter_mode_uses_first_expression_only(self):
         """
         The additional expr should still have a substitution effect, but it
             should NOT limit the rows returned
         """
 
         self.assertLines(
-            ["-G", "3", "9", "examples/dummy5.csv", "-E", r"\d{2,}", "X"],
+            ["-F", "3", "9", "examples/dummy5.csv", "-E", r"\d{2,}", "X"],
             [
                 "a,b,c",
                 "1,2,9",

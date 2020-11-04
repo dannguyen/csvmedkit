@@ -13,6 +13,8 @@ from unittest import skip as skiptest
 from unittest import TestCase
 import warnings
 
+from parameterized import parameterized
+
 from csvmedkit import agate
 from csvmedkit.exceptions import *
 

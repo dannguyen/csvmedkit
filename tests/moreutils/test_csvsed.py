@@ -9,6 +9,7 @@ from tests.mk import (
     EmptyFileTests,
     stdin_as_string,
     patch,
+    parameterized,
     skiptest,
 )
 
@@ -16,7 +17,7 @@ from csvmedkit.exceptions import ColumnIdentifierError
 from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance
 
 
-class TestCSVSed(CmkTestCase, ColumnsTests, EmptyFileTests):
+class TestCSVSed(CmkTestCase):
     Utility = CSVSed
     default_args = ["hello", "world"]
     columns_args = [
@@ -25,7 +26,7 @@ class TestCSVSed(CmkTestCase, ColumnsTests, EmptyFileTests):
     ]
 
 
-class TestInit(TestCSVSed):
+class TestInit(TestCSVSed, ColumnsTests, EmptyFileTests):
     def test_launch_new_instance(self):
         with patch.object(
             sys,
@@ -72,17 +73,43 @@ class TestInit(TestCSVSed):
         )
 
 
-class TestOptions(TestCSVSed):
-    def test_column_choice(self):
-        self.assertLines(
-            ["-c", "b,c", r"(\w)", r"\1!", "examples/dummy.csv"],
-            [
-                "a,b,c",
-                "1,2!,3!",
-            ],
-        )
+class TestRegexing(TestCSVSed):
+    @property
+    def idata(self):
+        rows = ["id,name,val", "1,2,3x", "3,4,5", "6,7y,8z"]
+        return StringIO("\n".join(rows))
+
+    def test_captured_groups(self):
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["([a-z])", r"&\1&"],
+                ["id,name,val", "1,2,3&x&", "3,4,5", "6,7&y&,8&z&"],
+            )
+
+    def test_named_groups(self):
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                [r"(?P<code>\d)(?P<sign>[a-z])", r"\g<sign>-\g<code>"],
+                ["id,name,val", "1,2,x-3", "3,4,5", "6,y-7,z-8"],
+            )
 
     def test_supports_case_insensitivity(self):
+        tdata = "\n".join(["a,b,c,d", "hey,Hello,hat,hEx"])
+
+        with stdin_as_string(StringIO(tdata)):
+            self.assertLines(
+                [
+                    "(?i)h(?=e)",
+                    "M",
+                ],
+                [
+                    "a,b,c,d",
+                    "Mey,Mello,hat,MEx",
+                ],
+            )
+
+    def test_supports_case_insensitivity_obsolete(self):
+        """maybe kill this test and its brittle example fixture?"""
         self.assertLines(
             [r"(?i)miss", "Ms.", "examples/honorifics-fem.csv"],
             [
@@ -96,6 +123,8 @@ class TestOptions(TestCSVSed):
             ],
         )
 
+
+class TestLiteralMatch(TestCSVSed):
     def test_literal_match(self):
         self.assertLines(
             ["-m", "s.", "x.", "examples/honorifics-fem.csv"],
@@ -111,8 +140,8 @@ class TestOptions(TestCSVSed):
         )
 
 
-class TestLikeGrep(TestCSVSed):
-    def test_default_without_grep_mode(self):
+class TestFilter(TestCSVSed):
+    def test_default_without_filter_mode(self):
         """
         like basic sed, shouldn't be filtering out lines that don't match for replacement
         """
@@ -126,12 +155,12 @@ class TestLikeGrep(TestCSVSed):
             ],
         )
 
-    def test_like_grep_mode(self):
+    def test_filter_basic(self):
         """
         like-grep mode filters, then the sed is applied
         """
         self.assertLines(
-            ["-G", "4", "x", "examples/dummy5.csv"],
+            ["--filter", "4", "x", "examples/dummy5.csv"],
             [
                 "a,b,c",
                 "2,3,x2",
@@ -139,14 +168,233 @@ class TestLikeGrep(TestCSVSed):
             ],
         )
 
-    def test_like_grep_mode_uses_first_expression_only(self):
+    def test_filter_easy(self):
+        """as expected, a filter pattern that matches everything returns all the rows"""
+        self.assertLines(
+            ["-F", "(?=.)", "z", "examples/dummy2.csv"],
+            [
+                "a,b,c",
+                "z1,z2,z3",
+                "z8,z9,z1z0",
+            ],
+        )
+
+    def test_filter_easy_null(self):
+        """a filter that matches everything but effectively does nothing"""
+        self.assertLines(
+            ["-F", "(?=.)", "", "examples/dummy2.csv"],
+            [
+                "a,b,c",
+                "1,2,3",
+                "8,9,10",
+            ],
+        )
+
+    def test_filter_harsh(self):
+        """
+        as expected, a filter pattern that matches nothing should return no rows except header
+        """
+        self.assertLines(
+            ["-F", "x", "y", "examples/dummy2.csv"],
+            [
+                "a,b,c",
+            ],
+        )
+
+    def test_filter_literal_match(self):
+        tdata = "\n".join(
+            [
+                "a,b",
+                "x,42",
+                r"y,\d",
+            ]
+        )
+        with stdin_as_string(StringIO(tdata)):
+            self.assertLines(
+                [
+                    "-F",
+                    "-m",
+                    r"\d",
+                    r"\1",
+                ],
+                [
+                    "a,b",
+                    r"y,\1",
+                ],
+            )
+
+
+class TestColumnChoice(TestCSVSed):
+    @property
+    def idata(self):
+        rows = ["id,name,val", "1,2,3x", "3,4,5", "6,7y,8z"]
+        return StringIO("\n".join(rows))
+
+    def test_columns_by_name(self):
+        """only specified columns are affected"""
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["-c", "id,val", r"(\w+)", r"\1!"],
+                ["id,name,val", "1!,2,3x!", "3!,4,5!", "6!,7y,8z!"],
+            )
+
+    def test_columns_by_index(self):
+        """only specified columns are affected"""
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                ["-c", "3,1", r"(\w+)", r"\1!"],
+                ["id,name,val", "1!,2,3x!", "3!,4,5!", "6!,7y,8z!"],
+            )
+
+    def test_columns_by_zero_index(self):
+        """only specified columns are affected"""
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                [
+                    "-c",
+                    "2,0",
+                    r"(\w+)",
+                    r"\1!",
+                    "--zero",
+                ],
+                ["id,name,val", "1!,2,3x!", "3!,4,5!", "6!,7y,8z!"],
+            )
+
+    def test_filtered_columns(self):
+        """only selected columns are affected, AND filtered for"""
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                [
+                    "-F",
+                    "-c",
+                    "id,name",
+                    r"([3-9])",
+                    r"\1@",
+                ],
+                [
+                    "id,name,val",
+                    "3@,4@,5",
+                    "6@,7@y,8z",
+                ],
+            )
+
+        # variation...
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                [
+                    "-Fc",
+                    "2",
+                    r"[a-z]",
+                    r"$",
+                ],
+                [
+                    "id,name,val",
+                    "6,7$,8z",
+                ],
+            )
+
+    def test_old_basic(self):
+        """deprecate"""
+        self.assertLines(
+            ["-c", "b,c", r"(\w)", r"\1!", "examples/dummy.csv"],
+            [
+                "a,b,c",
+                "1,2!,3!",
+            ],
+        )
+
+
+###################################################################################################
+### Tests that verify my documentation examples
+###################################################################################################
+class TestDocExamples(TestCSVSed):
+    """Tests that verify my documentation examples"""
+
+    @property
+    def idata(self):
+        rows = ["id,name,val", "1,2,3x", "3,4,5", "6,7y,8z"]
+        return StringIO("\n".join(rows))
+
+    def test_intro(self):
+        datacsv = StringIO("id,name\n1,Mrs. Adams\n2,Miss Miller\n3,Mrs Smith\n")
+        with stdin_as_string(datacsv):
+            self.assertLines(
+                [
+                    r"(Mrs|Miss|Ms)\.?",
+                    "Ms.",
+                ],
+                [
+                    "id,name",
+                    "1,Ms. Adams",
+                    "2,Ms. Miller",
+                    "3,Ms. Smith",
+                ],
+            )
+
+    def test_hacky_strip(self):
+        """obv you should use csvnorm, but this works in a pinch"""
+        self.assertLines(
+            [r"^\s*(.+?)\s*$", r"\1", "examples/ws_consec.csv"],
+            [
+                "id,phrase",
+                "1,hello world",
+                "2,good   bye",
+                "3,a  ok",
+            ],
+        )
+
+    def test_usage_filter_example(self):
+        """
+        $ csvsed -F '[a-z]' '%' data.csv
+        """
+        with stdin_as_string(self.idata):
+            self.assertLines(
+                [
+                    "-F",
+                    "[a-z]",
+                    "%",
+                ],
+                ["id,name,val", "1,2,3%", "6,7%,8%"],
+            )
+
+
+###################################################################################################
+###################################################################################################
+###
+### Tests of edge cases or experimental functionality or just obsolete
+###
+###################################################################################################
+###################################################################################################
+
+
+class TestExpressionArguments(TestCSVSed):
+    """
+    make sure first_patttern + first_replace are properly interpreted;
+
+    this section previously dealt with multiple expression functionality. That functionality has been deprecated/made
+    experimental, so this test section can probably be deleted/ignored
+    """
+
+    def test_ez(self):
+        """input_file always has to come after pattern and replace; this test is probably redundant"""
+        self.assertLines(
+            [r"(\w)", r"\1!", "examples/dummy.csv"],
+            [
+                "a,b,c",
+                "1!,2!,3!",
+            ],
+        )
+
+    def test_filter_mode_uses_first_expression_only(self):
         """
         The additional expr should still have a substitution effect, but it
             should NOT limit the rows returned
+
+        Note: currently not used as '-E' is still experimental
         """
 
         self.assertLines(
-            ["-G", "3", "9", "examples/dummy5.csv", "-E", r"\d{2,}", "X"],
+            ["-F", "3", "9", "examples/dummy5.csv", "-E", r"\d{2,}", "X"],
             [
                 "a,b,c",
                 "1,2,9",
@@ -156,23 +404,8 @@ class TestLikeGrep(TestCSVSed):
         )
 
 
-class TestExpressionArguments(TestCSVSed):
-    """
-    make sure first_patttern + first_replace are properly interpreted
-    """
-
-    def test_basic_expression(self):
-        """input_file always has to come after pattern and replace"""
-        self.assertLines(
-            [r"(\w)", r"\1!", "examples/dummy.csv"],
-            [
-                "a,b,c",
-                "1!,2!,3!",
-            ],
-        )
-
-
 class TestEdgeCases(TestCSVSed):
+    """TODO a lot of these tests may be redundant or obsolete"""
 
     ######################################
     # test intermixed args
@@ -334,7 +567,7 @@ class TestEdgeCases(TestCSVSed):
     def test_pattern_arg_has_leading_hyphen_escaped(self):
         self.assertLines(
             [
-                "-G",
+                "-F",
                 r"\-(\d)",
                 r"@\1",
                 "examples/ledger.csv",
@@ -354,7 +587,7 @@ class TestEdgeCases(TestCSVSed):
     def test_pattern_arg_has_leading_hyphen_double_escaped(self):
         self.assertLines(
             [
-                "-G",
+                "-F",
                 r"\\-(\d)",
                 r"@\1",
                 "examples/ledger.csv",
@@ -373,7 +606,7 @@ class TestEdgeCases(TestCSVSed):
     def test_repl_arg_has_leading_hyphen_escaped(self):
         self.assertLines(
             [
-                "-G",
+                "-F",
                 r"\-(\d)",
                 r"\-X\1",
                 "examples/ledger.csv",
@@ -387,28 +620,5 @@ class TestEdgeCases(TestCSVSed):
                 # '005,eggplants,"$3,987",$501',
                 # '006,figs,"$30,333","(777.66)"',
                 '006,grapes,"154,321.98","-X32,654"',
-            ],
-        )
-
-
-###################################################################################################
-### Tests that verify my documentation examples
-###################################################################################################
-class TestDocExamples(TestCSVSed):
-    """Tests that verify my documentation examples"""
-
-    @skiptest("write out examples later")
-    def test_intro(self):
-        pass
-
-    def test_hacky_strip(self):
-        """obv you should use csvnorm, but this works in a pinch"""
-        self.assertLines(
-            [r"^\s*(.+?)\s*$", r"\1", "examples/ws_consec.csv"],
-            [
-                "id,phrase",
-                "1,hello world",
-                "2,good   bye",
-                "3,a  ok",
             ],
         )

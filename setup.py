@@ -21,6 +21,7 @@ install_requires = [
 dev_requires = [
     "coverage>=4.4.2",
     "nose>=1.1.2",
+    "parameterized",
     "sphinx>=1.0.7",
     "sphinx_rtd_theme",
     "tox>=3.1.0",

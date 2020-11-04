@@ -21,16 +21,7 @@ class Parser:
             "-c",
             "--columns",
             dest="columns",
-            help='A comma separated list of column indices, names or ranges to be affected, e.g. "1,id,3-5". If not specified, csvsed will affect *all* columns',
-        )
-
-        self.argparser.add_argument(
-            "-G",
-            "--like-grep",
-            dest="like_grep",
-            action="store_true",
-            default=False,
-            help="""Only return rows in which [PATTERN] was a match (BEFORE any transformations) – i.e. like grep''s traditional behavior""",
+            help="""A comma separated list of column indices, names or ranges to be affected, e.g. '1,id,3-5'. Defaults to all columns.""",
         )
 
         self.argparser.add_argument(
@@ -39,7 +30,16 @@ class Parser:
             dest="literal_match",
             action="store_true",
             default=False,
-            help="By default, [PATTERN] is assumed to be a regex. Set this flag to make it a literal text find/replace",
+            help="By default, [PATTERN] is assumed to be a regular expression. Set this flag to do a literal match and replacement.",
+        )
+
+        self.argparser.add_argument(
+            "-F",
+            "--filter",
+            dest="like_grep",
+            action="store_true",
+            default=False,
+            help="""Only return rows that matched [PATTERN]. This has the same effect as operating on data pre-filtered by ``csvgrep -r (or -m) [PATTERN]`""",
         )
 
         self.argparser.add_argument(

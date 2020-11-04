@@ -1,7 +1,58 @@
 # TODOS
 
 
-## 0.1 
+## 0.9.13
+
+
+### csvslice
+
+- [ ] refresh usage memory
+- [ ] start on docs
+
+
+### csvsed
+
+- [x] change `-G/--like-grep` to `-F/--filter`
+    - [x] wrote lots of tests to cover combinations of --columns and --filter
+    - [x] wrote lots of tests for intermixing of args and opts and stdin
+    - [ ] update documentation
+
+### csvheader 
+
+When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
+
+NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
+
+- Is there any reason to have `-B/--bash`? In what situation would a user want to replace existing data headers with generic headers?
+    - [ ] not really, so kill it...
+- [ ] is `-R/--rename` convention particularly graceful/convenient?
+- [ ] Instead of `-C`, maybe we should have some kind of `--replace`.
+- [ ] But `--replace` is confusing with `--rename`, so maybe use `-C/--change/clobber`, or `-O/--overwrite`?
+- [ ] `-X/--regex` should just be `--regex` for now?
+
+
+
+## 0.1.0 
+
+Overall stuff
+- Separate usecases into their own section, instead of embedding them into the individual tool sections?
+
+
+- csvsed
+    - [ ] documentation
+        - [ ] write nutgraf and intro examples and test those examples
+        - [ ] write options/flags section
+        - [ ] write high level overview
+        - [ ] write comparison section
+        - [ ] write scenarios/use-cases 
+    - [ ] cmk_filter_rows should be refactored into a class instance method, and have its signature minimized
+    - [x] use cmkmixutil class
+    - [x] sans replacement flag
+    - [x] port old tests
+    - [x] implicit stdin pipe isn't working; fix broken test
+    - moved -E functionality to experimental phase for now
+        - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
+
 
 - csvnorm
     - [X] implementation (0.0.9.10)
@@ -12,8 +63,6 @@
 
 
 - csvslice
-    - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
-    - [x] tests (0.0.9.11)
     - [ ] documentation
 
 
@@ -42,29 +91,6 @@
                 - [ ] write tests to confirm babynames tests
     
 
-    - [X] `-C/--create`: like `--add`, but provide a comma-delimited list (0.0.9.12)
-        - [need test] throw error if number of custom column names does not match data
-        - [X] write tests
-    - [X] throw error if more than one of `-A/-B/-C` is invoked (0.0.9.12)
-    - Should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH` (0.0.9.12)
-        - [X] in fact, it can be simplified to `-A -B -C`, since csvkit doesn't use them. Also, `--add` is enough for the name, given that the entire context of the tool is operating on a `header`
-          - [x] `-B/--bash` renamed from `--ZH/--zap-header`
-          - [x] `-A/--add` renamed `--AH/--add-header`
-
-    (older stuff)
-    - [x] default `--preview` headers listing
-    - sed headers (replace)
-        - [x] renamed it to: `-X/--regex`
-        - [x] basic
-        - [x] write tests
-    - slugify headers
-        - [x] basic
-        - [x] fix tests from --slug to --slugify
-    - rename headers
-        - [x] basic
-        - [x] validate given indexes
-        - [x] write tests
-
 
 - csvpivot
     - [ ] documentation
@@ -90,21 +116,6 @@
             - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
                 - was 10s, now 0.5s
 
-
-- csvsed
-    - [ ] documentation
-        - [ ] write nutgraf and intro examples and test those examples
-        - [ ] write options/flags section
-        - [ ] write high level overview
-        - [ ] write comparison section
-        - [ ] write scenarios/use-cases 
-    - [ ] cmk_filter_rows should be refactored into a class instance method, and have its signature minimized
-    - [x] use cmkmixutil class
-    - [x] sans replacement flag
-    - [x] port old tests
-    - [x] implicit stdin pipe isn't working; fix broken test
-    - moved -E functionality to experimental phase for now
-        - [NA] make `-E` more robust, e.g. a custom formatter that looks for 2/3 nargs
 
 
 
@@ -193,3 +204,40 @@
 - add csvmedkitutil, and other baseclasses
 - set up pypi
 - did cookiecutter stuff
+
+
+
+## 0.9.11
+
+
+csvslice:
+    - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
+    - [x] tests (0.0.9.11)
+
+
+## 0.9.12
+
+
+csvheader:
+    - [X] `-C/--create`: like `--add`, but provide a comma-delimited list (0.0.9.12)
+        - [need test] throw error if number of custom column names does not match data
+        - [X] write tests
+    - [X] throw error if more than one of `-A/-B/-C` is invoked (0.0.9.12)
+    - Should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH` (0.0.9.12)
+        - [X] in fact, it can be simplified to `-A -B -C`, since csvkit doesn't use them. Also, `--add` is enough for the name, given that the entire context of the tool is operating on a `header`
+          - [x] `-B/--bash` renamed from `--ZH/--zap-header`
+          - [x] `-A/--add` renamed `--AH/--add-header`
+- (older stuff)
+    - [x] default `--preview` headers listing
+    - sed headers (replace)
+        - [x] renamed it to: `-X/--regex`
+        - [x] basic
+        - [x] write tests
+    - slugify headers
+        - [x] basic
+        - [x] fix tests from --slug to --slugify
+    - rename headers
+        - [x] basic
+        - [x] validate given indexes
+        - [x] write tests
+
