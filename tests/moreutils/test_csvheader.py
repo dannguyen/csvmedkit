@@ -1,3 +1,4 @@
+import contextlib
 from io import StringIO
 from unittest import skip as skiptest
 import sys
@@ -46,8 +47,8 @@ class TestInit(TestCSVHeader, EmptyFileTests):
         )
 
 
-class TestGenericHeaders(TestCSVHeader):
-    def test_add_generic_headers(self):
+class TestAddHeader(TestCSVHeader):
+    def test_add_basic(self):
         self.assertLines(
             ["--add", "examples/dummy.csv"],
             [
@@ -57,6 +58,7 @@ class TestGenericHeaders(TestCSVHeader):
             ],
         )
 
+    def test_add_w_zero(self):
         self.assertLines(
             ["-A", "--zero", "examples/dummy.csv"],
             [
@@ -66,7 +68,7 @@ class TestGenericHeaders(TestCSVHeader):
             ],
         )
 
-    def test_add_craploads_of_generic_headers(self):
+    def test_add_craploads_of_headers(self):
         txt = ",".join(str(i) for i in range(100))
         infile = StringIO(f"{txt}\n")
         with stdin_as_string(infile):
@@ -76,7 +78,9 @@ class TestGenericHeaders(TestCSVHeader):
             )
         infile.close()
 
-    def test_zap_headers(self):
+
+class TestBashHeader(TestCSVHeader):
+    def test_bash_basic(self):
         self.assertLines(
             ["--bash", "examples/dummy.csv"],
             [
@@ -85,12 +89,58 @@ class TestGenericHeaders(TestCSVHeader):
             ],
         )
 
+    def test_bash_basic_with_zero_col(self):
         self.assertLines(
             ["-B", "--zero", "examples/dummy.csv"],
             [
                 "field_0,field_1,field_2",
                 "1,2,3",
             ],
+        )
+
+
+class TestCreateHeader(TestCSVHeader):
+    def test_create_basic(self):
+        self.assertLines(
+            ["--create", "x,y,z", "examples/dummy.csv"],
+            [
+                "x,y,z",
+                "a,b,c",
+                "1,2,3",
+            ],
+        )
+
+    def test_create_messy_header(self):
+        self.assertLines(
+            ["--create", 'x,"y,y","z,\nz"', "examples/dummy.csv"],
+            [
+                'x,"y,y","z,',
+                'z"',
+                "a,b,c",
+                "1,2,3",
+            ],
+        )
+
+    def test_create_error_too_few_names_given(self):
+        with self.assertRaises(ValueError) as e:
+            self.get_output(
+                ["--create", "x,y", "examples/dummy.csv"],
+            )
+
+        self.assertIn(
+            """The data has 3 columns, but 2 column names were parsed from: `x,y`""",
+            str(e.exception),
+        )
+
+    def test_create_error_too_many_names_given(self):
+        with self.assertRaises(ValueError) as e:
+            self.get_output(
+                ["--create", "w,x,y,z", "examples/dummy.csv"],
+            )
+
+        self.assertIn(
+            """The data has 3 columns, but 4 column names were parsed from: `w,x,y,z`""",
+            str(e.exception),
         )
 
 
@@ -301,20 +351,25 @@ class TestOrderOps(TestCSVHeader):
     making sure the order of operations of transformations is what we expect
     """
 
-    def test_make_headers_no_added_effect_to_add_headers(self):
+    def test_rename_precedence_over_add(self):
+        """kind of an edge case..."""
         self.assertLines(
-            ["-B", "-A", "examples/dummy.csv"],
-            [
-                "field_1,field_2,field_3",
-                "a,b,c",
-                "1,2,3",
-            ],
+            ["-A", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["x,y,z", "a,b,c", "1,2,3"],
         )
 
-    def test_make_headers_precedence_over_rename(self):
+    def test_rename_precedence_over_bash(self):
+        """kind of an edge case..."""
         self.assertLines(
-            ["-B", "--rename", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
+            ["-B", "-R", "field_1|x,field_2|y,field_3|z", "examples/dummy.csv"],
             ["x,y,z", "1,2,3"],
+        )
+
+    def test_rename_precedence_over_create(self):
+        """kind of an edge case..."""
+        self.assertLines(
+            ["-C", "i,j,k", "-R", "i|x,j|y,k|z", "examples/dummy.csv"],
+            ["x,y,z", "a,b,c", "1,2,3"],
         )
 
     def test_rename_then_slug(self):
@@ -377,14 +432,55 @@ class TestHelpStringExamples(TestCSVHeader):
 
 
 ###################################################################################################
+### Tests for errors
+###################################################################################################
+class TestErrorStuff(TestCSVHeader):
+    @property
+    def errmsg(self):
+        return "The --add, --bash, and --create options are mutually exclusive; pick one and only one"
+
+    def test_add_bash_create_are_exclusive(self):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as e:
+                u = self.get_output(["-A", "-B", "examples/dummy.csv"])
+        self.assertEqual(e.exception.code, 2)
+        self.assertIn(self.errmsg, ioerr.getvalue())
+
+        # other combinations
+        with contextlib.redirect_stderr(StringIO()):
+            with self.assertRaises(SystemExit) as e:
+                u = self.get_output(["-A", "-C", "x,y,z", "examples/dummy.csv"])
+        self.assertEqual(e.exception.code, 2)
+
+        with contextlib.redirect_stderr(StringIO()):
+            with self.assertRaises(SystemExit) as e:
+                u = self.get_output(["-B", "-C", "x,y,z", "examples/dummy.csv"])
+        self.assertEqual(e.exception.code, 2)
+
+        with contextlib.redirect_stderr(StringIO()):
+            with self.assertRaises(SystemExit) as e:
+                u = self.get_output(["-A", "-B", "-C", "x,y,z", "examples/dummy.csv"])
+        self.assertEqual(e.exception.code, 2)
+
+
+###################################################################################################
 ### Tests that verify my documentation examples
 ###################################################################################################
-class TestDocExamples(TestCSVHeader):
-    """Tests that verify my documentation examples"""
-
+class TestHelpDoc(TestCSVHeader):
     @property
     def idata(self):
         return StringIO("Case #,X,Y,I.D.\n1,2,3,4\n5,6,7,8\n")
+
+    def test_create_helpdoc_midcomma_name(self):
+        self.assertLines(
+            ["-C", 'ID,cost,"Name, proper"', "examples/dummy.csv"],
+            [
+                'ID,cost,"Name, proper"',
+                "a,b,c",
+                "1,2,3",
+            ],
+        )
 
     def test_slugify_intro_example(self):
         with stdin_as_string(self.idata):

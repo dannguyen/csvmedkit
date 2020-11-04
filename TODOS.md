@@ -36,14 +36,16 @@
         - [x] write options/flags section
         - [ ] write high level overview
         - [ ] write comparison section
-        - [ ] write scenarios/use-cases 
-        - make sure help doc is up to date with `--AH/--BH/--CH`
+        - [x] make sure help doc is up to date with `-A/-B/-C`
+        - write scenarios/use-cases 
+            - babynames
+                - [ ] write tests to confirm babynames tests
+    
 
-    - [ ] `--CH/--create-header`: like `--add-header`, but provide a comma-delimited list
+    - [X] `-C/--create`: like `--add`, but provide a comma-delimited list (0.0.9.12)
         - [need test] throw error if number of custom column names does not match data
-        - [ ] write tests
-    - [ ] throw error if more than one of `--AH/--BH/--CH` is invoked
-
+        - [X] write tests
+    - [X] throw error if more than one of `-A/-B/-C` is invoked (0.0.9.12)
     - Should we switch to single-hyphen shortnames, e.g. `-AH` and `-CH` (0.0.9.12)
         - [X] in fact, it can be simplified to `-A -B -C`, since csvkit doesn't use them. Also, `--add` is enough for the name, given that the entire context of the tool is operating on a `header`
           - [x] `-B/--bash` renamed from `--ZH/--zap-header`

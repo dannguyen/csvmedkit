@@ -7,7 +7,7 @@ csvheader
 :command:`csvheader` is a command for listing and changing the headers of CSV-formatted data.
 
 
-For example, given a ``data.csv`` containing this::
+For example, given a ``data.csv`` containing this
 
 .. code-block:: text
 
@@ -40,20 +40,26 @@ Usage reference
 ===============
 
 
-``--AH, --add-header``
-----------------------
+-A, --add
+---------
 
-Given a dataset with no header, this flag adds generic fieldnames for each column, numbered starting from ``1``, e.g. ``field_1``, ``field_2``, and so on.
-
-
-``--BH, ---i``
-----------------------
-
-Similar to ``--add-header``, except that instead of *adding* a header, this flag causes the existing header to be **overwritten**. This generally means that the first row of the dataset is replaced.
+Add a header row of generic, numbered column names, starting from 1, e.g. field_1, field_2, and so on.
 
 
-``-R, --rename <renamed_header_pairs>``
------------------------------------------
+-B, --bash
+----------
+
+Bash (i.e. completely replace) the current header row with generic column names, e.g. field_1, field_2.
+
+
+-C, --create <column_names>
+---------------------------
+
+Similar to ``--add``, but specify column names with a comma-delimited string, e.g. ``'ID,cost,"Name, proper"'``
+
+
+-R, --rename <renamed_header_pairs>
+-----------------------------------
 
 Rename individual columns. The required argument is a comma-delimited string of pipe-delimited pairs — column id/name and the new name.
 
@@ -64,21 +70,21 @@ For example, to rename the "a" column to "Apples"; and also, the 2nd and 3rd col
     'a|Apples,2|hello,3|world'
 
 
-``-S, --slugify``
------------------
+-S, --slugify
+-------------
 
 Converts the existing column names to snake_case style. For example, ``APPLES`` and  ``'Date - Time '`` are converted, respectively, to ``'apples'`` and ``'date_time'``.
 
 
-``-X, --regex <pattern> <replacement>``
--------------------------------------------
+-X, --regex <pattern> <replacement>
+-----------------------------------
 
 In the existing column names, replace all occurrences of a regular expression *<pattern>* with *<replacement>*.
 
 
 
-``-P, --preview``
------------------
+-P, --preview
+-------------
 
 When no options are invoked, only the existing header is printed as a comma-delimited list. Invoking any of the aforementioned options prints the transformed header *and* the data. In the latter case, use the ``--preview`` flag to see only what the transformed headers look like.
 
@@ -114,8 +120,8 @@ How csvheader compares to existing tools
 
 
 
-Adding a header row with ``csvformat --no-header-row``
-------------------------------------------------------
+Compared to adding a header row with ``csvformat --no-header-row``
+------------------------------------------------------------------
 
 
 ::
@@ -127,18 +133,18 @@ Adding a header row with ``csvformat --no-header-row``
 
 ::
 
-    $ echo '1,2,3,4' | csvheader --add-header
+    $ echo '1,2,3,4' | csvheader --add
     field_1,field_2,field_3,field_4
     1,2,3,4
 
 
 .. note:: csvformat 1.0.6 bug
 
-    In the latest release of csvkit — 1.0.6 — csvformat's ``-H/--no-header-row`` does not work as expected. See issue/pull request `here <https://github.com/wireservice/csvkit/pull/1092>`_
+    In the latest official release of csvkit — 1.0.6 — csvformat's ``-H/--no-header-row`` does not work as expected. See issue/pull request `here <https://github.com/wireservice/csvkit/pull/1095>`_. (TODO: update this if csvkit master is patched)
 
 
-Listing column names with ``csvcut --names``
---------------------------------------------
+Compared to listing column names with ``csvcut --names``
+--------------------------------------------------------
 
 TK Lorem ipsum dolor sit amet, consectetur adipisicing elit
 
@@ -163,8 +169,8 @@ In contrast, because ``csvheader`` outputs the header as CSV, its output can be 
     "4","d  "
 
 
-Listing column names with ``xsv headers``
------------------------------------------
+Compared to listing column names with ``xsv headers``
+-----------------------------------------------------
 
 ::
 
@@ -175,8 +181,8 @@ Listing column names with ``xsv headers``
     4   d
 
 
-Compared to ``sed``
--------------------
+Compared to replacing the first line of data with ``sed``
+---------------------------------------------------------
 
 It's possible to use :command:`sed` to `replace the entire first line <https://superuser.com/a/1026686>`_ of input::
 
@@ -240,17 +246,17 @@ TK-IMG
 
 
 
-Each file contains the same 3 columns — name, sex, and count — but *sans* header row. Here are the first 3 rows in ``yob1880.txt``
+Each file contains the same 3 columns — name, sex, and count — but *sans* header row. Here are the first 3 rows in ``yob1880.txt``::
 
     Mary,F,7065
     Anna,F,2604
     Emma,F,2003
 
 
-Invoking ``csvheader`` with the ``--AH/add-headers`` flag will add generic column names to the data of each individual file, e.g.::
+Invoking ``csvheader`` with the ``-A/--add`` flag will add generic column names to the data of each individual file, e.g.::
 
 
-    $ csvheader --AH yob1880.txt
+    $ csvheader -A yob1880.txt
     field_1,field_2,field_3
     Mary,F,7065
     Anna,F,2604
@@ -259,9 +265,9 @@ Invoking ``csvheader`` with the ``--AH/add-headers`` flag will add generic colum
     ...
 
 
-But it's not much more work to add our own useful column names using the ``--CH/--create-header`` option::
+But it's not much more work to add our own useful column names using the ``-C/--create`` option::
 
-    $ csvheader yob1880.txt --CH 'name,sex,count'
+    $ csvheader yob1880.txt -C 'name,sex,count'
     name,sex,count
     Mary,F,7065
     Anna,F,2604
@@ -295,4 +301,4 @@ However, with ``csvstack --filenames``, that vital year context is included in t
     yob2018.txt,Zzyzx,M,5
 
 
-So where does
+So where does TKTKTK

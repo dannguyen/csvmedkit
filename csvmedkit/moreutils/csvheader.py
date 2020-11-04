@@ -11,7 +11,11 @@ from typing import (
 
 from csvmedkit import re_plus as re
 from csvmedkit.cmk.cmkutil import CmkUtil
-from csvmedkit.cmk.helpers import cmk_parse_column_ids, cmk_slugify
+from csvmedkit.cmk.helpers import (
+    cmk_parse_column_ids,
+    cmk_parse_delimited_str,
+    cmk_slugify,
+)
 
 
 class CSVHeader(CmkUtil):
@@ -37,7 +41,7 @@ class CSVHeader(CmkUtil):
             "--bash",
             dest="bash_header",
             action="store_true",
-            help="""Bash — i.e. completely replace — the current header row with generic column names""",
+            help="""Bash (i.e. completely replace) the current header row with generic column names, e.g. field_1, field_2.""",
         )
 
         self.argparser.add_argument(
@@ -99,7 +103,9 @@ class CSVHeader(CmkUtil):
     @property
     def create_header(self) -> typeOptional[list]:
         if self.args.create_header:
-            return self.args.create_header.split(",")  # TK: do proper delimitation
+            return cmk_parse_delimited_str(
+                self.args.create_header, delimiter=","
+            )  # TK: do proper delimitation
         else:
             return None
 
@@ -148,7 +154,7 @@ class CSVHeader(CmkUtil):
                 column_names = self.create_header
                 if len(column_names) != len(c_row):
                     raise ValueError(
-                        f"The data has {len(c_row)} columns, but only {len(column_names)} were parsed from: {self.create_header}"
+                        f"The data has {len(c_row)} columns, but {len(column_names)} column names were parsed from: `{self.args.create_header}`"
                     )
             else:
                 # then it's generic column names
@@ -170,27 +176,6 @@ class CSVHeader(CmkUtil):
             rows,
             column_names,
         )
-
-        # if not any(
-        #     h
-        #     for h in (
-        #         self.bash_header,
-        #         self.add_header,
-        #     )
-        # ):
-        #     self.generic_columnized = False
-        #     column_names = next(rows)
-        # else:
-        #     self.generic_columnized = True
-        #     # Peek at a row to get the number of columns.
-        #     _row = next(rows)
-        #     column_names = [
-        #         f"field_{i}" for i, _c in enumerate(_row, self.column_start_index)
-        #     ]
-
-        #     if self.args.add_header:
-        #         # then first row (_row) is actually data, not headers to be replaced
-        #         rows = itertools.chain([_row], rows)
 
     def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
 
@@ -232,6 +217,14 @@ class CSVHeader(CmkUtil):
     def main(self):
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
+
+        if 1 < sum(
+            1 if i else 0
+            for i in (self.add_header, self.bash_header, self.create_header)
+        ):
+            self.argparser.error(
+                "The --add, --bash, and --create options are mutually exclusive; pick one and only one"
+            )
 
         rows, column_names = self._prepare_headers()
 
