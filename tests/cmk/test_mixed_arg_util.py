@@ -132,17 +132,72 @@ class TestGroupedParamsExplicitStdin(GroupedParams):
 
 class MixedParams(MixCase):
     """when the options and args are all over the place!!!"""
-    mixed_params = [
-         [ "-F", "1", "A", "-c", "3,2", DEFAULT_PATH, ],
-         [ "-c", "3,2", "1", "A", DEFAULT_PATH, "-F", ],
-         [ '1', "-c", "3,2", "A", DEFAULT_PATH, "-F", ],
-         [ "1", "-c", "3,2", "A", "-F", DEFAULT_PATH, ],
-         [ "1", "-c", "3,2", "-F", "A", DEFAULT_PATH, ],
-         [ "1", "-F", "A", DEFAULT_PATH, "-c", "3,2", ],
-         [ "1", "A", "-c", "3,2", DEFAULT_PATH, "-F", ],
-         [ "1", "A", "-Fc", "3,2", DEFAULT_PATH, ],
-    ]
 
+    mixed_params = [
+        [
+            "-F",
+            "1",
+            "A",
+            "-c",
+            "3,2",
+            DEFAULT_PATH,
+        ],
+        [
+            "-c",
+            "3,2",
+            "1",
+            "A",
+            DEFAULT_PATH,
+            "-F",
+        ],
+        [
+            "1",
+            "-c",
+            "3,2",
+            "A",
+            DEFAULT_PATH,
+            "-F",
+        ],
+        [
+            "1",
+            "-c",
+            "3,2",
+            "A",
+            "-F",
+            DEFAULT_PATH,
+        ],
+        [
+            "1",
+            "-c",
+            "3,2",
+            "-F",
+            "A",
+            DEFAULT_PATH,
+        ],
+        [
+            "1",
+            "-F",
+            "A",
+            DEFAULT_PATH,
+            "-c",
+            "3,2",
+        ],
+        [
+            "1",
+            "A",
+            "-c",
+            "3,2",
+            DEFAULT_PATH,
+            "-F",
+        ],
+        [
+            "1",
+            "A",
+            "-Fc",
+            "3,2",
+            DEFAULT_PATH,
+        ],
+    ]
 
     @parameterized.expand(mixed_params)
     def test_input_file_path(self, *params):

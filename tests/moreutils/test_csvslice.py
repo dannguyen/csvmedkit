@@ -60,11 +60,7 @@ class TestBasics(TestCSVSlice):
         )
 
 
-class TestRangesIndexes(TestCSVSlice):
-    """
-    basically, ranges with closed intervals, e.g. '0-12,55-999', as opposed to '-12,55-'
-    """
-
+class TestIndexes(TestCSVSlice):
     def test_single_index(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
@@ -92,6 +88,10 @@ class TestRangesIndexes(TestCSVSlice):
 
 
 class TestRangesClosedIntervals(TestCSVSlice):
+    """
+    basically, ranges with closed intervals, e.g. '0-12,55-999', as opposed to '-12,55-'
+    """
+
     def test_single_interval(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
@@ -130,6 +130,40 @@ class TestRangesClosedIntervals(TestCSVSlice):
                 ],
             )
 
+    def test_zero_range(self):
+        """0 can be a special case because sometimes I forget how Python treats 0 as falsy/nonetype"""
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["-i", "0-3"],
+                [
+                    "id",
+                    "0",
+                    "1",
+                    "2",
+                    "3",
+                ],
+            )
+
+    def test_start_equals_end_is_fine(self):
+        """why would user do this, who knows, but it's technically fine"""
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["-i", "0-0"],
+                [
+                    "id",
+                    "0",
+                ],
+            )
+
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["-i", "3-3"],
+                [
+                    "id",
+                    "3",
+                ],
+            )
+
 
 class TestRangesOpenIntervals(TestCSVSlice):
     def test_lower_bound(self):
@@ -144,6 +178,25 @@ class TestRangesOpenIntervals(TestCSVSlice):
                 ],
             )
 
+    def test_lower_bound_zero_all(self):
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["-i", "1-"],
+                [
+                    "id",
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                    "6",
+                    "7",
+                    "8",
+                    "9",
+                ],
+            )
+
+    def test_lower_bound_combo(self):
         with stdin_as_string(self.ifile):
             self.assertLines(
                 ["-i", "0-2,6-8,7-"],
@@ -261,14 +314,174 @@ class TestErrors(TestCSVSlice):
 ###################################################################################################
 ### Tests that verify my documentation examples
 ###################################################################################################
-class TestDocExamples(TestCSVSlice):
+class TestDoc(TestCSVSlice):
     """Tests that verify my documentation examples"""
 
-    pass
+    src_path = "examples/ids.csv"
 
-    # @property
-    # def ifile(self):
-    #     return StringIO("")
 
-    # def test_intro_example(self):
-    #     pass
+class TestDocIntro(TestDoc):
+    def test_intro(self):
+        data = StringIO("id,val\n0,a\n1,b\n2,c\n3,d\n")
+        with stdin_as_string(data):
+            self.assertLines(
+                ["-i", "0,2-3"],
+                [
+                    "id,val",
+                    "0,a",
+                    "2,c",
+                    "3,d",
+                ],
+            )
+
+
+class TestDocIndexes(TestDoc):
+    def test_by_index(self):
+        self.assertLines(
+            ["-i", "1", self.src_path],
+            [
+                "id,val",
+                "1,b",
+            ],
+        )
+
+    def test_by_indexes(self):
+        self.assertLines(
+            ["-i", "0,5", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "5,f",
+            ],
+        )
+
+
+class TestDocRanges(TestDoc):
+    def test_basic(self):
+        self.assertLines(
+            ["-i", "1-3", self.src_path],
+            [
+                "id,val",
+                "1,b",
+                "2,c",
+                "3,d",
+            ],
+        )
+
+    def test_open_end(self):
+        self.assertLines(
+            ["-i", "3-", self.src_path],
+            [
+                "id,val",
+                "3,d",
+                "4,e",
+                "5,f",
+            ],
+        )
+
+    def test_multiple(self):
+        self.assertLines(
+            ["-i", "0-1,3-", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "3,d",
+                "4,e",
+                "5,f",
+            ],
+        )
+
+    def test_combo_w_indexes(self):
+        self.assertLines(
+            ["-i", "0,2-3,5", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "2,c",
+                "3,d",
+                "5,f",
+            ],
+        )
+
+
+class TestDocQuirks(TestDoc):
+    def test_range_must_make_sense(self):
+        with self.assertRaises(InvalidRange) as e:
+            u = self.get_output(["-i", "3-1", "examples/ids.csv"])
+
+        self.assertIn(r"Invalid range specified: 3-1", str(e.exception))
+
+    def test_unordered(self):
+        self.assertLines(
+            ["-i", "4,0,2", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "2,c",
+                "4,e",
+            ],
+        )
+
+        self.assertLines(
+            ["-i", "4,0-2,3", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "2,c",
+                "3,d",
+                "4,e",
+            ],
+        )
+
+    def test_duplicates(self):
+        self.assertLines(
+            ["-i", "3,1,3,1,1", self.src_path],
+            [
+                "id,val",
+                "1,b",
+                "3,d",
+            ],
+        )
+
+        self.assertLines(
+            ["-i", "1,0-2,1-3", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "2,c",
+                "3,d",
+            ],
+        )
+
+    def test_by_index_nonexistent(self):
+        self.assertLines(
+            ["-i", "5,42", self.src_path],
+            [
+                "id,val",
+                "5,f",
+            ],
+        )
+
+        self.assertLines(
+            ["-i", "42", self.src_path],
+            [
+                "id,val",
+            ],
+        )
+
+    def test_(self):
+        self.assertLines(
+            ["-i", "0-5", self.src_path],
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "2,c",
+                "3,d",
+                "4,e",
+                "5,f",
+            ],
+        )

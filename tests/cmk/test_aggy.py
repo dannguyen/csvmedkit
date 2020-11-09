@@ -13,7 +13,6 @@ from tests.mk import (
 
 
 class TestParseAggyString(TestCase):
-
     def test_basic(self):
         ag = Aggy.parse_aggy_string("count")
         assert isinstance(ag, Aggy)

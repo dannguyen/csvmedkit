@@ -6,9 +6,12 @@
 
 ### csvslice
 
-- [ ] refresh usage memory
-- [ ] start on docs
-
+- [ ] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
+- do docs; this should be style and template for others
+    - [ ] write usage examples
+    - [ ] write "compared to"
+    - [ ] mention performance issues
+    - [ ] add census real-world scenario
 
 ### csvsed
 
@@ -22,6 +25,15 @@
 When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
 
 NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
+
+Current thoughts (2020-11-09):
+
+- `-A/--add <column_names>` to add/append headers
+- `--AX/--add-x/--AS/--add-sub <column_names` to add and overwrite/substitute header
+- `-G/--generic` to append generic headers
+- `-GX/--generic-sub/generic-x` to overwrite with generic headers
+
+Old thoughts:
 
 - Is there any reason to have `-B/--bash`? In what situation would a user want to replace existing data headers with generic headers?
     - [ ] not really, so kill it...

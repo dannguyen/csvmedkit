@@ -35,6 +35,7 @@ class CSVSlice(UniformReader, CmkMixedUtil):
         )
 
     def calculate_slice_ranges(self) -> typeNoReturn:
+        # TODO: this is ugly spaghetti but it works
         self.slice_ranges: typeList[typeSequence]
         self.slice_lower_bound: typeUnion[
             int, float
@@ -54,18 +55,20 @@ class CSVSlice(UniformReader, CmkMixedUtil):
                 # just a regular index
                 indexes.append(int(rtxt))
             else:
-                i_start, i_end = [int(i) if i else 0 for i in rtxt.split("-")]
-                if i_start and i_end:
-                    if i_end <= i_start:
+                # todo: this could be really cleaned up
+                i_start, i_end = rtxt.split("-")
+                i_start = int(i_start)
+                i_end = None if i_end == "" else int(i_end)
+                if i_end is None:
+                    # implicitly, there is an i_start, even if it's 0
+                    # interpret '9-' as '9 and everything bigger'
+                    self.slice_lower_bound = min(self.slice_lower_bound, i_start)
+                else:
+                    # implicitly, i_start and i_end are both there
+                    if i_end < i_start:
                         raise InvalidRange(f"Invalid range specified: {rtxt}")
                     else:
                         intervals.append(range(i_start, i_end + 1))
-                elif i_end:
-                    # interpret '-42' as: everything from 0 to 42
-                    intervals.append(range(0, i_end + 1))
-                elif i_start:
-                    # interpret '9-' as '9 and everything bigger'
-                    self.slice_lower_bound = min(self.slice_lower_bound, i_start)
 
         self.slice_ranges = [sorted(indexes)] + intervals
 
