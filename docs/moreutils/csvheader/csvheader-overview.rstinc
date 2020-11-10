@@ -1,0 +1,25 @@
+
+High level overview TK
+======================
+
+In its most basic invocation, :command:`csvheader` simply produces a list of column names in CSV format::
+
+    $ csvheader examples/heady.csv
+
+    index,field
+    1,A
+    2, B Sharps
+    3,"SEA, shells!"
+
+However, enabling any of its renaming options, such as ``--slug``, will reproduce the input data with its headers renamed::
+
+    $ csvheader --slugify examples/heady.csv
+
+    a,b_sharps,sea_shells
+    100,cats,Iowa
+    200,dogs,Ohio
+
+
+
+Examples and stuff TK
+

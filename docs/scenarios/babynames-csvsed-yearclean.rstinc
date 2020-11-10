@@ -1,0 +1,40 @@
+.. _babynames-csvsed-yearclean:
+
+
+Using csvsed to clean up the SSA babynames data
+-----------------------------------------------
+
+
+Continued from: :ref:`babynames-csvheader`
+
+
+Given file :download:`babynames-yob.csv </../examples/real/babynames-yob.csv>`
+
+
+.. code-block:: text
+
+
+    year,name,sex,count
+    yob1880.txt,Mary,F,7065
+    yob1880.txt,Anna,F,2604
+    yob1880.txt,Emma,F,2003
+    ...
+    yob2018.txt,Zyrie,M,5
+    yob2018.txt,Zyron,M,5
+    yob2018.txt,Zzyzx,M,5
+
+
+
+TK you can do:
+
+
+TK make test
+
+.. code-block:: sh
+
+    $ csvsed 'yob(\d{4}).txt' '\1' babynames-yob.csv
+      year,name,sex,count
+      1880,Mary,F,7065
+      1880,James,F,22
+      1880,Leslie,F,8
+      1880,James,M,5927

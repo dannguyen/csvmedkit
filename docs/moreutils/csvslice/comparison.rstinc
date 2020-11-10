@@ -1,0 +1,55 @@
+
+How csvslice compares to existing tools
+=======================================
+
+
+head/tail
+---------
+
+csvkit --skip-lines
+-------------------
+
+
+xsv slice
+---------
+
+
+Getting a single record by index::
+
+    xsv slice -i 12 data.csv
+
+    csvslice -i 12 data.csv
+
+
+
+Getting a range of records::
+
+    xsv slice -s 5 -e 12
+
+    csvslice -i 5-12
+
+
+Getting records from index 14 on::
+
+    xsv slice -s 14
+
+
+    csvslice -i '14-'
+
+
+Getting the first 13 records::
+
+    xsv slice -e 13
+
+
+    csvslice -i '0-12'
+
+
+The agate library
+-----------------
+
+TK
+
+
+The pandas library
+------------------

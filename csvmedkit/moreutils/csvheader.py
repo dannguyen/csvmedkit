@@ -28,29 +28,39 @@ class CSVHeader(CmkUtil):
     ]
 
     def add_arguments(self):
+
         self.argparser.add_argument(
             "-A",
             "--add",
             dest="add_header",
+            metavar="<column_names>",
+            type=str,
+            help="""Add a header row of column names using a comma-delimited string, e.g. 'ID,cost,"name, proper"'""",
+        )
+
+        self.argparser.add_argument(
+            "--AX",
+            "--add-x",
+            dest="add_x_header",
+            metavar="<column_names>",
+            type=str,
+            help="""TKTK Add a header row of column names using a comma-delimited string, e.g. 'ID,cost,"name, proper"'""",
+        )
+
+        self.argparser.add_argument(
+            "-G",
+            "--generic",
+            dest="generic_header",
             action="store_true",
             help="""Add a header row of generic, numbered column names, starting from 1, e.g. field_1, field_2, and so on.""",
         )
 
         self.argparser.add_argument(
-            "-B",
-            "--bash",
-            dest="bash_header",
+            "--GX",
+            "--generic-x",
+            dest="generic_x_header",
             action="store_true",
-            help="""Bash (i.e. completely replace) the current header row with generic column names, e.g. field_1, field_2.""",
-        )
-
-        self.argparser.add_argument(
-            "-C",
-            "--create",
-            dest="create_header",
-            metavar="<column_names>",
-            type=str,
-            help="""Similar to `--add`, but specify column names with a comma-delimited string, e.g. 'ID,cost,"name, proper"'""",
+            help="""TKTK Bash (i.e. completely replace) the current header row with generic column names, e.g. field_1, field_2.""",
         )
 
         self.argparser.add_argument(
@@ -93,19 +103,35 @@ class CSVHeader(CmkUtil):
         )
 
     @property
-    def add_header(self) -> bool:
-        return self.args.add_header
+    def generic_header(self) -> bool:
+        return self.args.generic_header
 
     @property
-    def bash_header(self) -> bool:
-        return self.args.bash_header
+    def generic_x_header(self) -> bool:
+        return self.args.generic_x_header
 
     @property
-    def create_header(self) -> typeOptional[list]:
-        if self.args.create_header:
+    def add_header(self) -> typeOptional[list]:
+        if self.args.add_header:
+            return cmk_parse_delimited_str(self.args.add_header, delimiter=",")
+        else:
+            return None
+
+    @property
+    def add_x_header(self) -> typeOptional[list]:
+        """todo: refactor with add_header; added_custom_header"""
+        if self.args.add_x_header:
             return cmk_parse_delimited_str(
-                self.args.create_header, delimiter=","
+                self.args.add_x_header, delimiter=","
             )  # TK: do proper delimitation
+        else:
+            return None
+
+    @property
+    def added_custom_header(self) -> typeOptional[list]:
+        """TODO: refactor"""
+        if self.args.add_header or self.args.add_x_header:
+            return self.add_header if self.add_header else self.add_x_header
         else:
             return None
 
@@ -147,14 +173,14 @@ class CSVHeader(CmkUtil):
 
         rows = self.text_csv_reader()
 
-        if self.add_header or self.bash_header or self.create_header:
+        if self.generic_header or self.generic_x_header or self.added_custom_header:
             # sample first row to get a count of columns
             c_row = next(rows)
-            if self.create_header:
-                column_names = self.create_header
+            if self.added_custom_header:
+                column_names = self.added_custom_header
                 if len(column_names) != len(c_row):
                     raise ValueError(
-                        f"The data has {len(c_row)} columns, but {len(column_names)} column names were parsed from: `{self.args.create_header}`"
+                        f"The data has {len(c_row)} columns, but {len(column_names)} column names were parsed from: `{self.args.add_header}`"
                     )
             else:
                 # then it's generic column names
@@ -162,9 +188,9 @@ class CSVHeader(CmkUtil):
                     f"field_{i}" for i, _c in enumerate(c_row, self.column_start_index)
                 ]
 
-            # add_header and create_header assume the data had no header
+            # generic_header and add_header assume the data had no header
             # which means c_row is actually data and needs to be added back in
-            if self.add_header or self.create_header:
+            if self.generic_header or self.add_header:
                 rows = itertools.chain([c_row], rows)
 
         # all other options assume the data is "normal",
@@ -200,14 +226,15 @@ class CSVHeader(CmkUtil):
         elif any(
             m
             for m in (
+                self.generic_header,
+                self.generic_x_header,
                 self.add_header,
-                self.bash_header,
-                self.create_header,
+                self.add_x_header,
                 self.rename_headers,
                 self.slugify_mode,
                 self.sed_pattern,
-                # self.generic_columnized,  # i.e. a add_header or bash_header
-                # self.args.create_header,
+                # self.generic_columnized,  # i.e. a generic_header or generic_x_header
+                # self.args.add_header,
             )
         ):
             self.output_headers_only = False
@@ -220,10 +247,15 @@ class CSVHeader(CmkUtil):
 
         if 1 < sum(
             1 if i else 0
-            for i in (self.add_header, self.bash_header, self.create_header)
+            for i in (
+                self.generic_header,
+                self.generic_x_header,
+                self.add_header,
+                self.add_x_header,
+            )
         ):
             self.argparser.error(
-                "The --add, --bash, and --create options are mutually exclusive; pick one and only one"
+                "The --add, --add-x, --generic, and --generic-x options are mutually exclusive; pick one and only one."
             )
 
         rows, column_names = self._prepare_headers()

@@ -106,3 +106,10 @@ Example::
     5,Rob,John
     6,Jon,Abby
     7,Rob,Abby
+
+
+Real-world use cases
+====================
+
+
+.. include:: /scenarios/babynames-csvsed-yearclean.rstinc

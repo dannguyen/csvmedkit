@@ -1,7 +1,30 @@
+acs-pop.csv:
+  landing_page: https://data.census.gov/cedsci/table?q=population&g=0200000US1,2,3,4&tid=ACSDT1Y2019.B01003&moe=false&hidePreview=true
+  raw: ACSDT1Y2019.B01003_2020-11-10T165412.zip
+  description: |
+    ACS 2019 1-year Total Population table (B01003) for U.S. regions, no margin of error
+
+
+acs-race.csv:
+  landing_page: https://data.census.gov/cedsci/table?q=race&g=0200000US1,2,3,4&tid=ACSDT1Y2019.B02001&hidePreview=true
+  raw: ACSDT1Y2019.B02001_2020-11-10T164137.zip
+  description: |
+    ACS 2019 1-year Race estimate for U.S. regions
+
+acs-race-meta.csv:
+  landing_page: https://data.census.gov/cedsci/table?q=race&g=0200000US1,2,3,4&tid=ACSDT1Y2019.B02001&hidePreview=true
+
+babynames-single-year.csv:
+  wrangling: |
+    cp yob1907.txt babynames-single-year.csv
+
 babynames.csv:
   wrangling: |
-    cp yob1907.txt babynames.csv
+    csvstack *.txt -H --filenames | csvheader --AX 'year,name,sex,count' > /tmp/babynames.csv
 
+    cat /tmp/babynames.csv \
+      | xsv search '\b(?:Mary|James|Logan|Leslie|Hillary|Donald)\b' \
+      > babynames-yob.csv
 
 boardings.csv:
   landing_page: https://github.com/storydrivendatasets/faa_airport_boardings
@@ -33,6 +56,22 @@ surnames.csv:
   direct: https://www2.census.gov/topics/genealogy/2010surnames/names.zip
   wrangling:
     head -n 1000 Names_2010Census.csv
+
+
+potus-tweets.csv:
+  landing_page: https://twitter.com/POTUS/
+  cmd: |
+    twarc timeline POTUS --format csv > examples/real/potus-tweets.csv
+  wrangle: |
+    # a sample for testing csvnorm/csvflatten
+    xsv search '\n' examples/real/potus-tweets.csv  | xsv sample 10 > examples/tweets-newlines.csv
+  description: |
+    Latest tweets from @realDonaldTrump as of 2020-11-10
+
+    This data was generated using the twarc command-line tool, which converts the
+    Twitter JSON response to a flat CSV file.
+
+    https://github.com/DocNow/twarc#timeline
 
 white-house-salaries.csv:
   landing_page: https://github.com/storydrivendatasets/white_house_salaries

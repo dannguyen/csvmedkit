@@ -1,0 +1,125 @@
+Making multiline tweets easier to read
+--------------------------------------
+
+
+
+about the data TK
+^^^^^^^^^^^^^^^^^
+
+TK Raw data comes from Twitter's API and using twarc's flattened CSV version:
+
+- https://github.com/DocNow/twarc#timeline
+
+.. code-block:: sh
+
+    $ twarc timeline POTUS --format csv
+
+
+
+Reference file: :download:`tweets-newlines.csv </../examples/tweets-newlines.csv>`
+
+
+
+
+TK: image of data in excel
+
+
+.. code-block:: sh
+
+    $ csvflatten -P examples/tweets-newlines.csv
+
+
+First two tweets, in flattened format::
+
+.. code-block:: text
+
+
+    | field                        | value                                                  |
+    | ---------------------------- | ------------------------------------------------------ |
+    | id                           | 1196869405629702148                                    |
+    | tweet_url                    | https://twitter.com/POTUS/status/1196869405629702148   |
+    | created_at                   | Tue Nov 19 19:14:37 +0000 2019                         |
+    | parsed_created_at            | 2019-11-19 19:14:37+00:00                              |
+    | user_screen_name             | POTUS                                                  |
+    | text                         | Since the day President @realDonaldTrump took office,  |
+    |                              | House Democrats have ignored working Americans to      |
+    |                              | focus on their only real agenda item: impeachment.     |
+    |                              | Meanwhile, our country created $11 trillion in worth.  |
+    |                              | https://t.co/BwCBFMU2Tn                                |
+    | tweet_type                   | retweet                                                |
+    | coordinates                  |                                                        |
+    | hashtags                     |                                                        |
+    | media                        |                                                        |
+    | urls                         |                                                        |
+    | favorite_count               | 40704                                                  |
+    | in_reply_to_screen_name      |                                                        |
+    | in_reply_to_status_id        |                                                        |
+    | in_reply_to_user_id          |                                                        |
+    | lang                         | en                                                     |
+    | place                        |                                                        |
+    | possibly_sensitive           |                                                        |
+    | retweet_count                | 12547                                                  |
+    | retweet_or_quote_id          | 1196864730226401280                                    |
+    | retweet_or_quote_screen_name | WhiteHouse                                             |
+    | retweet_or_quote_user_id     | 822215673812119553                                     |
+    | source                       | <a href="https://www.sprinklr.com"                     |
+    |                              | rel="nofollow">TheWhiteHouse</a>                       |
+    | user_id                      | 822215679726100480                                     |
+    | user_created_at              | Thu Jan 19 22:54:28 +0000 2017                         |
+    | user_default_profile_image   | False                                                  |
+    | user_description             | 45th President of the United States of America,        |
+    |                              | @realDonaldTrump. Tweets archived:                     |
+    |                              | https://t.co/eVVzoBb3Zr                                |
+    | user_favourites_count        | 104                                                    |
+    | user_followers_count         | 32630758                                               |
+    | user_friends_count           | 39                                                     |
+    | user_listed_count            | 29517                                                  |
+    | user_location                | Washington, D.C.                                       |
+    | user_name                    | President Trump                                        |
+    | user_statuses_count          | 10928                                                  |
+    | user_time_zone               |                                                        |
+    | user_urls                    | http://WhiteHouse.gov                                  |
+    | user_verified                | True                                                   |
+    | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |                                                        |
+    | id                           | 1240016437248438276                                    |
+    | tweet_url                    | https://twitter.com/POTUS/status/1240016437248438276   |
+    | created_at                   | Tue Mar 17 20:45:31 +0000 2020                         |
+    | parsed_created_at            | 2020-03-17 20:45:31+00:00                              |
+    | user_screen_name             | POTUS                                                  |
+    | text                         | It's time for all Americans to do their part to stop   |
+    |                              | the transmission of the Coronavirus.   We will come    |
+    |                              | out stronger than ever before! https://t.co/u0SHHpRJ0l |
+    | tweet_type                   | retweet                                                |
+    | coordinates                  |                                                        |
+    | hashtags                     |                                                        |
+    | media                        |                                                        |
+    | urls                         |                                                        |
+    | favorite_count               | 15363                                                  |
+    | in_reply_to_screen_name      |                                                        |
+    | in_reply_to_status_id        |                                                        |
+    | in_reply_to_user_id          |                                                        |
+    | lang                         | en                                                     |
+    | place                        |                                                        |
+    | possibly_sensitive           |                                                        |
+    | retweet_count                | 3779                                                   |
+    | retweet_or_quote_id          | 1240016322920091655                                    |
+    | retweet_or_quote_screen_name | WhiteHouse                                             |
+    | retweet_or_quote_user_id     | 822215673812119553                                     |
+    | source                       | <a href="https://www.sprinklr.com"                     |
+    |                              | rel="nofollow">TheWhiteHouse</a>                       |
+    | user_id                      | 822215679726100480                                     |
+    | user_created_at              | Thu Jan 19 22:54:28 +0000 2017                         |
+    | user_default_profile_image   | False                                                  |
+    | user_description             | 45th President of the United States of America,        |
+    |                              | @realDonaldTrump. Tweets archived:                     |
+    |                              | https://t.co/eVVzoBb3Zr                                |
+    | user_favourites_count        | 104                                                    |
+    | user_followers_count         | 32630764                                               |
+    | user_friends_count           | 39                                                     |
+    | user_listed_count            | 29517                                                  |
+    | user_location                | Washington, D.C.                                       |
+    | user_name                    | President Trump                                        |
+    | user_statuses_count          | 10928                                                  |
+    | user_time_zone               |                                                        |
+    | user_urls                    | http://WhiteHouse.gov                                  |
+    | user_verified                | True                                                   |

@@ -1,0 +1,30 @@
+
+
+Options and flags
+=================
+
+:command:`csvslice` has only one unique and required option: ``-i/--include``
+
+.. note:: This is a required option.
+
+
+-i, --include <intervals>
+---------------------------
+
+`<intervals>` is a comma-delimited list of interval values representing indexes or ranges to be sliced from the 0-indexed dataset.
+
+An interval can take these forms::
+
+- ``-i 0`` — returns the very first row
+- ``-i 3-5`` - returns rows in the inclusive index range of 3 to 5
+- ``-i '5-'`` — returns all rows with index 5 or more
+
+
+Multiple interval values can be passed into ``-i/--include``, e.g.
+
+.. code-block:: sh
+
+    csvslice -i '0-5,12,15-18,42-' data.csv
+
+
+

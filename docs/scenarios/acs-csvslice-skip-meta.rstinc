@@ -1,0 +1,55 @@
+
+.. _acs-csvslice-skip-meta:
+
+Skipping the meta-header in Census data TK
+------------------------------------------
+
+
+
+About the data
+^^^^^^^^^^^^^^
+
+You can view the data on the `Census's Data site <https://data.census.gov/cedsci/table?q=population&g=0200000US1,2,3,4&tid=ACSDT1Y2019.B01003&moe=false&hidePreview=true>`_
+
+You can download a copy of the exported zip file: :download:`ACSDT1Y2019.B01003_2020-11-10T165412.zip </../examples/real/raw/ACSDT1Y2019.B01003_2020-11-10T165412.zip>`
+
+
+Given file :download:`acs-race.csv </../examples/real/acs-race.csv>`
+
+
+TK use csvflatten to show file, or include screenshot of data in Excel
+
+
+As you can see the first row of "data" is not really data, but another row of meta header, which we do not need.
+
+
+
+
+**TK: Using sed**
+
+
+Keep all rows but the second row, which is unneeded metadata TK
+
+.. code-block:: sh
+
+    $ sed '2d' acs-pop.csv
+    "GEO_ID","NAME","B01003_001E","B01003_001M"
+    "0200000US1","Northeast Region","55982803","*****"
+    "0200000US2","Midwest Region","68329004","*****"
+    "0200000US3","South Region","125580448","*****"
+    "0200000US4","West Region","78347268","*****"
+
+
+
+**using csvsed**
+
+
+
+.. code-block:: sh
+
+    $ csvslice -i '1-' acs-pop.csv
+    GEO_ID,NAME,B01003_001E,B01003_001M
+    0200000US1,Northeast Region,55982803,*****
+    0200000US2,Midwest Region,68329004,*****
+    0200000US3,South Region,125580448,*****
+    0200000US4,West Region,78347268,*****

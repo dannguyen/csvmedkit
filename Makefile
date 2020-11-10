@@ -49,13 +49,13 @@ clean-test: ## remove test and coverage artifacts
 
 
 test: ## run tests quickly with the default Python
-	nosetests
+	nosetests -x
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	nosetests --with-coverage --cover-package=csvmedkit
+	nosetests -x --with-coverage --cover-package=csvmedkit
 # 	coverage run --source csvmedkit setup.py test
 # 	coverage report -m
 # 	coverage html
@@ -70,7 +70,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	watchmedo shell-command -p '*.rst*' -c '$(MAKE) -C docs html' -R -D .
 
 release: dist ## package and upload a release
 	twine upload dist/*

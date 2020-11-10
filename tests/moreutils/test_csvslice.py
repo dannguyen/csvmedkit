@@ -46,7 +46,7 @@ class TestBasics(TestCSVSlice):
 
     def test_0_index(self):
         self.assertLines(
-            ["--intervals", "0", "examples/dummy.csv"],
+            ["--include", "0", "examples/dummy.csv"],
             [
                 "a,b,c",
                 "1,2,3",
@@ -70,7 +70,7 @@ class TestIndexes(TestCSVSlice):
 
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["--intervals", "9"],
+                ["--include", "9"],
                 ["id", "9"],
             )
 
@@ -269,35 +269,35 @@ class TestErrors(TestCSVSlice):
                 u = self.get_output(["examples/dummy.csv"])
         self.assertEqual(e.exception.code, 2)
         self.assertIn(
-            r"the following arguments are required: -i/--intervals", ioerr.getvalue()
+            r"the following arguments are required: -i/--include", ioerr.getvalue()
         )
 
     def test_invalid_interval_strings(self):
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "1,a", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --intervals argument, '1,a', has an incorrectly formatted value: 'a'",
+            r"Your --include argument, '1,a', has an incorrectly formatted value: 'a'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "20--20", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --intervals argument, '20--20', has an incorrectly formatted value: '20--20'",
+            r"Your --include argument, '20--20', has an incorrectly formatted value: '20--20'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "-5", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --intervals argument, '-5', has an incorrectly formatted value: '-5'",
+            r"Your --include argument, '-5', has an incorrectly formatted value: '-5'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "1,-5", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --intervals argument, '1,-5', has an incorrectly formatted value: '-5'",
+            r"Your --include argument, '1,-5', has an incorrectly formatted value: '-5'",
             str(e.exception),
         )
 

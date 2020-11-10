@@ -6,16 +6,13 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
 
 .. toctree::
    :maxdepth: 1
+   :glob:
    :caption: The utilities:
 
-   moreutils/csvheader
-   moreutils/csvflatten
-   moreutils/csvnorm
-   moreutils/csvpivot
-   moreutils/csvsed
-   moreutils/csvslice
+   moreutils/*/index
 
 
+   moreutils/*
 
 
 FAQ

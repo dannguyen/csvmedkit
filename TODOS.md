@@ -6,7 +6,7 @@
 
 ### csvslice
 
-- [ ] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
+- [x] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
 - do docs; this should be style and template for others
     - [ ] write usage examples
     - [ ] write "compared to"
@@ -22,11 +22,11 @@
 
 ### csvheader 
 
-When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
+- [x] `-A` and `--AX` options for adding/overwriting a header by passing in a comma-delimited string of column names
+- [x] `-G` and `--GX` options for adding/overwriting a header with generic field names
+- [x] `-B` and `-C` (bash/create) have been killed for being too confusing  
 
-NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
-
-Current thoughts (2020-11-09):
+old thoughts (2020-11-09):
 
 - `-A/--add <column_names>` to add/append headers
 - `--AX/--add-x/--AS/--add-sub <column_names` to add and overwrite/substitute header
@@ -35,10 +35,15 @@ Current thoughts (2020-11-09):
 
 Old thoughts:
 
+When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
+
+NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
+
+
 - Is there any reason to have `-B/--bash`? In what situation would a user want to replace existing data headers with generic headers?
     - [ ] not really, so kill it...
 - [ ] is `-R/--rename` convention particularly graceful/convenient?
-- [ ] Instead of `-C`, maybe we should have some kind of `--replace`.
+- [x] Instead of `-C`, maybe we should have some kind of `--replace`.
 - [ ] But `--replace` is confusing with `--rename`, so maybe use `-C/--change/clobber`, or `-O/--overwrite`?
 - [ ] `-X/--regex` should just be `--regex` for now?
 
@@ -223,7 +228,7 @@ Overall stuff
 
 
 csvslice:
-    - [X] implementation with simplified `-i/--intervals` option (0.0.9.11)
+    - [X] implementation with simplified `-i/--include` option (0.0.9.11)
     - [x] tests (0.0.9.11)
 
 

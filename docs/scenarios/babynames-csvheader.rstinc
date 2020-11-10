@@ -1,4 +1,4 @@
-
+.. _babynames-csvheader:
 
 
 Adding a header to the Social Security babynames data
@@ -23,10 +23,10 @@ Each file contains the same 3 columns — name, sex, and count — but *sans* he
     Emma,F,2003
 
 
-Invoking ``csvheader`` with the ``-A/--add`` flag will add generic column names to the data of each individual file, e.g.::
+Invoking ``csvheader`` with the ``-G/--generic`` flag will add generic column names to the data of each individual file, e.g.::
 
 
-    $ csvheader -A yob1880.txt
+    $ csvheader -G yob1880.txt
     field_1,field_2,field_3
     Mary,F,7065
     Anna,F,2604
@@ -35,9 +35,9 @@ Invoking ``csvheader`` with the ``-A/--add`` flag will add generic column names 
     ...
 
 
-But it's not much more work to add our own useful column names using the ``-C/--create`` option::
+But it's not much more work to add our own useful column names using the ``-A/--add`` option::
 
-    $ csvheader yob1880.txt -C 'name,sex,count'
+    $ csvheader yob1880.txt -A 'name,sex,count'
     name,sex,count
     Mary,F,7065
     Anna,F,2604
@@ -69,12 +69,24 @@ However, with ``csvstack --filenames``, that vital year context is included in t
     yob2018.txt,Zzyzx,M,5
 
 
-So combining that with ``csvhheader --rename``::
+So combining that with ``csvhheader --AX/--add-x``::
 
-    $ csvstack *.txt -H --filenames | csvheader -R 'file,name,sex,count' > babynames.csv
+    $ csvstack *.txt -H --filenames | csvheader --AX 'year,name,sex,count' > babynames.csv
 
 — results in ``babynames.csv`` looking like::
 
 
+    year,name,sex,count
+    yob1880.txt,Mary,F,7065
+    yob1880.txt,Anna,F,2604
+    yob1880.txt,Emma,F,2003
+    ...
+    yob2018.txt,Zyrie,M,5
+    yob2018.txt,Zyron,M,5
+    yob2018.txt,Zzyzx,M,5
 
 
+TK make test
+
+
+To see how to clean up the ``year`` column — e.g. change ``'yob2018.txt'`` to ``'2018'``, see: :ref:`babynames-csvsed-yearclean`

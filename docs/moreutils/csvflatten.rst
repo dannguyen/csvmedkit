@@ -483,4 +483,8 @@ Note that ``-rec-id`` by default disables the end-of-record separator
 Common scenarios and use cases
 ==============================
 
-TK TK
+
+.. include:: /scenarios/tweets-csvflatten.rstinc
+
+
+

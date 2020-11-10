@@ -26,12 +26,12 @@ class CSVSlice(UniformReader, CmkMixedUtil):
 
         self.argparser.add_argument(
             "-i",
-            "--intervals",
+            "--include",
             dest="slice_ranges_str",
             metavar="<intervals>",
             required=True,
             type=str,
-            help="""Comma-delimited string of intervals to slice, including individual indexes and ranges, e.g. '0' or '0-6,12', or '0-6,12-'""",
+            help="""Comma-delimited string of intervals to include. Can be individual indexes and ranges, e.g. '0' or '0-6,12', or '0-6,12-'""",
         )
 
     def calculate_slice_ranges(self) -> typeNoReturn:
@@ -48,7 +48,7 @@ class CSVSlice(UniformReader, CmkMixedUtil):
             rtxt = re.sub(r"\s+", "", txt).strip()
             if not re.match(r"^(?:\d+|\d+-|\d+-\d+)$", rtxt):
                 raise IncorrectlyFormattedString(
-                    f"Your --intervals argument, '{self.args.slice_ranges_str}', has an incorrectly formatted value: '{txt}'"
+                    f"Your --include argument, '{self.args.slice_ranges_str}', has an incorrectly formatted value: '{txt}'"
                 )
 
             if "-" not in rtxt:
