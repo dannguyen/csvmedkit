@@ -27,22 +27,9 @@ For example, given a ``data.csv`` containing this::
     description,An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C.
 
 
-A common use case is to produce "pretty" output — e.g. Markdown-table format — which can be easier to skim than a spreadsheet, especially for very *wide* data::
 
-    $ csvflatten -P data.csv
-    | field       | value                                                 |
-    | ----------- | ----------------------------------------------------- |
-    | id          | 001                                                   |
-    | product     | apples                                                |
-    | price       | 1.50                                                  |
-    | description | An apple is an edible fruit produced by an apple tree |
-    |             | (Malus domestica)                                     |
-    | ~~~~~~~~~~~ |                                                       |
-    | id          | 002                                                   |
-    | product     | oranges                                               |
-    | price       | 2.25                                                  |
-    | description | An orange is a type of citrus fruit that people often |
-    |             | eat. Oranges are a very good source of vitamin C.     |
+TK jump to prettify section
+
 
 .. contents:: Table of contents
    :local:
@@ -60,6 +47,25 @@ Usage reference
 Print output in Markdown tabular format instead of CSV
 
 TK
+
+
+A common use case is to produce "pretty" output — e.g. Markdown-table format — which can be easier to skim than a spreadsheet, especially for very *wide* data::
+
+    $ csvflatten -P data.csv
+    | field       | value                                                 |
+    | ----------- | ----------------------------------------------------- |
+    | id          | 001                                                   |
+    | product     | apples                                                |
+    | price       | 1.50                                                  |
+    | description | An apple is an edible fruit produced by an apple tree |
+    |             | (Malus domestica)                                     |
+    | ~~~~~~~~~~~ |                                                       |
+    | id          | 002                                                   |
+    | product     | oranges                                               |
+    | price       | 2.25                                                  |
+    | description | An orange is a type of citrus fruit that people often |
+    |             | eat. Oranges are a very good source of vitamin C.     |
+
 
 
 ``-L, --max-length <max_length_of_field>``
@@ -118,7 +124,7 @@ The "flattened" view of its 2 records would look like this:
    id,001
    product,apples
    price,1.50
-   ~TK~~~~,
+   ~~~~~,
    id,002
    product,oranges
    price,2.25
@@ -126,6 +132,12 @@ The "flattened" view of its 2 records would look like this:
 
 Basic example
 -------------
+
+Given a data file, :ref:`ids.csv <example-data-ids-csv>`:
+
+
+TK given :ref:`hamlet.csv <example-data-hamlet-csv>`: hey
+
 
 By default, :command:`csvflatten` produces CSV output without word-wrapping long fields (such as the ``lines`` field in the example below). But the most common use-case is to produce *pretty* tabular output, including word-wrapping long fields to the width of the terminal. This is done using the ``-P/--prettify`` flag::
 
@@ -169,24 +181,11 @@ This output is suitable for pasting into a `Markdown file <https://gist.github.c
     :alt: hamlet-markdown-table.png
 
 
-
-For reference's sake, this is what :download:`hamlet.csv </../examples/hamlet.csv>` contains::
-
-    act,scene,speaker,lines
-    1,5,Horatio,"Propose the oath, my lord."
-    1,5,Hamlet,"Never to speak of this that you have seen,
-    Swear by my sword."
-    1,5,Ghost,[Beneath] Swear.
-    3,4,Gertrude,"O, speak to me no more;
-    These words, like daggers, enter in mine ears;
-    No more, sweet Hamlet!"
-    4,7,Laertes,Know you the hand?
-
-(note the multi-line fields for the 2nd and 4th records)
+TK mention how hamlet.csv has new lines
 
 
-
-
+.. literalinclude:: ../../../examples/hamlet.csv
+   :emphasize-lines: 3-4,6-8
 
 
 

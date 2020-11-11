@@ -5,12 +5,17 @@ csvslice
 :command:`csvslice` is a command for selecting rows by 0-based index and/or inclusive ranges.
 
 
-Given :download:`example.csv`:
+Given a data file, :ref:`ids.csv <example-data-ids-csv>`:
 
 
 .. code-block:: shell
 
-    $ csvslice -i 0,2-3 example.csv
+    $ csvslice -i 0,2-3 ids.csv
+
+
+The output::
+
+    source
     id,val
     a,0
     c,2

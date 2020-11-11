@@ -8,8 +8,8 @@ TODO: section on benchmarks
 - make this its own include file
 
 
-xsv slice: Get a single record
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xsv slice a single record
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: sh
 
@@ -29,8 +29,8 @@ lorem ipsum
 However, performance is *much* slower! Lorem ipsum TK.
 
 
-xsv slice: Get the first n records
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xsv slice the first n records
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: sh
 
@@ -48,8 +48,8 @@ xsv slice: Get the first n records
 Note that :command:`xsv slice` has no ``tail``-like functionality, i.e. returning the last *n* rows.
 
 
-xsv slice: Get a range of records
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+xsv slice a range of records
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: sh
 

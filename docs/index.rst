@@ -10,8 +10,6 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
    :caption: The utilities:
 
    utilities/*/index
-
-
    utilities/*
 
 
@@ -43,9 +41,18 @@ Indices and tables
    history
 
 
+
 .. toctree::
    :maxdepth: 2
    :caption: Cookbook
 
    cookbook/index
+
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Appendix
+
+   appendix/data-samples
 

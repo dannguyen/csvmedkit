@@ -45,6 +45,9 @@ autosectionlabel_prefix_document = True
 
 
 nitpicky = True
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-smartquotes
+# https://github.com/docutils-mirror/docutils/blob/master/docutils/utils/smartquotes.py
+smartquotes_action = "qe"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
