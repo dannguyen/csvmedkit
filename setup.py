@@ -65,12 +65,12 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "csvflatten = csvmedkit.utilities.csvflatten:launch_new_instance",
-            "csvheader = csvmedkit.utilities.csvheader:launch_new_instance",
-            "csvnorm   = csvmedkit.utilities.csvnorm:launch_new_instance",
-            "csvpivot   = csvmedkit.utilities.csvpivot:launch_new_instance",
-            "csvsed     = csvmedkit.utilities.csvsed:launch_new_instance",
-            "csvslice     = csvmedkit.utilities.csvslice:launch_new_instance",
+            "csvflatten = csvmedkit.utils.csvflatten:launch_new_instance",
+            "csvheader  = csvmedkit.utils.csvheader:launch_new_instance",
+            "csvnorm    = csvmedkit.utils.csvnorm:launch_new_instance",
+            "csvpivot   = csvmedkit.utils.csvpivot:launch_new_instance",
+            "csvsed     = csvmedkit.utils.csvsed:launch_new_instance",
+            "csvslice   = csvmedkit.utils.csvslice:launch_new_instance",
 
         ]
     },

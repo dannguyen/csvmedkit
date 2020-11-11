@@ -6,7 +6,7 @@ import sys
 
 
 from csvmedkit.exceptions import *
-from csvmedkit.utilities.csvflatten import (
+from csvmedkit.utils.csvflatten import (
     CSVFlatten,
     launch_new_instance,
     DEFAULT_EOR_MARKER,
@@ -406,7 +406,7 @@ class TestPrettify(TestCSVFlatten):
             ],
         )
 
-    @patch("csvmedkit.utilities.csvflatten.get_terminal_size")
+    @patch("csvmedkit.utils.csvflatten.get_terminal_size")
     def test_prettify_uses_terminal_size_by_default(self, mock_get_tsize):
         Tz = namedtuple("terminal_size", ["columns", "lines"])
         mock_get_tsize.return_value = Tz(23, 42)
@@ -428,7 +428,7 @@ class TestPrettify(TestCSVFlatten):
             ],
         )
 
-    @patch("csvmedkit.utilities.csvflatten.get_terminal_size")
+    @patch("csvmedkit.utils.csvflatten.get_terminal_size")
     def test_prettify_ignores_terminal_size_if_too_small(self, mock_get_tsize):
         """
         if the calculated field widths are wider than the terminal (by the margin of a padding value),

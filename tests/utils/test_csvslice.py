@@ -13,7 +13,7 @@ from tests.mk import (
 )
 
 from csvmedkit.exceptions import *
-from csvmedkit.utilities.csvslice import CSVSlice, launch_new_instance
+from csvmedkit.utils.csvslice import CSVSlice, launch_new_instance
 
 
 class TestCSVSlice(CmkTestCase):

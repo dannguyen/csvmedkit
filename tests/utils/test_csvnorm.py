@@ -15,7 +15,7 @@ from tests.mk import (
 )
 
 from csvmedkit.exceptions import ColumnIdentifierError
-from csvmedkit.utilities.csvnorm import CSVNorm, Helpers, launch_new_instance
+from csvmedkit.utils.csvnorm import CSVNorm, Helpers, launch_new_instance
 
 
 class TestCSVNorm(CmkTestCase):

@@ -9,8 +9,8 @@ The unofficial extended family of csvkit, i.e. even more tools for command-line 
    :glob:
    :caption: The utilities:
 
-   utilities/*/index
-   utilities/*
+   utils/*/index
+   utils/*
 
 
 FAQ

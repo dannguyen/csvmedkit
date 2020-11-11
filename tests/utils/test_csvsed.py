@@ -14,7 +14,7 @@ from tests.mk import (
 )
 
 from csvmedkit.exceptions import ColumnIdentifierError
-from csvmedkit.utilities.csvsed import CSVSed, launch_new_instance
+from csvmedkit.utils.csvsed import CSVSed, launch_new_instance
 
 
 class TestCSVSed(CmkTestCase):
