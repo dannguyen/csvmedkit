@@ -1,26 +1,41 @@
 # TODOS
 
 
-## 0.9.13
+## 0.9.14
 
+**csvslice**
 
-### csvslice
-
-- [x] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
 - do docs; this should be style and template for others
+    - [ ] document new --head and --tail options
     - [ ] write usage examples
     - [ ] write "compared to"
-    - [ ] mention performance issues
+    - [ ] mention performance issues with xsv slice
     - [ ] add census real-world scenario
+    - [ ] scenario when comboing with csvsort (most popular baby names?)
 
-### csvsed
+
+-----------------------
+
+
+
+
+## 0.9.13 (pushed on 2020-11-11)
+
+**csvslice**
+
+- [x] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
+- [x] rename `--include` to `--indexes`
+- [x] create `--head` option, and make `--indexes` optional
+- [x] create `--tail` option; use a queue?
+
+**csvsed**
 
 - [x] change `-G/--like-grep` to `-F/--filter`
     - [x] wrote lots of tests to cover combinations of --columns and --filter
     - [x] wrote lots of tests for intermixing of args and opts and stdin
     - [ ] update documentation
 
-### csvheader 
+**csvheader**
 
 - [x] `-A` and `--AX` options for adding/overwriting a header by passing in a comma-delimited string of column names
 - [x] `-G` and `--GX` options for adding/overwriting a header with generic field names

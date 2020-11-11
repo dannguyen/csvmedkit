@@ -7,8 +7,27 @@ Usage overview and examples
 These examples refer to data as found in :download:`ids.csv </../examples/ids.csv>`
 
 
-Slicing individual rows by index
+Get the first n rows with --head
 --------------------------------
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+cillum dolor
+
+
+Get the last n rows with --tail
+-------------------------------
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+Slicing individual rows with --index
+------------------------------------
 
 You can specify rows to be sliced by 0-based index:
 
@@ -34,8 +53,8 @@ You can also specify a series of individual indexes as a comma-delimited string:
 
 
 
-Slicing rows by range
----------------------
+Slicing rows by an index range
+------------------------------
 
 Rows can be specified by using a range syntax: ``start-end``
 
@@ -103,7 +122,7 @@ Even though ``3-1`` and is technically a valid range,  :command:`csvslice` will 
     InvalidRange: Invalid range specified: 3-1
 
 
-For the most part, though, :command:`csvslice` isn't too whiny (in terms of warning you) about messy or otherwise nonsensical values for ``-i/--include``.
+For the most part, though, :command:`csvslice` isn't too whiny (in terms of warning you) about messy or otherwise nonsensical values for ``-i/--indexes``.
 
 No matter what order you specify the indexes and ranges, it will always return rows in sequential order:
 

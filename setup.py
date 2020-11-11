@@ -72,7 +72,6 @@ setup(
             "csvsed     = csvmedkit.utilities.csvsed:launch_new_instance",
             "csvslice     = csvmedkit.utilities.csvslice:launch_new_instance",
 
-
         ]
     },
     install_requires=install_requires,

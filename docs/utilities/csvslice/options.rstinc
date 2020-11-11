@@ -3,15 +3,13 @@
 Options and flags
 =================
 
-:command:`csvslice` has only one unique and required option: ``-i/--include``
-
-.. note:: This is a required option.
+:command:`csvslice` has 3 unique options, ``--indexes, --head, and --tail``. Each of these specify a *mode*, and one and only one mode can be specified.
 
 
--i, --include <intervals>
----------------------------
+-i, --indexes <values>
+----------------------
 
-`<intervals>` is a comma-delimited list of interval values representing indexes or ranges to be sliced from the 0-indexed dataset.
+`<values>` is a comma-delimited list of values representing individual indexes or ranges of indexes to be sliced and included from the 0-indexed dataset.
 
 An interval can take these forms::
 
@@ -20,7 +18,7 @@ An interval can take these forms::
 - ``-i '5-'`` — returns all rows with index 5 or more
 
 
-Multiple interval values can be passed into ``-i/--include``, e.g.
+Multiple interval values can be passed into ``-i/--indexes``, e.g.
 
 .. code-block:: sh
 
@@ -28,3 +26,14 @@ Multiple interval values can be passed into ``-i/--include``, e.g.
 
 
 
+--head <int>
+------------
+
+Return the header and the *first* `<int>` rows; `<int>` must be greater than 0.
+
+
+
+--tail <int>
+------------
+
+Return the header and the *last* `<int>` rows; `<int>` must be greater than 0.

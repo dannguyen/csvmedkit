@@ -4,10 +4,18 @@ csvmedkit
 
 The unofficial extended family of csvkit, i.e. even more tools for command-line data parsing and wrangling.
 
-**Status as of 2020-10-20**: Working toward 0.1 version, with 4-5 of the most useful functions ported over from the old csvkitcat lib.
+**Status as of 2020-11-11**: Working toward 0.9 version, with these utilities:
 
 
-Read existing docs as csvmedkit is updated at `csvmedkit.readthedocs.io <https://csvmedkit.readthedocs.io/>`_
+- csvflatten: reformat data for easier browsing of "wide" data
+- csvheader: add/alter a data file's column names
+- csvnorm: normalize unprintable characters and whitespace
+- csvpivot: do pivot tables
+- csvsed: do sed substitution on a per-column basis
+- csvslice: return rows by index, including head/tail to get first/last n rows
+
+
+Read the in-progress docs at: `csvmedkit.readthedocs.io <https://csvmedkit.readthedocs.io/>`_
 
 
 

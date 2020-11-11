@@ -8,6 +8,7 @@ from tests.mk import (
     EmptyFileTests,
     stdin_as_string,
     patch,
+    parameterized,
     skiptest,
 )
 
@@ -47,7 +48,7 @@ class TestBasics(TestCSVSlice):
 
     def test_0_index(self):
         self.assertLines(
-            ["--include", "0", "examples/dummy.csv"],
+            ["--indexes", "0", "examples/dummy.csv"],
             [
                 "a,b,c",
                 "1,2,3",
@@ -71,7 +72,7 @@ class TestIndexes(TestCSVSlice):
 
         with stdin_as_string(self.ifile):
             self.assertLines(
-                ["--include", "9"],
+                ["--indexes", "9"],
                 ["id", "9"],
             )
 
@@ -85,6 +86,46 @@ class TestIndexes(TestCSVSlice):
                     "2",
                     "9",
                 ],
+            )
+
+
+class TestHead(TestCSVSlice):
+    @property
+    def ifile(self):
+        return StringIO("id\n" + "\n".join(str(i) for i in range(0, 5)))
+
+    def test_basic(self):
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["--head", "2"],
+                ["id", "0", "1"],
+            )
+
+    def test_out_of_bounds(self):
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["--head", "20"],
+                ["id", "0", "1", "2", "3", "4"],
+            )
+
+
+class TestTail(TestCSVSlice):
+    @property
+    def ifile(self):
+        return StringIO("id\n" + "\n".join(str(i) for i in range(0, 5)))
+
+    def test_basic(self):
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["--tail", "2"],
+                ["id", "3", "4"],
+            )
+
+    def test_out_of_bounds(self):
+        with stdin_as_string(self.ifile):
+            self.assertLines(
+                ["--tail", "20"],
+                ["id", "0", "1", "2", "3", "4"],
             )
 
 
@@ -228,77 +269,128 @@ class TestRangesOpenIntervals(TestCSVSlice):
                 ],
             )
 
-    # cancelling these, since argparser does not like hyphen-leading arguments
-    # def test_upper_bounded(self):
-    #     with stdin_as_string(self.ifile):
-    #         self.assertLines(
-    #         ['-i', '-4'],
-    #             [
-    #                 'id',
-    #                 '0',
-    #                 '1',
-    #                 '2',
-    #                 '3',
-    #                 '4',
-
-    #             ],
-    #         )
-
-    #     with stdin_as_string(self.ifile):
-    #         self.assertLines(
-    #              ['-i', '-3,2-3,9,0'],
-    #             [
-    #                 'id',
-    #                 '0',
-    #                 '1',
-    #                 '2',
-    #                 '3',
-    #                 '9',
-    #             ],
-    #         )
-
 
 class TestEdgeCases(TestCSVSlice):
     pass
 
 
 class TestErrors(TestCSVSlice):
-    def test_ranges_is_required(self):
+    def test_at_least_one_required_opt(self):
+        """
+        -i/--indexes used to be the only option, and required.
+        With --head and --tail, this is no longer the case...
+        """
         ioerr = StringIO()
         with contextlib.redirect_stderr(ioerr):
             with self.assertRaises(SystemExit) as e:
                 u = self.get_output(["examples/dummy.csv"])
         self.assertEqual(e.exception.code, 2)
         self.assertIn(
-            r"the following arguments are required: -i/--include", ioerr.getvalue()
+            r"At least one of the following options must be included: --indexes, --head, or --tail",
+            ioerr.getvalue(),
         )
 
-    def test_invalid_interval_strings(self):
+    @parameterized.expand(
+        [
+            (
+                "--indexes",
+                "1",
+                "--head",
+                "1",
+                "--tail",
+                "1",
+            ),
+            (
+                "--indexes",
+                "1",
+                "--head",
+                "1",
+            ),
+            (
+                "--indexes",
+                "1",
+                "--tail",
+                "1",
+            ),
+            (
+                "--head",
+                "1",
+                "--tail",
+                "1",
+            ),
+        ]
+    )
+    def test_one_and_only_one_required_opt(self, *opts):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as e:
+                self.get_output([*opts, "examples/dummy.csv"])
+
+        self.assertEqual(e.exception.code, 2)
+        opttxt = [opts[0], opts[2]] if len(opts) < 6 else [opts[0], opts[2], opts[4]]
+        opttxt = ", ".join(opttxt)
+        self.assertIn(
+            f"""You specified options {opttxt}. But only one of these options""",
+            ioerr.getvalue(),
+        )
+
+    @parameterized.expand(
+        [
+            (
+                "--head",
+                "0",
+            ),
+            (
+                "--head",
+                "-5",
+            ),
+            (
+                "--tail",
+                "0",
+            ),
+            (
+                "--tail",
+                "-3",
+            ),
+        ]
+    )
+    def test_head_and_tail_arg_must_be_greater_than_zero(self, *opts):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as e:
+                self.get_output([*opts, "examples/ids.csv"])
+
+        self.assertEqual(e.exception.code, 2)
+        self.assertIn(
+            f"""{opts[0]} must be greater than 0, not {opts[1]}""", ioerr.getvalue()
+        )
+
+    def test_invalid_indexes_strings(self):
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "1,a", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --include argument, '1,a', has an incorrectly formatted value: 'a'",
+            r"Your --indexes argument, '1,a', has an incorrectly formatted value: 'a'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "20--20", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --include argument, '20--20', has an incorrectly formatted value: '20--20'",
+            r"Your --indexes argument, '20--20', has an incorrectly formatted value: '20--20'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "-5", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --include argument, '-5', has an incorrectly formatted value: '-5'",
+            r"Your --indexes argument, '-5', has an incorrectly formatted value: '-5'",
             str(e.exception),
         )
 
         with self.assertRaises(IncorrectlyFormattedString) as e:
             u = self.get_output(["-i", "1,-5", "examples/dummy.csv"])
         self.assertIn(
-            r"Your --include argument, '1,-5', has an incorrectly formatted value: '-5'",
+            r"Your --indexes argument, '1,-5', has an incorrectly formatted value: '-5'",
             str(e.exception),
         )
 
@@ -488,12 +580,113 @@ class TestDocQuirks(TestDoc):
         )
 
 
+class TestDocComparisons(TestDoc):
+    datapath = "examples/ids.csv"
+
+    def test_vs_head(self):
+        self.assertCmdLines(
+            f"head -n 3 {self.datapath}",
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+            ],
+        )
+
+        self.assertCmdLines(
+            f"csvslice --head 3 {self.datapath}",
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "2,c",
+            ],
+        )
+
+    def test_vs_tail(self):
+        self.assertCmdLines(
+            f"tail -n 2 {self.datapath}",
+            [
+                "4,e",
+                "5,f",
+            ],
+        )
+
+        self.assertCmdLines(
+            f"csvslice --tail 2 {self.datapath}",
+            [
+                "id,val",
+                "4,e",
+                "5,f",
+            ],
+        )
+
+    def test_vs_xsv_single(self):
+        answer = [
+            "id,val",
+            "2,c",
+        ]
+
+        self.assertCmdLines(f"xsv slice -i 2 {self.datapath}", list(answer))
+
+        self.assertCmdLines(f"csvslice -i 2 {self.datapath}", list(answer))
+
+    def test_vs_xsv_first_n(self):
+        answer = [
+            "id,val",
+            "0,a",
+            "1,b",
+            "2,c",
+        ]
+        self.assertCmdLines(f"xsv slice -l 3 {self.datapath}", list(answer))
+
+        self.assertCmdLines(f"csvslice --head 3 {self.datapath}", list(answer))
+
+    def test_vs_xsv_range(self):
+        answer = [
+            "id,val",
+            "1,b",
+            "2,c",
+        ]
+
+        self.assertCmdLines(f"xsv slice -s 1 -e 3 {self.datapath}", list(answer))
+
+        self.assertCmdLines(f"csvslice -i 1-2 {self.datapath}", list(answer))
+
+    # def test_vs_xsv_(self):
+    #     self.assertCmdLines(
+    #         f'xsv slice    {self.datapath}',
+    #         [
+    #                 "id,val",
+    #                 "0,a",
+    #                 "1,b",
+    #                 "2,c",
+    #                 "3,d",
+    #                 "4,e",
+    #                 "5,f",
+    #         ]
+    #     )
+
+    #     self.assertCmdLines(
+    #         f'csvslice   {self.datapath}',
+    #         [
+    #                 "id,val",
+    #                 "0,a",
+    #                 "1,b",
+    #                 "2,c",
+    #                 "3,d",
+    #                 "4,e",
+    #                 "5,f",
+    #         ]
+    #     )
+
+
 class TestDocScenarios(TestDoc):
-    def srcpath(self, path: str) -> str:
+    def getpath(self, path: str) -> str:
         return str(Path("examples/real").joinpath(path))
 
     def test_acs_csvslice_skip_meta(self):
-        src_path = self.srcpath("acs-pop.csv")
+        src_path = self.getpath("acs-pop.csv")
         self.assertCmdLines(
             f"""csvslice -i '1-' {src_path}""",
             [

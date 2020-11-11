@@ -2,54 +2,85 @@
 How csvslice compares to existing tools
 =======================================
 
-
-head/tail
----------
-
-csvkit --skip-lines
--------------------
+Given :download:`ids.csv <../../../examples/ids.csv>` (TK: not sure I need to repeat this reference?)
 
 
-xsv slice
----------
+head: Get the first n rows
+--------------------------
+
+The issue with :command:`head` is that it only understands text and newline characters. Thus, specifying ``-n 3`` returns 3 lines, one of which is the header line.
 
 
-Getting a single record by index::
+.. code-block:: sh
 
-    xsv slice -i 12 data.csv
-
-    csvslice -i 12 data.csv
+    $ head -n 3 ids.csv
+    id,val
+    0,a
+    1,b
 
 
 
-Getting a range of records::
-
-    xsv slice -s 5 -e 12
-
-    csvslice -i 5-12
+In contrast, :command:`csvslice` has a notion of comma-delimited *data*, in which the first line is **not** data, but the header. Thus, an argument equivalent to ``-n 3`` would return *4 lines* in total: 1 header line and 3 data lines.
 
 
-Getting records from index 14 on::
+.. code-block:: sh
 
-    xsv slice -s 14
-
-
-    csvslice -i '14-'
-
-
-Getting the first 13 records::
-
-    xsv slice -e 13
+    $ csvslice --head 3 ids.csv
+    id,val
+    0,a
+    1,b
+    2,c
 
 
-    csvslice -i '0-12'
+tail: Get the last n rows
+-------------------------
+
+TK lorem with :command:`tail`
+
+
+.. code-block:: sh
+
+    $ tail -n 2 ids.csv
+    4,e
+    5,f
+
+
+
+TK lorem with :command:`csvslice`
+
+
+.. code-block:: sh
+
+    $ csvslice --tail 2 ids.csv
+    id,val
+    4,e
+    5,f
+
+
+csvformat: Skip the first n lines
+---------------------------------
+
+.. code-block:: sh
+
+    $ TKTK ids.csv
+
+
+.. include:: comparison-xsv-slice.rstinc
 
 
 The agate library
 -----------------
 
-TK
+TK Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut
 
 
 The pandas library
 ------------------
+
+TK Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+cillum dolore eu fugiat nulla pariatur.

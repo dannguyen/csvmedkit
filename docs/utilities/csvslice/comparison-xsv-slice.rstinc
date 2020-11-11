@@ -1,0 +1,69 @@
+
+xsv slice
+---------
+
+csvslice is so much slower than xsv that the main reason to use csvslice for common functionality is that you just didn't get around to installing xsv. lorem ipsum
+
+TODO: section on benchmarks
+- make this its own include file
+
+
+xsv slice: Get a single record
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+    $ xsv slice -i 2 ids.csv
+    id,val
+    2,c
+
+lorem ipsum
+
+
+.. code-block:: sh
+
+    $ csvslice -i 2 ids.csv
+    id,val
+    2,c
+
+However, performance is *much* slower! Lorem ipsum TK.
+
+
+xsv slice: Get the first n records
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+    $ xsv slice -l 3 ids.csv
+    0,a
+    1,b
+    2,c
+
+
+.. code-block:: sh
+
+    $ csvslice ^-head 3 ids.csv
+
+
+Note that :command:`xsv slice` has no ``tail``-like functionality, i.e. returning the last *n* rows.
+
+
+xsv slice: Get a range of records
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: sh
+
+    $ xsv slice -s 1 -e 3 ids.csv
+    id,val
+    1,b
+    2,c
+
+
+lorem :command:`csvslice` uses inclusive ranges
+
+.. code-block:: sh
+
+    $ csvslice -i 1-2 ids.csv
+    id,val
+    1,b
+    2,c
