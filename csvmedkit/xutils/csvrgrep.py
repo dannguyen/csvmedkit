@@ -7,7 +7,7 @@ csvrgrep is experimental/unofficial for now
 from argparse import Action
 from os import isatty
 import sys
-from typing import Iterable as typeIterable, List as typeList
+from typing import Iterable as IterableType, List as ListType
 
 from csvmedkit.cmk.cmkutil import CmkMixedUtil
 from csvmedkit.cmk.helpers import cmk_filter_rows
@@ -87,7 +87,7 @@ class CSVRgrep(CmkMixedUtil):
             help="The CSV file to operate on. If omitted, will accept input as piped data via STDIN.",
         )
 
-    def _handle_expressions(self) -> typeList:
+    def _handle_expressions(self) -> ListType:
         expressions = []
         first_pattern = self.args.first_pattern
         first_colstring = self.args.columns if self.args.columns else ""

@@ -3,11 +3,11 @@
 # import itertools
 from math import inf as INFINITY
 from typing import (
-    List as typeList,
-    NoReturn as typeNoReturn,
-    Optional as typeOptional,
-    Sequence as typeSequence,
-    Union as typeUnion,
+    List as ListType,
+    NoReturn as NoReturnType,
+    Optional as OptionalType,
+    Sequence as SequenceType,
+    Union as UnionType,
 )
 
 from csvmedkit import agate, re_std as re
@@ -34,10 +34,10 @@ class CSVSlice(UniformReader, CmkMixedUtil):
             help="""Comma-delimited string of intervals to include. Can be individual indexes and ranges, e.g. '0' or '0-6,12', or '0-6,12-'""",
         )
 
-    def calculate_slice_ranges(self) -> typeNoReturn:
+    def calculate_slice_ranges(self) -> NoReturnType:
         # TODO: this is ugly spaghetti but it works
-        self.slice_ranges: typeList[typeSequence]
-        self.slice_lower_bound: typeUnion[
+        self.slice_ranges: ListType[SequenceType]
+        self.slice_lower_bound: UnionType[
             int, float
         ] = INFINITY  # type float is allowed because INFINITY is a float
 

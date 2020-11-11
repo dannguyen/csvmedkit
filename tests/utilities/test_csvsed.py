@@ -14,7 +14,7 @@ from tests.mk import (
 )
 
 from csvmedkit.exceptions import ColumnIdentifierError
-from csvmedkit.moreutils.csvsed import CSVSed, launch_new_instance
+from csvmedkit.utilities.csvsed import CSVSed, launch_new_instance
 
 
 class TestCSVSed(CmkTestCase):
@@ -535,19 +535,30 @@ class TestEdgeCases(TestCSVSed):
             infile.close()
 
     def test_no_error_when_expression_has_2_args_and_piped_input(self):
-        p1 = Popen(
-            [
-                "cat",
-                "examples/dummy.csv",
-            ],
-            stdout=PIPE,
+        self.assertCmdLines(
+            r"""cat examples/dummy.csv | csvsed '(1|2)' '\1x'""", ["a,b,c", "1x,2x,3"]
         )
-        p2 = Popen(["csvsed", "(1|2)", r"\1x"], stdin=p1.stdout, stdout=PIPE)
-        p1.stdout.close()
-        p1.wait()
-        txt = p2.communicate()[0].decode("utf-8")
-        p2.wait()
-        self.assertEqual(txt.splitlines(), ["a,b,c", "1x,2x,3"])
+
+        # note: assertPipedLines will probably be deprecated
+        self.assertPipedLines(
+            [["cat", "examples/dummy.csv"], ["csvsed", "(1|2)", r"\1x"]],
+            ["a,b,c", "1x,2x,3"],
+        )
+
+        # old test, deprecated:
+        # p1 = Popen(
+        #     [
+        #         "cat",
+        #         "examples/dummy.csv",
+        #     ],
+        #     stdout=PIPE,
+        # )
+        # p2 = Popen(["csvsed", "(1|2)", r"\1x"], stdin=p1.stdout, stdout=PIPE)
+        # p1.stdout.close()
+        # p1.wait()
+        # txt = p2.communicate()[0].decode("utf-8")
+        # p2.wait()
+        # self.assertEqual(txt.splitlines(), ["a,b,c", "1x,2x,3"])
 
     ##############################
     # special stuff

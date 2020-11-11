@@ -4,10 +4,10 @@ from collections import namedtuple
 from io import StringIO
 import sys
 from typing import (
-    List as typeList,
-    NoReturn as typeNoReturn,
-    Tuple as typeTuple,
-    Optional as typeOptional,
+    List as ListType,
+    NoReturn as NoReturnType,
+    Tuple as TupleType,
+    Optional as OptionalType,
 )
 
 from csvmedkit import agate
@@ -113,7 +113,7 @@ class Props:
     """
 
     @property
-    def pivot_column_name(self) -> typeOptional[str]:
+    def pivot_column_name(self) -> OptionalType[str]:
 
         if self.args.pivot_colname:
             cids = cmk_parse_column_ids(
@@ -133,7 +133,7 @@ class Props:
         return self.i_column_names[cids[0]] if cids else None
 
     @property
-    def pivot_row_ids(self) -> typeList:
+    def pivot_row_ids(self) -> ListType:
         if self.args.pivot_rownames:
             return cmk_parse_column_ids(
                 self.args.pivot_rownames,
@@ -144,7 +144,7 @@ class Props:
             return []
 
     @property
-    def pivot_row_names(self) -> typeList:
+    def pivot_row_names(self) -> ListType:
         """
         prereqs:
          - self.pivot_row_ids
@@ -158,7 +158,7 @@ class Props:
 class CSVPivot(UniformReader, Props, Parser, CmkUtil):
     def _validate_aggy_column_arguments(
         self, aggy: Aggy, table: agate.Table
-    ) -> typeNoReturn:
+    ) -> NoReturnType:
         """
         Aggy is csvpivot/agate.Table agnostic, so this method:
 
@@ -211,7 +211,7 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
                 aggy._args[1] = dval
 
     def _filter_input_rows(
-        self, rows: agate.csv.DictReader, colnames: typeList[str]
+        self, rows: agate.csv.DictReader, colnames: ListType[str]
     ) -> agate.Table:
         """
         trim self.i_rows to the actually used columns

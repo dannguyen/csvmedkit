@@ -17,7 +17,7 @@ from tests.mk import (
     skiptest,
 )
 
-from csvmedkit.moreutils.csvsed import CSVSed
+from csvmedkit.utilities.csvsed import CSVSed
 
 DEFAULT_PATH = "examples/dummy2.csv"
 

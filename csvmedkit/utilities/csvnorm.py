@@ -2,11 +2,11 @@
 # from io import StringIO
 # import itertools
 from typing import (
-    List as typeList,
-    Iterable as typeIterable,
-    NoReturn as typeNoReturn,
-    Optional as typeOptional,
-    Tuple as typeTuple,
+    List as ListType,
+    Iterable as IterableType,
+    NoReturn as NoReturnType,
+    Optional as OptionalType,
+    Tuple as TupleType,
 )
 
 from csvmedkit import agate, re_plus as re
@@ -41,7 +41,7 @@ class Helpers:
         return newtxt
 
     @classmethod
-    def normtext(klass, txt: typeOptional[str], **kwargs) -> str:
+    def normtext(klass, txt: OptionalType[str], **kwargs) -> str:
         newtxt = txt
         if newtxt:
             newtxt = klass.norm_chars(newtxt)
@@ -50,7 +50,7 @@ class Helpers:
         return newtxt
 
     @classmethod
-    def transformtext(klass, txt: typeOptional[str], **kwargs) -> str:
+    def transformtext(klass, txt: OptionalType[str], **kwargs) -> str:
         newtxt = txt
         if newtxt:
             if kwargs.get("slugify"):

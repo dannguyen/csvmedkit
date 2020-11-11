@@ -6,8 +6,8 @@ from shutil import get_terminal_size
 import sys
 import textwrap
 from typing import (
-    Callable as typeCallable,
-    Optional as typeOptional,
+    Callable as CallableType,
+    Optional as OptionalType,
 )
 
 DEFAULT_EOR_MARKER = "~"
@@ -79,7 +79,7 @@ class CSVFlatten(UniformReader, CmkUtil):
         )
 
     @property
-    def chunkpattern(self) -> typeCallable:
+    def chunkpattern(self) -> CallableType:
         """
         expects self.max_field_length to be set
         """
@@ -91,13 +91,13 @@ class CSVFlatten(UniformReader, CmkUtil):
         return _cp
 
     @property
-    def end_of_record_marker(self) -> typeOptional[str]:
+    def end_of_record_marker(self) -> OptionalType[str]:
         """
         preconditions:
             - self.max_column_name_length
             - self.rec_ids_mode
         """
-        marker: typeOptional[str]
+        marker: OptionalType[str]
 
         _eor = self.args.end_of_record_marker
         if _eor == "none" or _eor == "":

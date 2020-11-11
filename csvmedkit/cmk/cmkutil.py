@@ -2,10 +2,10 @@
 import argparse
 import sys
 from typing import (
-    List as typeList,
-    NoReturn as typeNoReturn,
-    Iterable as typeIterable,
-    Union as typeUnion,
+    List as ListType,
+    NoReturn as NoReturnType,
+    Iterable as IterableType,
+    Union as UnionType,
 )
 import warnings
 
@@ -54,7 +54,7 @@ class UniformReader:
         )
 
     @property
-    def filtered_column_ids(self) -> typeList[int]:
+    def filtered_column_ids(self) -> ListType[int]:
         """convenience helper"""
         return parse_column_identifiers(
             self.columns_filter,
@@ -93,7 +93,7 @@ class CmkUtil(CmkProps, CSVKitUtility):
     slightly adjusted version of standard CSVKitUtility
     """
 
-    def log_err(self, txt: str) -> typeNoReturn:
+    def log_err(self, txt: str) -> NoReturnType:
         stderr.write(f"{txt}\n")
 
     def text_csv_reader(self) -> agate.csv.reader:

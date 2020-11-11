@@ -2,11 +2,11 @@ import csv
 from io import StringIO
 import itertools
 from typing import (
-    List as typeList,
-    Iterable as typeIterable,
-    NoReturn as typeNoReturn,
-    Optional as typeOptional,
-    Tuple as typeTuple,
+    List as ListType,
+    Iterable as IterableType,
+    NoReturn as NoReturnType,
+    Optional as OptionalType,
+    Tuple as TupleType,
 )
 
 from csvmedkit import re_plus as re
@@ -111,14 +111,14 @@ class CSVHeader(CmkUtil):
         return self.args.generic_x_header
 
     @property
-    def add_header(self) -> typeOptional[list]:
+    def add_header(self) -> OptionalType[list]:
         if self.args.add_header:
             return cmk_parse_delimited_str(self.args.add_header, delimiter=",")
         else:
             return None
 
     @property
-    def add_x_header(self) -> typeOptional[list]:
+    def add_x_header(self) -> OptionalType[list]:
         """todo: refactor with add_header; added_custom_header"""
         if self.args.add_x_header:
             return cmk_parse_delimited_str(
@@ -128,7 +128,7 @@ class CSVHeader(CmkUtil):
             return None
 
     @property
-    def added_custom_header(self) -> typeOptional[list]:
+    def added_custom_header(self) -> OptionalType[list]:
         """TODO: refactor"""
         if self.args.add_header or self.args.add_x_header:
             return self.add_header if self.add_header else self.add_x_header
@@ -146,8 +146,8 @@ class CSVHeader(CmkUtil):
     @staticmethod
     def parse_rename_param(
         txt: str,
-        column_names: typeList[str],
-    ) -> typeList[typeTuple[str]]:
+        column_names: ListType[str],
+    ) -> ListType[TupleType[str]]:
         """
         Converts:
           'a|apples,b|Be Bee,"c|Sea, shell "'
@@ -160,15 +160,15 @@ class CSVHeader(CmkUtil):
         return [h.split("|") for h in next(csv.reader(StringIO(txt)))]
 
     def output_indexed_headers(
-        self, rows: typeIterable, column_names: typeList[str]
-    ) -> typeNoReturn:
+        self, rows: IterableType, column_names: ListType[str]
+    ) -> NoReturnType:
         """default behavior of csvheaders is called without any modifying flags"""
         outs = self.text_csv_writer()
         outs.writerow(("index", "field"))
         for idx, colname in enumerate(column_names, self.column_start_index):
             outs.writerow((idx, colname))
 
-    def _prepare_headers(self) -> typeTuple[typeIterable]:
+    def _prepare_headers(self) -> TupleType[IterableType]:
         """besides returning (rows, column_names,), this sets self.generic_columnized to True/False """
 
         rows = self.text_csv_reader()
@@ -203,7 +203,7 @@ class CSVHeader(CmkUtil):
             column_names,
         )
 
-    def _set_modes(self, column_names=typeList[str]) -> typeNoReturn:
+    def _set_modes(self, column_names=ListType[str]) -> NoReturnType:
 
         self.output_headers_only: bool
 

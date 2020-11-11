@@ -3,11 +3,11 @@ import csv
 from io import StringIO
 import sys
 from typing import (
-    List as typeList,
-    NoReturn as typeNoReturn,
-    Iterable as typeIterable,
-    Union as typeUnion,
-    Sequence as typeSequence,
+    List as ListType,
+    NoReturn as NoReturnType,
+    Iterable as IterableType,
+    Union as UnionType,
+    Sequence as SequenceType,
 )
 
 from slugify import slugify as pyslugify
@@ -20,8 +20,8 @@ from csvmedkit.exceptions import *
 
 
 def cmk_parse_column_ids(
-    ids: str, column_names: typeList[str], column_offset=1
-) -> typeList[int]:
+    ids: str, column_names: ListType[str], column_offset=1
+) -> ListType[int]:
     """just a simplified version of parse_column_identifiers"""
     return parse_column_identifiers(
         ids, column_names, column_offset, excluded_columns=None
@@ -29,7 +29,7 @@ def cmk_parse_column_ids(
 
 
 def cmk_filter_rows(
-    rows: typeIterable,
+    rows: IterableType,
     pattern_str: str,
     columns_str: str,
     column_names: list,
@@ -73,12 +73,12 @@ def cmk_parse_delimited_str(
     minlength: int = 0,
     escapechar=None,
     **csvreader_kwargs,
-) -> typeList[typeUnion[str]]:
+) -> ListType[UnionType[str]]:
     """
     minlength: expected minimum number of elements. If csv.reader returns a row shorter than minlength, it
         will pad the row with empty strings ''
     """
-    row: typeList
+    row: ListType
     with StringIO(txt) as src:
         kwargs = csvreader_kwargs.copy()
         kwargs["delimiter"] = delimiter
@@ -93,7 +93,7 @@ def cmk_parse_delimited_str(
     return row
 
 
-def cmk_slugify(txt: typeUnion[str, typeSequence]) -> str:
+def cmk_slugify(txt: UnionType[str, SequenceType]) -> str:
     if not isinstance(txt, str):
         # e.g a list of strings
         txt = " ".join(str(t) for t in txt)

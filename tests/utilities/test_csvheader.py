@@ -3,7 +3,7 @@ from io import StringIO
 from unittest import skip as skiptest
 import sys
 
-from csvmedkit.moreutils.csvheader import (
+from csvmedkit.utilities.csvheader import (
     CSVHeader,
     launch_new_instance,
 )

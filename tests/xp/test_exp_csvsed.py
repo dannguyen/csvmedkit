@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 import sys
 
 from tests.mk import CmkTestCase, stdin_as_string, skiptest
-from csvmedkit.moreutils.csvsed import CSVSed
+from csvmedkit.utilities.csvsed import CSVSed
 
 
 class TestCSVSed(CmkTestCase):

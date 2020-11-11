@@ -11,7 +11,7 @@ from csvmedkit.exceptions import (
     InvalidAggregationArgument,
     InvalidAggregateName,
 )
-from csvmedkit.moreutils.csvpivot import CSVPivot, Parser, launch_new_instance
+from csvmedkit.utilities.csvpivot import CSVPivot, Parser, launch_new_instance
 from csvmedkit.cmk.aggs import Aggy, Aggregates
 
 

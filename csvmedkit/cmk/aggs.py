@@ -2,10 +2,10 @@ from csvmedkit import agate
 from csvmedkit.cmk.helpers import *
 from csvmedkit.exceptions import InvalidAggregateName
 from typing import (
-    List as typeList,
-    NoReturn as typeNoReturn,
-    Tuple as typeTuple,
-    Optional as typeOptional,
+    List as ListType,
+    NoReturn as NoReturnType,
+    Tuple as TupleType,
+    Optional as OptionalType,
 )
 
 
@@ -41,7 +41,7 @@ class Aggy(object):
         given dataset
     """
 
-    def __init__(self, slug: str, args: list, output_name: typeOptional[str]):
+    def __init__(self, slug: str, args: list, output_name: OptionalType[str]):
         self._slug = slug
         self._args = args
         self._output_name = output_name
@@ -57,12 +57,12 @@ class Aggy(object):
         return self.aggregate_class(*self._args)
 
     @property
-    def agg_args(self) -> typeList[str]:
+    def agg_args(self) -> ListType[str]:
         d = self._args.copy()
         return d
 
     @property
-    def column_name(self) -> typeOptional[str]:
+    def column_name(self) -> OptionalType[str]:
         """basically, agg_args[0]"""
         return self._args[0] if self._args else None
 

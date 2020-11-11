@@ -15,7 +15,7 @@ import re as re_std  # because I'm still deciding between re/regex, we should ha
 import regex as re_plus
 
 
-from typing import Union as typeUnion, Sequence as typeSequence
+from typing import Union as UnionType, Sequence as SequenceType
 
 agate = agate
 rxlib = re_std

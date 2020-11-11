@@ -1,5 +1,6 @@
 import contextlib
 from io import StringIO
+from pathlib import Path
 import sys
 
 from tests.mk import (
@@ -11,7 +12,7 @@ from tests.mk import (
 )
 
 from csvmedkit.exceptions import *
-from csvmedkit.moreutils.csvslice import CSVSlice, launch_new_instance
+from csvmedkit.utilities.csvslice import CSVSlice, launch_new_instance
 
 
 class TestCSVSlice(CmkTestCase):
@@ -483,5 +484,23 @@ class TestDocQuirks(TestDoc):
                 "3,d",
                 "4,e",
                 "5,f",
+            ],
+        )
+
+
+class TestDocScenarios(TestDoc):
+    def srcpath(self, path: str) -> str:
+        return str(Path("examples/real").joinpath(path))
+
+    def test_acs_csvslice_skip_meta(self):
+        src_path = self.srcpath("acs-pop.csv")
+        self.assertCmdLines(
+            f"""csvslice -i '1-' {src_path}""",
+            [
+                "GEO_ID,NAME,B01003_001E,B01003_001M",
+                "0200000US1,Northeast Region,55982803,*****",
+                "0200000US2,Midwest Region,68329004,*****",
+                "0200000US3,South Region,125580448,*****",
+                "0200000US4,West Region,78347268,*****",
             ],
         )

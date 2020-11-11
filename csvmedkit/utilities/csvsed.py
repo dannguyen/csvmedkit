@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 from pathlib import Path
-from typing import List as typeList
+from typing import List as ListType
 
 from csvmedkit import re_std as re
 from csvmedkit.cmk.cmkutil import CmkMixedUtil
@@ -96,7 +96,7 @@ class Props:
 
 
 class CSVSed(Props, Parser, CmkMixedUtil):
-    def _handle_sed_expressions(self, column_names: typeList[str]) -> typeList:
+    def _handle_sed_expressions(self, column_names: ListType[str]) -> ListType:
         """
         Standard usage of csvsed expects only a single sed expression, so in practice, this
             method returns a list of 1
