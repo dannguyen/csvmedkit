@@ -4,7 +4,7 @@ csvmedkit
 
 The unofficial extended family of csvkit, i.e. even more tools for command-line data parsing and wrangling.
 
-**Status as of 2020-11-11**: Working toward 0.9 version, with these utilities:
+**Status as of 2020-11-11**: Alpha, but working toward release version with these utilities:
 
 
 - csvflatten: reformat data for easier browsing of "wide" data
