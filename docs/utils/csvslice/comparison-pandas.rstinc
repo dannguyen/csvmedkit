@@ -1,0 +1,126 @@
+
+How csvslice compares to doing it in pandas
+===========================================
+
+TK lorem ipsum intro: a graf about accomodating traditional data scripters who have likely used Python and pandas in a script but not command line yet, verbosity etc etc. Obviously pandas is more flexible and powerful
+
+
+.. note:: The pandas code seems particularly verbose only because I've included boilerplate code to import and output the ``DataFrame`` as CSV. And it includes extra variable assignments that you probably wouldn't use in a typical data wrangling scripts, but that I'm including here to emphasize where the actual action happens. I've highlighted the non-boilerplate code for clarity. TKTKTK
+
+
+.head: get the first n rows
+---------------------------
+
+The ``pd.DataFrame`` class has a `head <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.head.html>`_  method for "quickly testing if your object has the right type of data in it", and it's basically the same as ``csvslice --head 3``:
+
+
+.. code-block:: sh
+
+    $ csvslice --head 3 ids.csv
+
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    >>> import pandas as pd
+    >>> from sys import stdout
+    >>> df = pd.read_csv('ids.csv')
+    >>> xf = df.head(3)
+    >>> stdout.write(xf.to_csv(index=False))
+
+.. code-block:: text
+
+    id,val
+    0,a
+    1,b
+    2,c
+
+
+
+.tail: get the last n rows
+--------------------------
+
+And pandas DataFrames also have a `tail <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.tail.html#pandas.DataFrame.tail>`_ method:
+
+
+.. code-block:: sh
+
+    $ csvslice --tail 3 ids.csv
+
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    >>> import pandas as pd
+    >>> from sys import stdout
+    >>> df = pd.read_csv('ids.csv')
+    >>> xf = df.tail(3)
+    >>> stdout.write(xf.to_csv(index=False))
+
+
+.. code-block:: text
+
+    id,val
+    3,d
+    4,e
+    5,f
+
+.iloc: slicing individual indexes
+---------------------------------
+
+Slicing by index in **pandas** can be done with `iloc <https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#different-choices-for-indexing>`_. To get the rows ``1``, ``3``, and ``5``:
+
+
+
+.. code-block:: sh
+
+    $ csvslice -i 1,3,5 ids.csv
+
+
+
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    >>> import pandas as pd
+    >>> from sys import stdout
+    >>> df = pd.read_csv('ids.csv')
+    >>> xf = df.iloc[[1,3,5]]
+    >>> stdout.write(xf.to_csv(index=False))
+
+.. code-block:: text
+
+    id,val
+    1,b
+    3,d
+    5,f
+
+
+.iloc: slicing and index range
+------------------------------
+
+When slicing a *range*, the main difference is that ``iloc`` uses a **half-open** range — i.e. the *end_index* is excluded.
+
+
+.. code-block:: sh
+
+    $ csvslice -i 3-5 ids.csv
+
+
+
+.. code-block:: python
+
+    >>> import pandas as pd
+    >>> from sys import stdout
+    >>> df = pd.read_csv('ids.csv')
+    >>> xf = df.iloc[3:6]
+    >>> stdout.write(xf.to_csv(index=False))
+    >>> print(xf.to_csv(index=False))
+
+.. code-block:: text
+
+    id,val
+    3,d
+    4,e
+    5,f
+

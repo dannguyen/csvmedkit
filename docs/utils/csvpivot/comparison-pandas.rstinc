@@ -1,0 +1,61 @@
+
+How pivot compares to doing it in pandas
+========================================
+
+
+
+
+
+Simple group row count
+======================
+
+    csvpivot -r gender peeps2.csv
+
+
+    xf = pd.pivot_table(df, values='age', index=['gender'], aggfunc='count')
+
+
+    gender,count_of
+    female,4
+    male,2
+
+Row and column pivot
+====================
+
+    csvpivot -r race -c gender peeps2.csv
+
+
+    race,female,male
+    white,1,0
+    asian,1,1
+    black,2,0
+    latino,0,1
+
+
+    (not sure how to do this in pandas)
+
+Aggregating values
+==================
+
+.. code-block:: sh
+
+    $ csvpivot -r gender -a mean:age
+
+
+
+.. code-block:: python
+    :emphasize-lines: 5,6
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from sys import stdout
+    >>> df = pd.read_csv('peeps2.csv')
+    >>> xf = pd.pivot_table(df, values='age', index=['gender'], aggfunc=np.mean)
+    >>> xf.rename(columns={'age': 'mean_of_age'}, inplace=True)
+    >>> stdout.write(xf.to_csv())
+
+
+.. code-block:: text
+
+    gender,mean_of_age
+    female,42.5
+    male,40

@@ -152,26 +152,26 @@ class CSVSlice(UniformReader, CmkMixedUtil):
 
         writer = agate.csv.writer(self.output_file, **self.writer_kwargs)
         writer.writerow(self.i_column_names)
-        mode = self.select_mode()
+        s_mode = self.select_mode()
 
-        if mode == "indexes":
+        if s_mode == "indexes":
             self.calculate_slice_ranges()
             for i, row in enumerate(self.i_rows):
                 if i >= self.slice_lower_bound or any(
                     i in r for r in self.slice_ranges
                 ):
                     writer.writerow(row)
-        elif mode == "head":
+        elif s_mode == "head":
             for i, row in enumerate(self.i_rows, 1):
                 if i > self.head_count:
                     break
                 writer.writerow(row)
 
-        elif mode == "tail":
-            tdata = deque(maxlen=self.tail_count)
+        elif s_mode == "tail":
+            q = deque(maxlen=self.tail_count)
             for row in self.i_rows:
-                tdata.append(row)
-            writer.writerows(tdata)
+                q.append(row)
+            writer.writerows(q)
 
     def run(self):
         self.input_file = self._open_input_file(self.args.input_path)

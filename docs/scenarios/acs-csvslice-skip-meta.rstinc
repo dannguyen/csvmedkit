@@ -14,13 +14,50 @@ You can view the data on the `Census's Data site <https://data.census.gov/cedsci
 You can download a copy of the exported zip file: :download:`ACSDT1Y2019.B01003_2020-11-10T165412.zip </../examples/real/raw/ACSDT1Y2019.B01003_2020-11-10T165412.zip>`
 
 
-Given file :download:`acs-race.csv </../examples/real/acs-race.csv>`
+Given file :ref:`acs-pop.csv <example-data-acs-pop-csv>`
 
 
-TK use csvflatten to show file, or include screenshot of data in Excel
+
+.. figure:: /scenarios/files/images/acs-pop-excel.png
+    :alt: acs-pop-excel.png
 
 
-As you can see the first row of "data" is not really data, but another row of meta header, which we do not need.
+
+As you can see, both the first 2 rows of the file serve as headers. The first row serves as machine-readable data fields, including Census table codes such as ``NAME`` and ``B01003_001E``. And the second row is more human-readable, e.g. ``Geographic Area Name`` and ``Estimate!!Total``.
+
+
+Of course, many users might consider the *first* row to be extraneous, in which case you can use the ``--skip-lines`` option, which is shared across standard **csvkit** and **csvmedkit** tools:
+
+
+.. code-block:: sh
+
+    $ csvlook --skip-lines 1 acs-pop.csv
+
+.. code-block:: text
+
+
+    | id         | Geographic Area Name | Estimate!!Total | Margin of Error!!Total |
+    | ---------- | -------------------- | --------------- | ---------------------- |
+    | 0200000US1 | Northeast Region     |      55,982,803 | *****                  |
+    | 0200000US2 | Midwest Region       |      68,329,004 | *****                  |
+    | 0200000US3 | South Region         |     125,580,448 | *****                  |
+    | 0200000US4 | West Region          |      78,347,268 | *****                  |
+
+However, many other users may prefer to cut out the *second* row, especially in an application which refers to the canonical, more uniform table codes. To do that in ``csvslice`` (and then pretty-print with `csvkit's csvlook <https://csvkit.readthedocs.io/en/latest/scripts/csvlook.html>`_):
+
+**using csvslice**
+
+
+.. code-block:: sh
+
+    $ csvslice -i '1-' acs-pop.csv | csvlook
+
+    | GEO_ID     | NAME             | B01003_001E | B01003_001M |
+    | ---------- | ---------------- | ----------- | ----------- |
+    | 0200000US1 | Northeast Region |  55,982,803 | *****       |
+    | 0200000US2 | Midwest Region   |  68,329,004 | *****       |
+    | 0200000US3 | South Region     | 125,580,448 | *****       |
+    | 0200000US4 | West Region      |  78,347,268 | *****       |
 
 
 
@@ -39,17 +76,3 @@ Keep all rows but the second row, which is unneeded metadata TK
     "0200000US3","South Region","125580448","*****"
     "0200000US4","West Region","78347268","*****"
 
-
-
-**using csvsed**
-
-
-
-.. code-block:: sh
-
-    $ csvslice -i '1-' acs-pop.csv
-    GEO_ID,NAME,B01003_001E,B01003_001M
-    0200000US1,Northeast Region,55982803,*****
-    0200000US2,Midwest Region,68329004,*****
-    0200000US3,South Region,125580448,*****
-    0200000US4,West Region,78347268,*****

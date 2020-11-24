@@ -34,6 +34,9 @@ from csvmedkit import __version__ as CMK_VERSION
 extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx_rtd_theme',
+    # currently not using it but who knows:
+    # https://sphinx-extensions.readthedocs.io/en/latest/sphinx-prompt.html
+    'sphinx-prompt',
 ]
 
 

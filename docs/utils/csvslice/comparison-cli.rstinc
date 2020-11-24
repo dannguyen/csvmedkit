@@ -1,12 +1,12 @@
 
-How csvslice compares to existing tools
-=======================================
+How csvslice compares to existing command-line tools
+====================================================
 
 Given :download:`ids.csv <../../../examples/ids.csv>` (TK: not sure I need to repeat this reference?)
 
 
-head: Get the first n rows
---------------------------
+head (BSD): Get the first n rows
+--------------------------------
 
 The issue with :command:`head` is that it only understands text and newline characters. Thus, specifying ``-n 3`` returns 3 lines, one of which is the header line.
 
@@ -32,8 +32,8 @@ In contrast, :command:`csvslice` has a notion of comma-delimited *data*, in whic
     2,c
 
 
-tail: Get the last n rows
--------------------------
+tail (BSD): Get the last n rows
+-------------------------------
 
 TK lorem with :command:`tail`
 
@@ -65,22 +65,7 @@ csvformat: Skip the first n lines
     $ TKTK ids.csv
 
 
+
+
+
 .. include:: comparison-xsv-slice.rstinc
-
-
-The agate library
------------------
-
-TK Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut
-
-
-The pandas library
-------------------
-
-TK Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur.

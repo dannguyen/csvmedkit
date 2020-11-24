@@ -428,19 +428,43 @@ class TestDocIntro(TestDoc):
             )
 
 
-class TestDocIndexes(TestDoc):
-    def test_by_index(self):
+class TestDocUsageOverview(TestDoc):
+    datapath = "examples/ids.csv"
+
+    def test_head(self):
         self.assertLines(
-            ["-i", "1", self.src_path],
+            ["--head", "3", self.datapath],
+            [
+                "id,val",
+                "0,a",
+                "1,b",
+                "2,c",
+            ],
+        )
+
+    def test_tail(self):
+        self.assertLines(
+            ["--tail", "3", self.datapath],
+            [
+                "id,val",
+                "3,d",
+                "4,e",
+                "5,f",
+            ],
+        )
+
+    def test_index_individual(self):
+        self.assertLines(
+            ["-i", "1", self.datapath],
             [
                 "id,val",
                 "1,b",
             ],
         )
 
-    def test_by_indexes(self):
+    def test_index_multiple_indexes(self):
         self.assertLines(
-            ["-i", "0,5", self.src_path],
+            ["-i", "0,5", self.datapath],
             [
                 "id,val",
                 "0,a",
@@ -448,11 +472,9 @@ class TestDocIndexes(TestDoc):
             ],
         )
 
-
-class TestDocRanges(TestDoc):
-    def test_basic(self):
+    def test_index_range_closed(self):
         self.assertLines(
-            ["-i", "1-3", self.src_path],
+            ["-i", "1-3", self.datapath],
             [
                 "id,val",
                 "1,b",
@@ -461,9 +483,9 @@ class TestDocRanges(TestDoc):
             ],
         )
 
-    def test_open_end(self):
+    def test_index_range_open_ended(self):
         self.assertLines(
-            ["-i", "3-", self.src_path],
+            ["-i", "3-", self.datapath],
             [
                 "id,val",
                 "3,d",
@@ -472,9 +494,9 @@ class TestDocRanges(TestDoc):
             ],
         )
 
-    def test_multiple(self):
+    def test_index_range_series(self):
         self.assertLines(
-            ["-i", "0-1,3-", self.src_path],
+            ["-i", "0-1,3-", self.datapath],
             [
                 "id,val",
                 "0,a",
@@ -485,9 +507,9 @@ class TestDocRanges(TestDoc):
             ],
         )
 
-    def test_combo_w_indexes(self):
+    def test_index_mixed_series(self):
         self.assertLines(
-            ["-i", "0,2-3,5", self.src_path],
+            ["-i", "0,2-3,5", self.datapath],
             [
                 "id,val",
                 "0,a",

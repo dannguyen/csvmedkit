@@ -1,0 +1,70 @@
+
+Usage overview and examples
+===========================
+
+
+
+
+
+simple row count
+----------------
+
+.. code-block:: sh
+
+    $ csvpivot peeps2.csv
+
+
+.. code-block:: text
+
+    source
+
+multiple row count
+------------------
+
+.. code-block:: sh
+
+    $ csvpivot peeps2.csv
+
+
+.. code-block:: text
+
+    source
+
+
+row-x-column count
+------------------
+
+.. code-block:: sh
+
+    $ csvpivot peeps2.csv
+
+
+.. code-block:: text
+
+    source
+
+
+single row + value aggregation
+------------------------------
+
+.. code-block:: sh
+
+    $ csvpivot peeps2.csv
+
+
+.. code-block:: text
+
+    source
+
+
+multi-row + multi-value agg
+---------------------------
+
+.. code-block:: sh
+
+    $ csvpivot peeps2.csv
+
+
+.. code-block:: text
+
+    source

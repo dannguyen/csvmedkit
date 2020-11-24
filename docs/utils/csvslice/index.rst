@@ -8,18 +8,18 @@ csvslice
 Given a data file, :ref:`ids.csv <example-data-ids-csv>`:
 
 
-.. code-block:: shell
+.. code-block:: sh
 
     $ csvslice -i 0,2-3 ids.csv
 
 
 The output::
 
-    source
     id,val
     a,0
     c,2
     d,3
+
 
 
 .. contents:: Table of contents
@@ -33,9 +33,9 @@ The output::
 
 .. include:: usage.rstinc
 
-.. include:: comparison.rstinc
+.. include:: comparison-cli.rstinc
 
-
+.. include:: comparison-pandas.rstinc
 
 
 
@@ -43,5 +43,9 @@ The output::
 
 Real-world use cases
 ====================
+
+
+The most common use cases will probably involve using ``--head`` and ``--tail``, which, to be honest, can mostly be done with the standard Unix :command:`head` and :command:`tail` utilities. TK EXCEPT in cases where the data has new lines:
+TK include env-inspections example
 
 .. include:: /scenarios/acs-csvslice-skip-meta.rstinc

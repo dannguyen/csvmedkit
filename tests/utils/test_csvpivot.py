@@ -346,7 +346,7 @@ class TestNonCountAggregates(TestCSVPivot):
                 ["race", "maxlength_of_name"],
                 ["white", "5"],
                 ["asian", "5"],
-                ["black", "11"],
+                ["black", "10"],
                 ["latino", "6"],
             ],
         )

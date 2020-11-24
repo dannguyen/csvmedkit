@@ -10,71 +10,95 @@ These examples refer to data as found in :download:`ids.csv </../examples/ids.cs
 Get the first n rows with --head
 --------------------------------
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolor
+
+
+.. code-block:: sh
+
+    csvslice --head 3 ids.csv
+
+.. code-block:: text
+
+    id,val
+    0,a
+    1,b
+    2,c
 
 
 Get the last n rows with --tail
 -------------------------------
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+.. code-block:: sh
+
+    csvslice --tail 3 ids.csv
 
 
-Slicing individual rows with --index
-------------------------------------
+.. code-block:: text
 
-You can specify rows to be sliced by 0-based index:
+    id,val
+    3,d
+    4,e
+    5,f
+
+Slicing individual rows with -i/--index
+---------------------------------------
+
+You can specify individual rows by 0-based index:
 
 
 .. code-block:: sh
 
     csvslice -i 1 ids.csv
+
+
+.. code-block:: text
+
     id,val
     1,b
 
 
-
-You can also specify a series of individual indexes as a comma-delimited string:
+Multiple row indexes can be specified as a comma-delimited string:
 
 
 .. code-block:: sh
 
     csvslice -i 0,5 ids.csv
+
+.. code-block:: text
+
     id,val
     0,a
     5,f
 
 
 
-
 Slicing rows by an index range
 ------------------------------
 
-Rows can be specified by using a range syntax: ``start-end``
+A range of rows can be specified: ``[start_index]-[end_index]``
 
-The range is *inclusive*:
 
+Note that *start_index* and *end_index* are **inclusive**:
 
 .. code-block:: sh
 
     $ csvslice -i 1-3 ids.csv
+
+.. code-block:: text
+
     id,val
     1,b
     2,c
     3,d
 
 
-Omitting the right-side *end* value returns an open range of values:
+You can omit the *end_index* in order to return all rows starting from *start_index*:
 
 .. code-block:: sh
 
     $ csvslice -i 3- ids.csv
+
+.. code-block:: text
+
     id,val
     3,d
     4,e
@@ -88,6 +112,9 @@ Like indexes, a series of ranges can be specified as a comma-delimited string:
 .. code-block:: sh
 
     $ csvslice -i 0-1,3- ids.csv
+
+.. code-block:: text
+
     id,val
     0,a
     1,b
@@ -102,6 +129,9 @@ And you can combine ranges with individual indexes:
 .. code-block:: sh
 
     $ csvslice -i 0,2-3,5 ids.csv
+
+.. code-block:: text
+
     id,val
     0,a
     2,c
@@ -110,15 +140,18 @@ And you can combine ranges with individual indexes:
 
 
 
-Troubleshooting
----------------
+Troubleshooting and quirks
+--------------------------
 
 
-Even though ``3-1`` and is technically a valid range,  :command:`csvslice` will throw an error if the ``end`` value is smaller than the ``start`` value:
+When specifying an index range, the *end_index* is expected to be **greater or equal to** the *start_index*. So while ``3-1`` and is technically a valid range,  :command:`csvslice` will throw an error if the ``end`` value is smaller than the ``start`` value:
 
 .. code-block:: sh
 
     $ csvslice -i 3-1 examples/ids.csv
+
+.. code-block:: text
+
     InvalidRange: Invalid range specified: 3-1
 
 

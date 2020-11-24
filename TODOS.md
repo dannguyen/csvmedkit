@@ -1,17 +1,44 @@
 # TODOS
 
 
-## 0.9.14
+## 0.0.9.14
+
+
+**csvpivot**
+- [ ] documentation
+    - usage overview
+        - [ ] simple row count
+        - [ ] multiple row count
+        - [ ] row-x-column count
+        - [ ] single row + value aggregation
+        - [ ] multi-row + multi-value agg
+    - pandas comparison
+        - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot_table.html
+        - [ ] apparently pandas can't do a row-x-column pivot?
+        - [ ] pandas can do grand total columns
+    - [ ] write nutgraf and intro examples and test those examples
+    - [ ] write options/flags section
+    - [ ] write comparison section
+    - [ ] write scenarios/use-cases 
+
+
 
 **csvslice**
 
 - do docs; this should be style and template for others
-    - [ ] document new --head and --tail options
-    - [ ] write usage examples
+    - [x] document new --head and --tail options
+    - [x] write usage examples
     - [ ] write "compared to"
+        - figure out how to arrange the compared commands and the output
+        - [x] separate into CLI and pandas comparisons
+        - [ ] complete pandas section
+        - [ ] complete CLI section 
+            - [ ] xsv slice 
+    - scenarios
+        - [ ] finish census real-world scenario    
+        - [ ] scenario when comboing with csvsort (most popular baby names?)
+        - [ ] --head example with env-inspections narrative data
     - [ ] mention performance issues with xsv slice
-    - [ ] add census real-world scenario
-    - [ ] scenario when comboing with csvsort (most popular baby names?)
 
 
 -----------------------
@@ -19,52 +46,8 @@
 
 
 
-## 0.9.13 (pushed on 2020-11-11)
 
-**csvslice**
-
-- [x] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
-- [x] rename `--include` to `--indexes`
-- [x] create `--head` option, and make `--indexes` optional
-- [x] create `--tail` option; use a queue?
-
-**csvsed**
-
-- [x] change `-G/--like-grep` to `-F/--filter`
-    - [x] wrote lots of tests to cover combinations of --columns and --filter
-    - [x] wrote lots of tests for intermixing of args and opts and stdin
-    - [ ] update documentation
-
-**csvheader**
-
-- [x] `-A` and `--AX` options for adding/overwriting a header by passing in a comma-delimited string of column names
-- [x] `-G` and `--GX` options for adding/overwriting a header with generic field names
-- [x] `-B` and `-C` (bash/create) have been killed for being too confusing  
-
-old thoughts (2020-11-09):
-
-- `-A/--add <column_names>` to add/append headers
-- `--AX/--add-x/--AS/--add-sub <column_names` to add and overwrite/substitute header
-- `-G/--generic` to append generic headers
-- `-GX/--generic-sub/generic-x` to overwrite with generic headers
-
-Old thoughts:
-
-When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
-
-NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
-
-
-- Is there any reason to have `-B/--bash`? In what situation would a user want to replace existing data headers with generic headers?
-    - [ ] not really, so kill it...
-- [ ] is `-R/--rename` convention particularly graceful/convenient?
-- [x] Instead of `-C`, maybe we should have some kind of `--replace`.
-- [ ] But `--replace` is confusing with `--rename`, so maybe use `-C/--change/clobber`, or `-O/--overwrite`?
-- [ ] `-X/--regex` should just be `--regex` for now?
-
-
-
-## 0.1.0 
+## 0.1.0 (public alpha)
 
 Overall stuff
 - Separate usecases into their own section, instead of embedding them into the individual tool sections?
@@ -121,45 +104,15 @@ Overall stuff
         - write scenarios/use-cases 
             - babynames
                 - [ ] write tests to confirm babynames tests
-    
-
-
-- csvpivot
-    - [ ] documentation
-        - [ ] write nutgraf and intro examples and test those examples
-        - [ ] write options/flags section
-        - [ ] write high level overview
-        - [ ] write comparison section
-            - [ ] look up pandas equivalent
-        - [ ] write scenarios/use-cases 
-
-    - [x] implementation
-        - [X] handle multiple aggregations if user doesn't specify column
-            - [YES] does that make groupby obsolete?
-        - [x] refactored aggy
-        - [x] add UniformReader to interface
-            - [NO] use `@filtered_column_ids` instead of `cmk_parse_col_ids` -- filtered_column_ides only works with `-c/--columns`
-        - [x] needs better error message:
-            - csvpivot examples/real/denver-pot-sales.csv -r YEAR -a sum:GROSS `KeyError: 'GROSS'`
-    - [x] port tests
-    - performance
-        - [x] created filtered table to remove all columns not specified in the arguments
-        - [x] benchmarking
-            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
-                - was 10s, now 0.5s
 
 
 
 
+## 0.1.5 
 
-- Overall documentation
-    - [ ] Write intro
-    - [ ] Write tutorial
-    - [ ] Write installation and requirements
+**csvheader**
 
-## Datasets
-
-- [ ] Census selected characteristics, for csvheaders
+- add a `behead` option to cut off a dataset's header: https://github.com/BurntSushi/xsv/pull/215/commits
 
 ## 0.2
 
@@ -230,7 +183,7 @@ Overall stuff
 ## Old
 
 
-### 0.0
+### 0.0.0.1
 
 - fix setup.py, add dependencies, test utils, etc
 - add csvmedkitutil, and other baseclasses
@@ -239,7 +192,7 @@ Overall stuff
 
 
 
-## 0.9.11
+## 0.0.9.11
 
 
 csvslice:
@@ -247,7 +200,7 @@ csvslice:
     - [x] tests (0.0.9.11)
 
 
-## 0.9.12
+## 0.0.9.12
 
 
 csvheader:
@@ -273,3 +226,69 @@ csvheader:
         - [x] validate given indexes
         - [x] write tests
 
+
+
+
+## 0.0.9.13 (pushed on 2020-11-11)
+
+
+- csvpivot
+    - [x] implementation
+        - [X] handle multiple aggregations if user doesn't specify column
+            - [YES] does that make groupby obsolete?
+        - [x] refactored aggy
+        - [x] add UniformReader to interface
+            - [NO] use `@filtered_column_ids` instead of `cmk_parse_col_ids` -- filtered_column_ides only works with `-c/--columns`
+        - [x] needs better error message:
+            - csvpivot examples/real/denver-pot-sales.csv -r YEAR -a sum:GROSS `KeyError: 'GROSS'`
+    - [x] port tests
+    - performance
+        - [x] created filtered table to remove all columns not specified in the arguments
+        - [x] benchmarking
+            - `time csvpivot examples/drafts/fed-judges-service.csv -r 'Appointing President,ABA Rating' > /dev/null`
+                - was 10s, now 0.5s
+
+
+
+
+
+**csvslice**
+
+- [x] rename `--intervals` to `--include`; in case we rejigger csvslice to allow resequencing of returned rows?
+- [x] rename `--include` to `--indexes`
+- [x] create `--head` option, and make `--indexes` optional
+- [x] create `--tail` option; use a queue?
+
+**csvsed**
+
+- [x] change `-G/--like-grep` to `-F/--filter`
+    - [x] wrote lots of tests to cover combinations of --columns and --filter
+    - [x] wrote lots of tests for intermixing of args and opts and stdin
+    - [ ] update documentation
+
+**csvheader**
+
+- [x] `-A` and `--AX` options for adding/overwriting a header by passing in a comma-delimited string of column names
+- [x] `-G` and `--GX` options for adding/overwriting a header with generic field names
+- [x] `-B` and `-C` (bash/create) have been killed for being too confusing  
+
+old thoughts (2020-11-09):
+
+- `-A/--add <column_names>` to add/append headers
+- `--AX/--add-x/--AS/--add-sub <column_names` to add and overwrite/substitute header
+- `-G/--generic` to append generic headers
+- `-GX/--generic-sub/generic-x` to overwrite with generic headers
+
+Old thoughts:
+
+When writing csvheader docs, realized we needed a `-C` option that also replaces the existing header (in the case of piping from csvflatten). And/or, the --rename/-R convention needs to be changed.
+
+NAMING THINGS IS HARD!!! THINK ABOUT IT LATER THIS WEEK
+
+
+- Is there any reason to have `-B/--bash`? In what situation would a user want to replace existing data headers with generic headers?
+    - [ ] not really, so kill it...
+- [ ] is `-R/--rename` convention particularly graceful/convenient?
+- [x] Instead of `-C`, maybe we should have some kind of `--replace`.
+- [ ] But `--replace` is confusing with `--rename`, so maybe use `-C/--change/clobber`, or `-O/--overwrite`?
+- [ ] `-X/--regex` should just be `--regex` for now?
