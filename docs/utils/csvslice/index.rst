@@ -38,14 +38,4 @@ The output::
 .. include:: comparison-pandas.rstinc
 
 
-
-
-
-Real-world use cases
-====================
-
-
-The most common use cases will probably involve using ``--head`` and ``--tail``, which, to be honest, can mostly be done with the standard Unix :command:`head` and :command:`tail` utilities. TK EXCEPT in cases where the data has new lines:
-TK include env-inspections example
-
-.. include:: /scenarios/acs-csvslice-skip-meta.rstinc
+.. include:: real-usecases.rstinc

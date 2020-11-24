@@ -4,7 +4,18 @@
 ## 0.0.9.14
 
 
+**general documentation**
+- given how lengthy usage overview is for csvpivot, maybe every tool should have a Quickstart?
+    - [ ] wrote a basic one for csvpivot
+    - [ ] do it for csvslice
+- write a top level tutorial like csvkit?
+    - https://csvkit.readthedocs.io/en/latest/tutorial.html#
+
+
 **csvpivot**
+
+- cli
+    - simplify command-line opts to '--column' and '--rows' from '--pivot-column' and '--pivot-rows'
 
 - [ ] documentation
     - usage overview

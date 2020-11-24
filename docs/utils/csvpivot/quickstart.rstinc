@@ -1,0 +1,53 @@
+Quickstart
+==========
+
+Given data TK/whos.csv:
+
+
+A simple row count
+
+.. code-block:: sh
+
+    $ csvpivot -r race whos.csv
+
+.. code-block:: text
+
+    race,count_of
+    white,2
+    asian,2
+    black,2
+    latino,1
+
+
+Row by column:
+
+.. code-block:: sh
+
+    $ csvpivot -r race -c gender whos.csv
+
+
+.. code-block:: text
+
+    race,female,male
+    white,1,1
+    asian,1,1
+    black,2,0
+    latino,0,1
+
+
+An aggregation other than counting:
+
+
+
+.. code-block:: sh
+
+    $ csvpivot -r race -c gender -a median:age whos.csv
+
+
+.. code-block:: text
+
+    race,female,male
+    white,40,20
+    asian,60,30
+    black,35,0
+    latino,0,50

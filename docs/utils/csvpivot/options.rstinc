@@ -1,0 +1,59 @@
+
+Options and flags
+=================
+
+
+
+-r, --pivot-rows COLUMN_NAMES
+-----------------------------
+
+The column name(s) on which to use as pivot rows.
+Should be either one name (or index) or a comma-
+separated list with one name (or index)
+
+
+-c, --pivot-column COLUMN_NAME
+------------------------------
+
+Optionally, a column name/id to use as a pivot
+column. Only one is allowed
+
+
+-a, --agg AGGREGATES_LIST
+----------------------------
+
+The name of an aggregation to perform on each group
+of data in the pivot table. For aggregations that
+require an argument (i.e. a column name), pass in
+the aggregation name, followed by a colon, followed
+by comma-delimited arguments, e.g. `-a "sum:age"`
+and `-a "count:name,hello"
+
+
+TK default is count
+
+TK specify agg column name
+
+TK specify optional title
+
+TK how to get multiple aggs
+
+
+
+
+--list-aggs
+--------------
+
+List the available aggregate functions.
+
+The available aggregate functions are a subset of those implemented in `Agate's Aggregations API <https://agate.readthedocs.io/en/latest/api/aggregations.html>`_
+
+- count
+- max
+- maxlength
+- min
+- mean
+- median
+- mode
+- stdev
+- sum

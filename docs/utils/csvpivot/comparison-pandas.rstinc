@@ -1,13 +1,35 @@
 
-How pivot compares to doing it in pandas
-========================================
+How csvpivot compares to doing it in pandas
+===========================================
+
+
+pandas.pivot_table()
+--------------------
+
+https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot_table.html
+
+agate.Table.pivot()
+-------------------
+
+https://agate.readthedocs.io/en/1.6.1/api/table.html#agate.Table.pivot
+
+https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-by-a-single-column
+
+https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-by-multiple-columns
+
+https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-to-sum
+
+(can't do this) https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pivot-to-percent-of-total
+
 
 
 
 
 
 Simple group row count
-======================
+----------------------
+
+TK
 
     csvpivot -r gender peeps2.csv
 
@@ -26,7 +48,9 @@ pandas TK::
     print(xf.to_csv(header=True))
 
 Row and column pivot
-====================
+--------------------
+
+TK
 
     csvpivot -r race -c gender peeps2.csv
 
@@ -41,7 +65,9 @@ Row and column pivot
     (not sure how to do this in pandas)
 
 Aggregating values
-==================
+------------------
+
+TK
 
 .. code-block:: sh
 

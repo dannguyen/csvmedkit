@@ -1,0 +1,12 @@
+
+How csvpivot compares to existing command-line tools
+====================================================
+
+
+csvstat
+-------
+
+xsv frequency
+-------------
+
+xsv frequency -s gender,race examples/whos.csv
