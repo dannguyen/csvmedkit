@@ -156,6 +156,34 @@ class Props:
 
 
 class CSVPivot(UniformReader, Props, Parser, CmkUtil):
+    def run(self):
+        # don't bother going into main
+        if self.args.list_aggs or (
+            self.args.aggregates_list and self.args.aggregates_list[0] == ""
+        ):
+            self.print_available_aggregates()
+            return
+
+        if not self.args.pivot_rownames and not self.args.pivot_colname:
+            self.argparser.error(
+                "Either -r/--pivot-rows or -c/--pivot-column must be specified. Both cannot be left unspecified."
+            )
+
+        if self.args.pivot_colname and (
+            self.args.aggregates_list and len(self.args.aggregates_list) > 1
+        ):
+
+            aggcount = len(self.args.aggregates_list)
+            agglist = "".join("\n- %s" % str(a) for a in self.args.aggregates_list)
+
+            self.argparser.error(
+                """Cannot have more than one aggregation when --pivot-column is specified. """
+                + """You specified --pivot-column '{colname}' and also {aggcount} aggregations: {agglist}""".format(
+                    colname=self.args.pivot_colname, aggcount=aggcount, agglist=agglist
+                )
+            )
+        super().run()
+
     def _validate_aggy_column_arguments(
         self, aggy: Aggy, table: agate.Table
     ) -> NoReturnType:
@@ -223,10 +251,17 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
             used_cols.append(self.pivot_column_name)
         if self.args.aggregates_list:
             used_cols.extend(
-                [a.column_name for a in self.args.aggregates_list if a.column_name]
+                # set is used so that only unique columns are included in the used_cols subset
+                list(
+                    set(
+                        a.column_name
+                        for a in self.args.aggregates_list
+                        if a.column_name
+                    )
+                )
             )
 
-        for c in list(set(used_cols)):
+        for c in used_cols:
             if not c in colnames:
                 raise ColumnNameError(
                     f"'{c}' is not a valid column name; column names are: {colnames}"
@@ -301,33 +336,10 @@ class CSVPivot(UniformReader, Props, Parser, CmkUtil):
             # user wants multiple aggregations for rows, so this is essentially a group_by
             for rcol in self.pivot_row_names:
                 outtable = outtable.group_by(key=rcol)
-
             outtable = outtable.aggregate([(a.title, a.aggregation) for a in aggies])
 
         outtable.to_csv(self.output_file, **self.writer_kwargs)
         return 0
-
-    def run(self):
-        # don't bother going into main
-        if self.args.list_aggs or (
-            self.args.aggregates_list and self.args.aggregates_list[0] == ""
-        ):
-            self.print_available_aggregates()
-            return
-
-        if not self.args.pivot_rownames and not self.args.pivot_colname:
-            self.argparser.error(
-                "Either -r/--pivot-rows or -c/--pivot-column must be specified. Both cannot be left unspecified."
-            )
-
-        if self.args.pivot_colname and (
-            self.args.aggregates_list and len(self.args.aggregates_list) > 1
-        ):
-            self.argparser.error(
-                f"""Cannot specify --pivot-column '{self.pivot_column_name}' and have more than one aggregation; you specified {len(self.args.aggregates_list)}: {self.args.aggregates_list}"""
-            )
-
-        super().run()
 
 
 def launch_new_instance():
@@ -337,3 +349,8 @@ def launch_new_instance():
 
 if __name__ == "__main__":
     launch_new_instance()
+
+
+"""
+import Agate as ag
+"""

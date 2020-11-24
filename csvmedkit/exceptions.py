@@ -22,10 +22,10 @@ class InvalidAggregateName(CustomException):
     pass
 
 
-class InvalidAggregationArgument(CustomException):
+class MissingAggregationArgument(CustomException):
     """
-    this is used when there is a failure in an agate.Aggregation, e.g. a reference to
-      a non-existent column in an agate.Table
+    this is used when user passed in an aggregation function name (e.g. sum, mean) but not the required
+    column name argument. This is the case for every aggregate function other than `count`
     """
 
     pass

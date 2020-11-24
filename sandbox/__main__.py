@@ -32,6 +32,8 @@ DATA_PATHS = {
     "peeps": Path("examples/peeps.csv"),
     "states": Path("examples/statecodes.csv"),
     'pot': Path('examples/real/denver-pot-sales.csv'),
+    'whos': Path('examples/whos.csv'),
+
 }
 
 DATA = {}
@@ -43,11 +45,13 @@ for k, p in DATA_PATHS.items():
 def main():
     print("Why hello there!")
 
-    peeps = agate.Table.from_object(DATA["peeps"])
+    # data = agate.Table.from_object(DATA["whos"])
     # , column_types=[agate.Text(cast_nulls=False) for k in DATA['stuff'][0].keys()])
-    pot = agate.Table.from_object(DATA['pot'])
-    gpot = pot.group_by(key='YEAR')
-    vpot = pot.pivot(key=['YEAR'])
+    table = agate.Table.from_csv('examples/whos.csv')
+    outtable = table.group_by(key='gender')
+    outtable = outtable.aggregate([('sum_of_age', Sum('age')), ('mean_of_age', Mean('age'))])
+    # gpot = pot.group_by(key='YEAR')
+    # vpot = pot.pivot(key=['YEAR'])
 
     iembed()
 

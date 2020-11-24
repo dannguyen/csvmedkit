@@ -1,6 +1,6 @@
 from csvmedkit import agate
 from csvmedkit.cmk.helpers import *
-from csvmedkit.exceptions import InvalidAggregateName
+from csvmedkit.exceptions import InvalidAggregateName, MissingAggregationArgument
 from typing import (
     List as ListType,
     NoReturn as NoReturnType,
@@ -41,20 +41,37 @@ class Aggy(object):
         given dataset
     """
 
-    def __init__(self, slug: str, args: list, output_name: OptionalType[str]):
+    def __init__(
+        self, argtext: str, slug: str, args: list, output_name: OptionalType[str]
+    ):
+        self.argtext = argtext
         self._slug = slug
         self._args = args
         self._output_name = output_name
 
-        self._aggregate = self.get_agg(self.slug)
+    def __str__(self):
+        return self.argtext
+
+    def __repr__(self):
+        return self.argtext
 
     @property
     def aggregate_class(self) -> type:
-        return self._aggregate
+        """e.g. agate.aggregations.Sum"""
+        return self.get_agg(self.slug)
 
     @property
     def aggregation(self) -> agate.Aggregation:
-        return self.aggregate_class(*self._args)
+        try:
+            ag = self.aggregate_class(*self._args)
+        except TypeError as err:
+            if "required positional argument: 'column_name'" in str(err):
+                msg = "The aggregate function `{foo}` requires a `column_name` argument, i.e. the column of values for which to calculate the {foo}."
+                raise MissingAggregationArgument(msg.format(foo=self.slug))
+            else:
+                raise err
+        else:
+            return ag
 
     @property
     def agg_args(self) -> ListType[str]:
@@ -111,4 +128,4 @@ class Aggy(object):
         # parse any individual agg_args
         agg_args = cmk_parse_delimited_str(agg_args)
 
-        return klass(agg_slug, agg_args, output_name)
+        return klass(argtext, agg_slug, agg_args, output_name)

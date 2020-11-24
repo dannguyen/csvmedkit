@@ -3,12 +3,12 @@
 import contextlib
 from io import StringIO
 import sys
-
+import warnings
 
 from csvmedkit.exceptions import (
     ColumnIdentifierError,
     ColumnNameError,
-    InvalidAggregationArgument,
+    MissingAggregationArgument,
     InvalidAggregateName,
 )
 from csvmedkit.utils.csvpivot import CSVPivot, Parser, launch_new_instance
@@ -450,6 +450,16 @@ class TestErrors(TestCSVPivot):
             str(e.exception),
         )
 
+
+class TestAggErrors(TestCSVPivot):
+    def test_aggregate_requires_column_name_arg(self):
+        with self.assertRaises(MissingAggregationArgument) as e:
+            u = self.get_output(["-r", "a", "--agg", "sum", "examples/dummy.csv"])
+        self.assertIn(
+            """The aggregate function `sum` requires a `column_name` argument""",
+            str(e.exception),
+        )
+
     def test_invalid_aggregation_method_specified(self):
         with self.assertRaises(InvalidAggregateName) as e:
             u = self.get_output(["-c", "b", "-a", "just magic!", "examples/dummy.csv"])
@@ -483,6 +493,8 @@ class TestErrors(TestCSVPivot):
             str(e.exception),
         )
 
+
+class TestArgumentErrors(TestCSVPivot):
     def test_more_than_one_pivot_col_specified(self):
         ioerr = StringIO()
         with contextlib.redirect_stderr(ioerr):
@@ -491,6 +503,57 @@ class TestErrors(TestCSVPivot):
 
         self.assertEqual(err.exception.code, 2)
         self.assertIn("Only one -c/--pivot-column is allowed, not 2", ioerr.getvalue())
+
+    def test_cant_have_multiple_aggs_if_pivot_column_specified(self):
+        ioerr = StringIO()
+        with contextlib.redirect_stderr(ioerr):
+            with self.assertRaises(SystemExit) as err:
+                u = self.get_output(
+                    [
+                        "-c",
+                        "gender",
+                        "-a",
+                        "count",
+                        "--agg",
+                        "sum:age",
+                        "-a",
+                        "mean:age|Avg. Age" "examples/peeps.csv",
+                    ]
+                )
+        self.assertEqual(err.exception.code, 2)
+        self.assertIn(
+            "Cannot have more than one aggregation when --pivot-column is specified.",
+            ioerr.getvalue(),
+        )
+        self.assertIn(
+            "You specified --pivot-column 'gender' and also 3 aggregations",
+            ioerr.getvalue(),
+        )
+        self.assertIn("- count", ioerr.getvalue())
+        self.assertIn("- sum:age", ioerr.getvalue())
+        self.assertIn("- mean:age|Avg. Age", ioerr.getvalue())
+
+
+class TestMiscWarnings(TestCSVPivot):
+    def test_multiple_aggs_on_same_column_does_not_make_agate_warning(self):
+        """
+        The following should NOT happen
+        $ csvpivot examples/whos.csv -r gender -a min:age -a max:age
+        /agate/utils.py:292: DuplicateColumnWarning: Column name "age" already exists in Table. Column will be renamed to "age_2".
+        gender,min_of_age,max_of_age
+        female,30,60
+        male,20,50
+        """
+        with warnings.catch_warnings(record=True) as thewarns:
+            warnings.filterwarnings(action="always", module="agate")
+
+            # ioerr = StringIO()
+            # with contextlib.redirect_stderr(ioerr):
+            u = self.get_output(
+                ["-r", "race", "-a", "min:age", "--agg", "max:age", "examples/whos.csv"]
+            )
+            assert len(thewarns) == 0
+            # self.assertNotIn("""Column name "age" already exists in Table""", str(thewarns[0].message))
 
 
 ###################################################################################################

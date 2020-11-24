@@ -19,6 +19,12 @@ Simple group row count
     female,4
     male,2
 
+
+pandas TK::
+
+    xf = df.groupby(['race', 'gender']).count()['age']
+    print(xf.to_csv(header=True))
+
 Row and column pivot
 ====================
 
@@ -45,13 +51,13 @@ Aggregating values
 
 .. code-block:: python
     :emphasize-lines: 5,6
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from sys import stdout
-    >>> df = pd.read_csv('peeps2.csv')
-    >>> xf = pd.pivot_table(df, values='age', index=['gender'], aggfunc=np.mean)
-    >>> xf.rename(columns={'age': 'mean_of_age'}, inplace=True)
-    >>> stdout.write(xf.to_csv())
+    import numpy as np
+    import pandas as pd
+    from sys import stdout
+    df = pd.read_csv('peeps2.csv')
+    xf = pd.pivot_table(df, values='age', index=['gender'], aggfunc=np.mean)
+    xf.rename(columns={'age': 'mean_of_age'}, inplace=True)
+    stdout.write(xf.to_csv())
 
 
 .. code-block:: text

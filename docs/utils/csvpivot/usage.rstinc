@@ -2,69 +2,264 @@
 Usage overview and examples
 ===========================
 
+.. note:: For ease and clarity of comparison, the output of each example :command:`csvpivot` call is piped into :command:`csvlook` to get the data in prettified table form.
+
+    For example, a regular ``csvpivot`` call and output looks like this:
+
+    .. code-block:: text
+
+        $ csvpivot -r gender,region whos.csv | csvlook
+        gender,region,count_of
+        female,east,1
+        female,west,3
+        male,mid,2
+        male,east,1
 
 
+    Combined with ``csvlook``, it looks like this:
+
+    .. code-block:: text
+
+        $ csvpivot -r gender,region whos.csv | csvlook
+        | gender | region | count_of |
+        | ------ | ------ | -------- |
+        | female | east   |        1 |
+        | female | west   |        3 |
+        | male   | mid    |        2 |
+        | male   | east   |        1 |
 
 
-simple row count
-----------------
-
-.. code-block:: sh
-
-    $ csvpivot peeps2.csv
-
-
-.. code-block:: text
-
-    source
-
-multiple row count
+Simple group count
 ------------------
 
+The simplest form of :command:`csvpivot` invocation is to pass a single column name as argument to the ``-r/--pivot-rows`` option.
+
 .. code-block:: sh
 
-    $ csvpivot peeps2.csv
+    $ csvpivot -r race whos.csv | csvlook
+
+
+The resulting output consists of two columns: the *column_name* argument and ``count_of``. And the rows will consist of each each unique value in *column_name* and its respective frequency count in the data.
 
 
 .. code-block:: text
 
-    source
+    | race   | count_of |
+    | ------ | -------- |
+    | white  |        2 |
+    | asian  |        2 |
+    | black  |        2 |
+    | latino |        1 |
 
 
-row-x-column count
-------------------
+By passing in multiple column names to ``-r/--pivot-rows``, we get the frequency count for each unique combination of values in those columns:
 
 .. code-block:: sh
 
-    $ csvpivot peeps2.csv
+    $ csvpivot -r race,gender whos.csv | csvlook
+
+.. code-block:: text
+
+    | race   | gender | count_of |
+    | ------ | ------ | -------- |
+    | white  | female |        1 |
+    | white  | male   |        1 |
+    | asian  | male   |        1 |
+    | asian  | female |        1 |
+    | black  | female |        2 |
+    | latino | male   |        1 |
+
+
+
+
+This is essentially the same concept and result as a **group count** — e.g. SQL's ``GROUP BY...COUNT`` or pandas `GroupBy().count <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.core.groupby.GroupBy.count.html>`_
+
+
+
+Values as column names
+----------------------
+
+A feature that differentiates a "pivot table" from a typical groupby count is the ability to view data as *crosstab*, with values from columns being used for both rows and columns (TODO: TK better definition).
+
+For example, instead of using the ``-r/--pivot-rows`` option, we can instead pass a *column_name* argument into the ``-c/--pivot-column`` option. We still get a group count, but now the values of *column_name* are the *columns* in the resulting table:
+
+
+.. code-block:: sh
+
+    $ csvpivot -c region whos.csv | csvlook
 
 
 .. code-block:: text
 
-    source
+    | east | mid | west |
+    | ---- | --- | ---- |
+    |    2 |   2 |    3 |
 
 
-single row + value aggregation
-------------------------------
+
+..  note:: csvpivot requires at least either ``-r`` or ``-c``, or both to be set. You cannot, however, call csvpivot and omit both options.
+
+Pivoting on row and column values
+---------------------------------
+
+An important difference between the ``-r`` and ``-c`` options is that (for now) the latter supports only a *single* column name as argument. Passing in multiple column names will result in an error.
+
+
+While the ``-c/--pivot-column`` option only supports a single *column_name* argument, we can call :command:`csvpivot` with both the ``-c`` and ``-r`` options:
 
 .. code-block:: sh
 
-    $ csvpivot peeps2.csv
+    $ csvpivot -c region -r gender whos.csv | csvlook
 
 
 .. code-block:: text
 
-    source
+    | gender | east | west | mid |
+    | ------ | ---- | ---- | --- |
+    | female | True |    3 |   0 |
+    | male   | True |    0 |   2 |
 
 
-multi-row + multi-value agg
----------------------------
+And we can still pass in multiple *column_name* arguments into the ``-r`` option:
+
 
 .. code-block:: sh
 
-    $ csvpivot peeps2.csv
+    $ csvpivot -c region -r gender,race whos.csv | csvlook -I
+
+
+    | gender | race   | east | west | mid |
+    | ------ | ------ | ---- | ---- | --- |
+    | female | white  | 1    | 0    | 0   |
+    | female | black  | 0    | 2    | 0   |
+    | female | asian  | 0    | 1    | 0   |
+    | male   | asian  | 0    | 0    | 1   |
+    | male   | latino | 1    | 0    | 0   |
+    | male   | white  | 0    | 0    | 1   |
+
+
+Aggregations other than counting
+--------------------------------
+
+In all the examples so far, we've seen :command:`csvpivot` returning a group count aggregation on the columns we've specified. And this is because the default aggregation method is ``count``.
+
+To do a specific aggregation, use the ``-a/--agg`` option. For example, to specify *explicitly* that we want to do a ``count`` aggregation:
+
+
+.. code-block:: sh
+
+    $ csvpivot -r gender -a count whos.csv | csvlook
+
+.. code-block:: text
+
+    | gender | count_of |
+    | ------ | -------- |
+    | female |        4 |
+    | male   |        3 |
+
+
+However, aggregates *other* than ``count`` are a little different. For example, let's say we want to get the *sum* of values in data. The following call will result in an error:
+
+
+.. code-block:: sh
+
+    $ csvpivot -r gender -a sum whos.csv
 
 
 .. code-block:: text
 
-    source
+    MissingAggregationArgument: The aggregate function `sum` requires a `column_name` argument, i.e. the column of values for which to calculate the sum
+
+
+When doing a **count** of a dataset, it's just assumed that the user wants a group count of the specified column-values-row-combos-WHATEVER (TK terminology). But that assumption just can't be made when doing something like **sum** or **median**; the user has to specify what exactly they want the **sum** or **median** *of*, e.g. "the **sum** of the values in the ``birds`` column"
+
+
+So for the ``-a/--agg`` option, we can specify the aggregation method and the column name of values to aggregate by passing them in a string delimited by a **colon**, e.g.:
+
+
+.. code-block:: sh
+
+    $ csvpivot -r gender -a sum:birds whos.csv | csvlook
+
+.. code-block:: text
+
+    | gender | sum_of_birds |
+    | ------ | ------------ |
+    | female |            3 |
+    | male   |            7 |
+
+
+
+
+
+The ``-a/--agg`` option can be combined with the ``-r`` and ``-c`` options as seen in the previous examples.
+
+For example, specifying multiple column names for ``-r``:
+
+.. code-block:: sh
+
+    $ csvpivot -r gender,race -a sum:birds whos.csv | csvlook
+
+.. code-block:: text
+
+    | gender | race   | sum_of_birds |
+    | ------ | ------ | ------------ |
+    | female | white  |            1 |
+    | female | black  |            2 |
+    | female | asian  |            0 |
+    | male   | asian  |            1 |
+    | male   | latino |            4 |
+    | male   | white  |            2 |
+
+
+
+And when pivoting with values for the column names (TK better terminology), you can choose an aggregation other than the default **count**:
+
+
+.. code-block:: sh
+
+    $ csvpivot -r race -c gender -a median:age whos.csv | csvlook
+
+
+.. code-block:: text
+
+    | race   | female | male |
+    | ------ | ------ | ---- |
+    | white  |     40 |   20 |
+    | asian  |     60 |   30 |
+    | black  |     35 |    0 |
+    | latino |      0 |   50 |
+
+
+
+To get a list of available aggregates, run :command:`csvpivot` with the ``--list-aggs`` flag::
+
+    $ csvpivot --list-aggs
+    List of aggregate functions:
+    - count
+    - max
+    - maxlength
+    - min
+    - mean
+    - median
+    - mode
+    - stdev
+    - sum
+
+
+
+
+Performing multiple aggregations
+--------------------------------
+
+To return more than one column of aggregated values, we can invoke the ``-a/--agg`` option multiple times, one for each aggregate that we want.
+
+Like ``-r/--pivot-rows``, ``-a/--agg`` can take in multiple comma-delimited arguments. TKTODODOTODOD
+
+
+
+.. code-block:: sh
+
+    $ csvpivot -r gender -a sum:birds -a mean:age
+
+

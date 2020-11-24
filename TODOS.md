@@ -5,13 +5,17 @@
 
 
 **csvpivot**
+
 - [ ] documentation
     - usage overview
         - [ ] simple row count
         - [ ] multiple row count
-        - [ ] row-x-column count
-        - [ ] single row + value aggregation
-        - [ ] multi-row + multi-value agg
+        - [ ] row-x-column crosstab count
+            - [ ] come up with better definition of pivot/crosstab
+            - [ ... ] Aggregations other than counting
+            - [ ] Performing multiple aggregations (left off here)
+            - [ ] can't do multiple aggs and column_name
+            - [ ] Why count is special
     - pandas comparison
         - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot_table.html
         - [ ] apparently pandas can't do a row-x-column pivot?
