@@ -11,7 +11,6 @@ from csvmedkit.exceptions import *
 
 class Parser:
     description = """Replaces all instances of [PATTERN] with [REPL]"""
-
     override_flags = [
         "f",
     ]

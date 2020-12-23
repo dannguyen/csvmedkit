@@ -1,0 +1,90 @@
+
+Usage overview and examples
+===========================
+
+
+
+For every input record, :command:`csvflatten`'s output will contain 2-column rows — ``field,value`` — for each of the record's key-value pairs. This is useful for viewing records one at a time, especially if each row contains many columns.
+
+It's a concept similar to `xsv flatten <https://github.com/BurntSushi/xsv#available-commands>`_, though the structure of "flattened" output differs.
+
+
+For example, given the following table:
+
+.. csv-table::
+   :header: id,product,price
+
+   001,apples,1.50
+   002,oranges,2.25
+
+The "flattened" view of its 2 records would look like this:
+
+
+.. csv-table::
+   :header: field,value
+
+   id,001
+   product,apples
+   price,1.50
+   ~~~~~,
+   id,002
+   product,oranges
+   price,2.25
+
+
+Default pretty tabular format
+-----------------------------
+
+By default, :command:`csvflatten` assumes the user wants to get a quick look at a dataset's schema, so by default it produces "prettified" output in the form of Markdown tables. The width of the output is based on your terminal window width.
+
+Given data file :ref:`hamlet.csv <example-data-hamlet-csv>`:
+
+.. code-block:: shell
+
+    $ csvflatten examples/hamlet.csv
+
+.. code-block:: text
+
+    | fieldname | value                                          |
+    | --------- | ---------------------------------------------- |
+    | act       | 1                                              |
+    | scene     | 5                                              |
+    | speaker   | Horatio                                        |
+    | lines     | Propose the oath, my lord.                     |
+    | ~~~~~~~~~ |                                                |
+    | act       | 1                                              |
+    | scene     | 5                                              |
+    | speaker   | Hamlet                                         |
+    | lines     | Never to speak of this that you have seen,     |
+    |           | Swear by my sword.                             |
+    | ~~~~~~~~~ |                                                |
+    | act       | 1                                              |
+    | scene     | 5                                              |
+    | speaker   | Ghost                                          |
+    | lines     | [Beneath] Swear.                               |
+    | ~~~~~~~~~ |                                                |
+    | act       | 3                                              |
+    | scene     | 4                                              |
+    | speaker   | Gertrude                                       |
+    | lines     | O, speak to me no more;                        |
+    |           | These words, like daggers, enter in mine ears; |
+    |           | No more, sweet Hamlet!                         |
+    | ~~~~~~~~~ |                                                |
+    | act       | 4                                              |
+    | scene     | 7                                              |
+    | speaker   | Laertes                                        |
+    | lines     | Know you the hand?                             |
+
+
+This output is suitable for pasting into a `Markdown file <https://gist.github.com/dannguyen/296461fd1ccdd3719ecb36a6302a65f3>`_  to produce a formatted HTML table:
+
+.. figure:: files/images/hamlet-markdown-table.png
+    :alt: hamlet-markdown-table.png
+
+
+TK mention how hamlet.csv has new lines
+
+
+.. literalinclude:: ../../../examples/hamlet.csv
+   :emphasize-lines: 3-4,6-8
+

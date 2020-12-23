@@ -25,7 +25,7 @@ COLTYPE_MAP = {
 }
 
 FLAT_COL_PADDING = 4
-FLAT_COL_WIDTH = len("field") + FLAT_COL_PADDING  # e.g. '| field |' and '| recid |'
+FLAT_COL_WIDTH = len("field") + FLAT_COL_PADDING
 
 
 class CSVFlatten(UniformReader, CmkUtil):
@@ -35,12 +35,13 @@ class CSVFlatten(UniformReader, CmkUtil):
     override_flags = ["l"]
 
     def add_arguments(self):
+
         self.argparser.add_argument(
-            "-P",
-            "--prettify",
-            dest="prettify",
+            "-c",
+            "--csv",
+            dest="csvify",
             action="store_true",
-            help="""Print output in Markdown tabular format instead of CSV""",
+            help="""Print output in CSV format""",
         )
 
         self.argparser.add_argument(
@@ -123,8 +124,8 @@ class CSVFlatten(UniformReader, CmkUtil):
         return self.args.rec_ids_mode
 
     @property
-    def prettify(self):
-        return self.args.prettify
+    def csvify(self):
+        return self.args.csvify
 
     def read_input(self):
         self._rows = agate.csv.reader(self.skip_lines(), **self.reader_kwargs)
@@ -158,7 +159,7 @@ class CSVFlatten(UniformReader, CmkUtil):
             self.args.max_field_length or self.args.max_field_length == 0
         ):  # 0 is considered to be infinite/no-wrap
             self.max_field_length = self.args.max_field_length
-        elif self.prettify and not self.args.max_field_length:
+        elif not self.csvify and not self.args.max_field_length:
             # user wants it pretty but didn't specify a max_field_length, so we automatically figure it out
             # TODO: this is ugly
             termwidth = get_terminal_size().columns
@@ -204,7 +205,12 @@ class CSVFlatten(UniformReader, CmkUtil):
                         )
                     outrows.append(o_row + [fieldname, chunk])
 
-        if self.prettify:
+        if self.csvify:
+            writer = agate.csv.writer(self.output_file, **self.writer_kwargs)
+            writer.writerow(self.output_flat_column_names)
+            writer.writerows(outrows)
+
+        else:
             outtable = agate.Table(
                 outrows,
                 column_names=self.output_flat_column_names,
@@ -217,10 +223,6 @@ class CSVFlatten(UniformReader, CmkUtil):
                 max_rows=None,
                 max_columns=None,
             )
-        else:
-            writer = agate.csv.writer(self.output_file, **self.writer_kwargs)
-            writer.writerow(self.output_flat_column_names)
-            writer.writerows(outrows)
 
 
 def launch_new_instance():

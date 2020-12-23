@@ -20,14 +20,9 @@ column. Only one is allowed
 
 
 -a, --agg AGGREGATES_LIST
-----------------------------
+-------------------------
 
-The name of an aggregation to perform on each group
-of data in the pivot table. For aggregations that
-require an argument (i.e. a column name), pass in
-the aggregation name, followed by a colon, followed
-by comma-delimited arguments, e.g. `-a "sum:age"`
-and `-a "count:name,hello"
+The name of an aggregation to perform on each group of data in the pivot table. For aggregations that require an argument (i.e. a column name), pass in the aggregation name, followed by a colon, followed by comma-delimited arguments, e.g. ``-a "sum:age"`` and ``-a "count:name,hello"``
 
 
 TK default is count

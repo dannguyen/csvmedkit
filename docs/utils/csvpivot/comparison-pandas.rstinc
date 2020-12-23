@@ -29,23 +29,57 @@ https://agate.readthedocs.io/en/1.6.1/cookbook/transform.html?highlight=pivot#pi
 Simple group row count
 ----------------------
 
-TK
 
-    csvpivot -r gender peeps2.csv
+.. code-block:: sh
+
+    $ csvpivot -r gender whos.csv
 
 
-    xf = pd.pivot_table(df, values='age', index=['gender'], aggfunc='count')
-
+.. code-block:: text
 
     gender,count_of
     female,4
-    male,2
+    male,3
 
 
-pandas TK::
+Because this is not really a pivot table as much as it is a group count, we can use pandas ``groupby()`` method to get the same result.
 
-    xf = df.groupby(['race', 'gender']).count()['age']
-    print(xf.to_csv(header=True))
+and then rename: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rename.html
+
+
+.. code-block:: python
+
+    import pandas as pd
+    from sys import stdout
+    df = pd.read_csv('whos.csv')
+    xf = df.groupby('gender').count()[['name']]
+    xf.rename(columns={'name': 'count_of'})
+    stdout.write(xf.to_csv())
+
+
+
+Here's what it looks like when using `pandas.DataFrame.pivot_table() <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.pivot_table.html#pandas.DataFrame.pivot_table>`_
+
+.. code-block:: python
+
+    import pandas as pd
+    from sys import stdout
+    df = pd.read_csv('whos.csv')
+    xf = pd.pivot_table(df, index=['gender'], values='name', aggfunc='count')
+    xf.rename(columns={'name': 'count_of'}, inplace=True)
+    stdout.write(xf.to_csv())
+
+
+
+
+
+Multiple row grouping
+---------------------
+
+
+
+
+
 
 Row and column pivot
 --------------------
@@ -77,6 +111,7 @@ TK
 
 .. code-block:: python
     :emphasize-lines: 5,6
+
     import numpy as np
     import pandas as pd
     from sys import stdout

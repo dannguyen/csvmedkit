@@ -3,6 +3,49 @@
 
 ## 0.0.9.14
 
+**thoughts 2020-12-11**
+
+while working on data project, wondered that:
+
+- csvflatten 
+    - [x] --prettify should be default
+    - [ ] option to replace record separator with empty row
+- csvnorm
+    - [ ] should have the --max-length option, not csvflatten
+
+
+**thoughts 2020-11-24**
+- terms across frameworks
+    - csvpivot: 
+        - long data to wide data
+        - pivot_wider == tidyr.spread == reshape.cast/dcast 
+    - csvmelt: pivot_longer == tidyr.gather == reshape.melt
+        - wide data to long data
+- a csvmelt (i.e. unpivot) would be super useful, especially for real-world examples
+- for now, link to other resources that explain pivot tables and wide data. don't write my own guide
+- pandas.pivot and reshape.cast/tidyr/pivot_wider refer to an `index` argument rather than rows
+    - do i want to follow that, or stick with spreadsheet conventions?
+- very good reshape2 guide: https://seananderson.ca/2013/10/19/reshape/
+
+    ```R
+    melt(airquality, id.vars = c("month", "day"))
+
+    # from:
+        ##   ozone solar.r wind temp month day
+        ## 1    41     190  7.4   67     5   1
+        ## 2    36     118  8.0   72     5   2
+        ## 3    12     149 12.6   74     5   3
+
+    # to:
+
+        ##   month day variable value
+        ## 1     5   1    ozone    41
+        ## 2     5   2    ozone    36
+        ## 3     5   3    ozone    12
+        ## 4     5   4    ozone    18
+        ## 5     5   5    ozone    NA
+        ## 6     5   6    ozone    28
+    ```
 
 **general documentation**
 - given how lengthy usage overview is for csvpivot, maybe every tool should have a Quickstart?
@@ -10,14 +53,82 @@
     - [ ] do it for csvslice
 - write a top level tutorial like csvkit?
     - https://csvkit.readthedocs.io/en/latest/tutorial.html#
+    - Getting started congress.csv
+        - combine with csvlook and csvjoin
+        - csvflatten to view data
+        - csvsed to replace values
+    - data exploration: narrative data like env inspects
+        - csvslice + csvflatten
+    - data ranlgling: census
+        - csvheader to replace header with custom names
+        - csvslice to cut out metadata
+    - to and from with csvsqlite and in2csv
+        - LESO data stack
 
+- **get inspiration from tidyverse**
+    - method reference page: https://tidyr.tidyverse.org/reference/pivot_wider.html#details
+        - simple, elegant, with just 4 content headers: Arguments, Details, See Also, and Examples
+        - Details is just a short graf, giving background and relation to other methods
+        - See Also is a single line and link: pivot_wider_spec() to pivot "by hand" with a data frame that defines a pivotting specification.
+            - pivot_wider spec: https://tidyr.tidyverse.org/reference/pivot_wider_spec.html
+        - Intro graf includes "Learn more in vignette("pivot")", which links to a different page with more text and elaboration: 
+         - https://tidyr.tidyverse.org/articles/pivot.html
+    - ggplot2 is good too: https://ggplot2.tidyverse.org/reference/geom_bar.html
+
+**csvflatten**
+
+- --prettify as the default, in the way that csvstat as a --csv option: https://csvkit.readthedocs.io/en/latest/scripts/csvstat.html
 
 **csvpivot**
+
+
+**pivot readings**
+
+Read pandas docs on pandas.pivot and DataFrame.pivot_table
+- pandas.pivot: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot.html
+- DataFrame.pivot_table: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.pivot_table.html#pandas.DataFrame.pivot_table
+    - Described as `Create a spreadsheet-style pivot table as a DataFrame.`
+
+Reshape2 (Hadley Wickham's general reshaping library)
+- tidyr vs reshape2: https://jtr13.github.io/spring19/hx2259_qz2351.html
+    - reshape2 does aggregation (like csvpivot), whereas tidyr does not
+- journal article: Reshaping Data with the reshape Package
+    - https://www.jstatsoft.org/article/view/v021i12
+    - study the theory/context sections, e.g. Conceptual Framework
+    - 4. Casting molten data
+    - study how example data is shown, then referred to in each example
+
+Read tidyverse's article on pivoting: 
+- Main https://tidyr.tidyverse.org/articles/pivot.html
+- Wider section: https://tidyr.tidyverse.org/articles/pivot.html#wider
+- Nutgraf
+
+    > pivot_wider() is the opposite of pivot_longer(): it makes a dataset wider by increasing the number of columns and decreasing the number of rows. It’s relatively rare to need pivot_wider() to make tidy data, but it’s often useful for creating summary tables for presentation, or data in a format needed by other tools.
+
+
+**R guides**
+
+- An introduction to reshape https://seananderson.ca/2013/10/19/reshape/
+    - 'What makes data wide or long?'
+    - very well formatted and written guide
+
+- https://ademos.people.uic.edu/Chapter8.html
+    - reshape.cast is the equivalent to a Pivot: 
+    > Casting will transform long format back into wide format. This will, essentially, make your data look as it did in the beginning (or in any other way you’d prefer).
+
+
 
 - cli
     - simplify command-line opts to '--column' and '--rows' from '--pivot-column' and '--pivot-rows'
 
 - [ ] documentation
+    - terminology
+        - look at tidyverse writeup for pivot_wider
+            - https://tidyr.tidyverse.org/reference/pivot_wider.html
+            - *`pivot_wider() "widens" data, increasing the number of columns and decreasing the number of rows. The inverse transformation is pivot_longer().*
+        - look at tidyverse writeup for spread() (spread is now deprecated): 
+            - https://rstudio-pubs-static.s3.amazonaws.com/282405_e280f5f0073544d7be417cde893d78d0.html
+            - "key: The column you want to split apart (Field)"
     - usage overview
         - [ ] simple row count
         - [ ] multiple row count
@@ -35,8 +146,10 @@
     - [ ] write options/flags section
     - [ ] write comparison section
     - [ ] write scenarios/use-cases 
-
-
+    - other references about Pivot Tables
+        - Pivot Tables in Google Sheets: A Beginner’s Guide: https://www.benlcollins.com/spreadsheets/pivot-tables-google-sheets/#one
+        - https://business.tutsplus.com/tutorials/how-to-use-pivot-tables-in-google-sheets--cms-28887
+        - https://support.microsoft.com/en-us/office/create-a-pivottable-to-analyze-worksheet-data-a9a84538-bfe9-40a9-a8e9-f99134456576
 
 **csvslice**
 
@@ -132,9 +245,13 @@ Overall stuff
 ## 0.2
 
 
-- csvmelt:
+- csvmelt/csvgather:
+    - pandas uses "melt()" to refer to an "unpivot" https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.melt.html
+        - >This function is useful to massage a DataFrame into a format where one or more columns are identifier variables (id_vars), while all other columns, considered measured variables (value_vars), are “unpivoted” to the row axis, leaving just two non-identifier columns, ‘variable’ and ‘value’.
+
+    - r lang: https://www.rdocumentation.org/packages/reshape2/versions/1.4.4/topics/melt
     - tidyr: gather/pivot_longer https://tidyr.tidyverse.org/reference/pivot_longer.html
-    - 
+    - tidyverse https://uc-r.github.io/tidyr#gather
     - pt.normalize('gender', ['white', 'black', 'asian', 'latino'])
     | gender | property | value |
     | ------ | -------- | ----- |

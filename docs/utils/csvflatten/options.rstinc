@@ -1,0 +1,171 @@
+
+
+
+Options and flags
+=================
+
+TK: change the other option examples to use flatfruit.csv
+
+
+``-c, --csv``
+------------------
+
+Print output in CSV format, instead of "prettified" Markdown tabular format.
+
+Maybe you want "flattened" output, but something that you can paste into a spreadsheet:
+
+    .. code-block:: shell
+
+        $ csvflatten -c data.csv
+
+
+    .. code-block:: text
+
+        field,value
+        id,001
+        product,apples
+        price,1.50
+        description,An apple is an edible fruit produced by an apple tree (Malus domestica)
+        ~~~~~~~~~~~,
+        id,002
+        product,oranges
+        price,2.25
+        description,An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C.
+
+
+Here's what it looks like in a spreadsheet:
+
+.. figure:: files/images/excel-flatfruits-csvmode.png
+    :alt: excel-flatfruits-csvmode.png
+
+
+
+
+-L/--max-length [integer]
+--------------------------
+
+Specify a max character length for field values; values that exceed this length are split into multiple rows. This is useful for producing output easier to view in a spreadsheet::
+
+    $ csvflatten -L 5 examples/abc123.csv
+
+    field,value
+    code,alfa
+    blob,01234
+    ,56789
+    ~~~~~,
+    code,beta
+    blob,ABCDE
+    ,FGHIJ
+
+
+Or combining with the ``-P/--prettify`` option::
+
+    $ csvflatten -P -L 5 examples/abc123.csv
+
+    | field | value |
+    | ----- | ----- |
+    | code  | alfa  |
+    | blob  | 01234 |
+    |       | 56789 |
+    | ~~~~~ |       |
+    | code  | beta  |
+    | blob  | ABCDE |
+    |       | FGHIJ |
+
+
+
+The default behavior is as follows:
+
+- *Without* ``--prettify`` mode, this value is set to ``0``, i.e. no splitting of long values.
+- *With* ``--prettify`` mode, this value is automatically set to the width of the terminal. To disable this behavior, you can explicitly set ``--max-length 0``
+
+
+
+-B/--chunk-labels
+-----------------
+
+When a value is chopped into chunks across multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
+
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+
+
+If the ``--chunk-labels`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
+
+    |  field   |  value  |
+    +----------+---------+
+    | id       | 001     |
+    | title    | this is |
+    | title__1 | a story |
+    | title__2 | of love |
+
+
+
+-E/--eor [END_OF_RECORD_MARKER (string)]
+----------------------------------------
+
+By default, each record is separated by having a string of *tildes* in ``field``, e.g.::
+
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    | ~~~~~ |         |
+    | id    | 002     |
+    | title | Book 2  |
+
+
+Set ``'none'`` to disable::
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    | id    | 002     |
+    | title | Book 2  |
+
+Or to a value of your choosing::
+
+
+    $ csvflatten -E 'NEW-RECORD' data.csv
+
+    |   field    |  value  |
+    +------------+---------+
+    | id         | 001     |
+    | title      | this is |
+    |            | a story |
+    |            | of love |
+    | NEW-RECORD |         |
+    | id         | 002     |
+    | title      | Book 2  |
+
+
+
+-R/--rec-id
+-----------
+
+Include a ``_recid_`` column that contains the 0-based index for the respective record::
+
+
+    | _recid_ | field |  value  |
+    +---------+-------+---------+
+    |       0 | id    | 001     |
+    |       0 | title | this is |
+    |       0 |       | a story |
+    |       0 |       | of love |
+    |       1 | id    | 002     |
+    |       1 | title | Book 2  |
+
+
+Note that ``-rec-id`` by default disables the end-of-record separator
+
