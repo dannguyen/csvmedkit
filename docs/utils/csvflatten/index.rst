@@ -27,7 +27,7 @@ For example, given this ``data.csv``:
     | price       | 1.50                                                  |
     | description | An apple is an edible fruit produced by an apple tree |
     |             | (Malus domestica)                                     |
-    | ~~~~~~~~~~~ |                                                       |
+    | =========== |                                                       |
     | id          | 002                                                   |
     | product     | oranges                                               |
     | price       | 2.25                                                  |

@@ -7,30 +7,30 @@ Options and flags
 TK: change the other option examples to use flatfruit.csv
 
 
-``-c, --csv``
-------------------
+-c, --csv
+---------
 
 Print output in CSV format, instead of "prettified" Markdown tabular format.
 
 Maybe you want "flattened" output, but something that you can paste into a spreadsheet:
 
-    .. code-block:: shell
+.. code-block:: shell
 
-        $ csvflatten -c data.csv
+    $ csvflatten -c data.csv
 
 
-    .. code-block:: text
+.. code-block:: text
 
-        field,value
-        id,001
-        product,apples
-        price,1.50
-        description,An apple is an edible fruit produced by an apple tree (Malus domestica)
-        ~~~~~~~~~~~,
-        id,002
-        product,oranges
-        price,2.25
-        description,An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C.
+    field,value
+    id,001
+    product,apples
+    price,1.50
+    description,An apple is an edible fruit produced by an apple tree (Malus domestica)
+    ===========,
+    id,002
+    product,oranges
+    price,2.25
+    description,An orange is a type of citrus fruit that people often eat. Oranges are a very good source of vitamin C.
 
 
 Here's what it looks like in a spreadsheet:
@@ -52,7 +52,7 @@ Specify a max character length for field values; values that exceed this length 
     code,alfa
     blob,01234
     ,56789
-    ~~~~~,
+    =====,
     code,beta
     blob,ABCDE
     ,FGHIJ
@@ -67,7 +67,7 @@ Or combining with the ``-P/--prettify`` option::
     | code  | alfa  |
     | blob  | 01234 |
     |       | 56789 |
-    | ~~~~~ |       |
+    | ===== |       |
     | code  | beta  |
     | blob  | ABCDE |
     |       | FGHIJ |
@@ -81,7 +81,7 @@ The default behavior is as follows:
 
 
 
--B/--chunk-labels
+-B/--label-chunks
 -----------------
 
 When a value is chopped into chunks across multiple rows, by default, the  ``field`` (i.e. first column) is filled in for the value's *first* row, then left blank for its subsequent rows::
@@ -95,7 +95,7 @@ When a value is chopped into chunks across multiple rows, by default, the  ``fie
     |       | of love |
 
 
-If the ``--chunk-labels`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
+If the ``--label-chunks`` flag is set, each subsequent ``field`` will be filled with an incremental label, e.g.::
 
     |  field   |  value  |
     +----------+---------+
@@ -106,24 +106,14 @@ If the ``--chunk-labels`` flag is set, each subsequent ``field`` will be filled 
 
 
 
--E/--eor [END_OF_RECORD_MARKER (string)]
-----------------------------------------
+-S/--separator [TEXT_MARKER (string)]
+-------------------------------------
 
-By default, each record is separated by having a string of *tildes* in ``field``, e.g.::
-
-
-    | field |  value  |
-    +-------+---------+
-    | id    | 001     |
-    | title | this is |
-    |       | a story |
-    |       | of love |
-    | ~~~~~ |         |
-    | id    | 002     |
-    | title | Book 2  |
+By default, each record is separated by having a string of *equals signs* in ``field``, e.g.:
 
 
-Set ``'none'`` to disable::
+
+.. code-block:: text
 
     | field |  value  |
     +-------+---------+
@@ -131,13 +121,42 @@ Set ``'none'`` to disable::
     | title | this is |
     |       | a story |
     |       | of love |
+    | ===== |         |
     | id    | 002     |
     | title | Book 2  |
 
-Or to a value of your choosing::
+
+    $ csvflatten -S 'NEW-RECORD' data.csv
 
 
-    $ csvflatten -E 'NEW-RECORD' data.csv
+Set ``'none'`` to disable:
+
+
+.. code-block:: shell
+
+    $ csvflatten -S none data.csv
+
+.. code-block:: text
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    | id    | 002     |
+    | title | Book 2  |
+
+Or to a value of your choosing:
+
+.. code-block:: shell
+
+    $ csvflatten -S 'NEW-RECORD' data.csv
+
+
+
+
+.. code-block:: text
 
     |   field    |  value  |
     +------------+---------+
@@ -150,21 +169,45 @@ Or to a value of your choosing::
     | title      | Book 2  |
 
 
+-N/--newline-sep
+----------------
+
+Separate each flattened record with a blank newline. Cannot be used with ``-S/--separator``
+
+.. code-block:: text
+
+    | field |  value  |
+    +-------+---------+
+    | id    | 001     |
+    | title | this is |
+    |       | a story |
+    |       | of love |
+    |       |         |
+    | id    | 002     |
+    | title | Book 2  |
+
 
 -R/--rec-id
 -----------
 
-Include a ``_recid_`` column that contains the 0-based index for the respective record::
+Include a ``recid`` column that contains the 0-based index for the respective record:
+
+.. code-block:: shell
+
+    $ csvflatten -R data.csv
 
 
-    | _recid_ | field |  value  |
-    +---------+-------+---------+
-    |       0 | id    | 001     |
-    |       0 | title | this is |
-    |       0 |       | a story |
-    |       0 |       | of love |
-    |       1 | id    | 002     |
-    |       1 | title | Book 2  |
+.. code-block:: text
+
+
+    | recid  | field |  value  |
+    +---------+-------+--------+
+    |      0 | id    | 001     |
+    |      0 | title | this is |
+    |      0 |       | a story |
+    |      0 |       | of love |
+    |      1 | id    | 002     |
+    |      1 | title | Book 2  |
 
 
 Note that ``-rec-id`` by default disables the end-of-record separator

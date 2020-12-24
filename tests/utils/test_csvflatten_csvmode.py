@@ -59,7 +59,7 @@ class TestInit(TestCSVFlatten, EmptyFileTests):
                 "a,1",
                 "b,2",
                 "c,3",
-                "~~~~~,",
+                "=====,",
                 "a,8",
                 "b,9",
                 "c,10",
@@ -76,7 +76,7 @@ class TestInit(TestCSVFlatten, EmptyFileTests):
                 "b,2",
                 'c,"3,"',
                 ",4",
-                "~~~~~,",
+                "=====,",
                 "a,8",
                 "b,9",
                 "c,10",
@@ -93,7 +93,7 @@ class TestInit(TestCSVFlatten, EmptyFileTests):
                     "a,1",
                     "b,",
                     "c,3",
-                    "~~~~~,",
+                    "=====,",
                     "a,",
                     "b,",
                     "c,",
@@ -115,12 +115,12 @@ class TestMaxLength(TestCSVFlatten):
                 "field,value",
                 "code,IA",
                 "name,Iowa",
-                f"~~~~~,",
+                f"=====,",
                 "code,RI",
                 "name,Rhode",
                 ",Islan",
                 ",d",
-                f"~~~~~,",
+                f"=====,",
                 "code,TN",
                 "name,Tenne",
                 ",ssee",
@@ -152,7 +152,7 @@ class TestChunkLabel(TestCSVFlatten):
                 "b,2",
                 'c,"3,"',
                 "c__1,4",
-                "~~~~~,",
+                "=====,",
                 "a,8",
                 "b,9",
                 "c,10",
@@ -163,7 +163,7 @@ class TestChunkLabel(TestCSVFlatten):
         """
         --label-chunks adds label to every chunk
         """
-        eor = "~~~~~"
+        eor = "====="
         self.assertLines(
             ["-c", "examples/statecodes.csv", "--max-length", "5", "--label-chunks"],
             [
@@ -238,7 +238,7 @@ class TestEor(TestCSVFlatten):
 
     def test_no_end_of_record_marker(self):
         self.assertLines(
-            ["-c", "examples/tinyvals.csv", "--eor", ""],
+            ["-c", "examples/tinyvals.csv", "--separator", ""],
             [
                 """field,value""",
                 """alpha,1""",
@@ -250,7 +250,7 @@ class TestEor(TestCSVFlatten):
             ],
         )
         self.assertLines(
-            ["-c", "examples/tinyvals.csv", "-E", "none"],
+            ["-c", "examples/tinyvals.csv", "-S", "none"],
             [
                 """field,value""",
                 """alpha,1""",
@@ -264,7 +264,7 @@ class TestEor(TestCSVFlatten):
 
     def test_custom_end_of_record_marker(self):
         self.assertLines(
-            ["-c", "examples/tinyvals.csv", "-E", "False"],
+            ["-c", "examples/tinyvals.csv", "-S", "False"],
             [
                 """field,value""",
                 """alpha,1""",
@@ -280,7 +280,7 @@ class TestEor(TestCSVFlatten):
 
         # all-caps NONE is NOT treated as "none"
         self.assertLines(
-            ["-c", "examples/tinyvals.csv", "-E", "NONE"],
+            ["-c", "examples/tinyvals.csv", "-S", "NONE"],
             [
                 """field,value""",
                 """alpha,1""",
@@ -303,7 +303,7 @@ class TestRowId(TestCSVFlatten):
 
     def test_row_id_basic(self):
         """
-        prepend recid column; by default, --E/--eor is disabled
+        prepend recid column; by default, --S/--separator is disabled
         """
         self.assertLines(
             ["-R", "-c", "examples/dummy2.csv"],
@@ -320,10 +320,10 @@ class TestRowId(TestCSVFlatten):
 
     def test_row_id_eor(self):
         """
-        user has option to add -E/--eor if they want
+        user has option to add -S/--separator if they want
         """
         self.assertLines(
-            ["--rec-id", "-E", "WOAH", "-c", "examples/dummy2.csv"],
+            ["--rec-id", "-S", "WOAH", "-c", "examples/dummy2.csv"],
             [
                 "recid,field,value",
                 "0,a,1",
@@ -372,7 +372,7 @@ class TestPrettifyCombo(TestCSVFlatten):
                 "| b     | 2     |",
                 "| c     | 3,    |",
                 "|       | 4     |",
-                "| ~~~~~ |       |",
+                "| ===== |       |",
                 "| a     | 8     |",
                 "| b     | 9     |",
                 "| c     | 10    |",
@@ -381,7 +381,7 @@ class TestPrettifyCombo(TestCSVFlatten):
 
     def test_prettify_eor_none(self):
         self.assertLines(
-            ["-E", "none", "examples/dummy2.csv"],
+            ["-S", "none", "examples/dummy2.csv"],
             [
                 "| field | value |",
                 "| ----- | ----- |",

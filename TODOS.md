@@ -9,9 +9,9 @@ while working on data project, wondered that:
 
 - csvflatten 
     - [x] --prettify should be default
-    - [ ] option to replace record separator with empty row
+    - [x] option to replace record separator with empty row
 - csvnorm
-    - [ ] should have the --max-length option, not csvflatten
+    - [ ] should have the --max-length option, similar to csvflatten
 
 
 **thoughts 2020-11-24**

@@ -10,7 +10,7 @@ from typing import (
     Optional as OptionalType,
 )
 
-DEFAULT_EOR_MARKER = "~"
+DEFAULT_EOR_MARKER = "="
 DEFAULT_MAX_LENGTH = 50
 FLAT_COLUMN_NAMES = (
     "field",
@@ -58,7 +58,12 @@ class CSVFlatten(UniformReader, CmkUtil):
             "--rec-id",
             dest="rec_ids_mode",
             action="store_true",
-            help="""Include a `_recid_` column for each row, for easier tracking the 0-based index of each record""",
+            help="""Include a `recid` column at the beginning of each row, corresponding to the
+            numerical index of a flatten record.
+
+            (Using this option disables the default record separator, but you can still set --separator
+            to a custom marker)
+            """,
         )
 
         self.argparser.add_argument(
@@ -67,16 +72,26 @@ class CSVFlatten(UniformReader, CmkUtil):
             dest="label_chunks_mode",
             action="store_true",
             help="""When a long value is split into multiple "chunks", the `field` (i.e. first column) is left blank after the first chunk.
-                    Setting the --chunk-labels flag will fill the `field` column with: "field~n", where `n` indicates the n-th chunk of a chopped value""",
+                    Setting the --label-chunks flag will fill the `field` column with: "field~n", where `n` indicates the n-th chunk of a chopped value""",
         )
 
         self.argparser.add_argument(
-            "-E",
-            "--eor",
-            dest="end_of_record_marker",
+            "-N",
+            "--newline-sep",
+            dest="newline_separator",
+            action="store_true",
+            help="""Separate each flattened record with a blank newline. Cannot be used with -S/--s""",
+        )
+
+        self.argparser.add_argument(
+            "-S",
+            "--separator",
+            dest="record_separator",
+            metavar="TEXT_MARKER",
             type=str,
-            help="""end of record; When flattening multiple records, separate each records with a row w/ fieldname of [marker]. Set to '' or 'none' to disable. By default,
-                    the EOR marker is a series of tildes (~~~~~). However, this setting defaults to 'none' if `-R/--rowid` mode is true. """,
+            help=f"""Separate each flatten record with a blank row in which the `field` column contains a
+                text marker. The default marker is a series of "{DEFAULT_EOR_MARKER}". Set this option to "" or "none"
+                to disable.""",
         )
 
     @property
@@ -92,27 +107,35 @@ class CSVFlatten(UniformReader, CmkUtil):
         return _cp
 
     @property
-    def end_of_record_marker(self) -> OptionalType[str]:
+    def record_separator(self) -> OptionalType[str]:
         """
         preconditions:
             - self.max_column_name_length
             - self.rec_ids_mode
         """
         marker: OptionalType[str]
-
-        _eor = self.args.end_of_record_marker
-        if _eor == "none" or _eor == "":
-            marker = None
-        elif _eor:  # use default
-            marker = _eor
+        if self.args.newline_separator:
+            # empty string effectively makes a blank row
+            marker = ""
         else:
-            # disable by default, if we're in rowid mode
-            if self.rec_ids_mode:
+            argval = self.args.record_separator
+            if argval == "none" or argval == "":
+                # user explicitly disables it
                 marker = None
+            elif argval:
+                # user specified *something*
+                marker = argval
             else:
-                marker = "".join(
-                    DEFAULT_EOR_MARKER for i in range(self.max_column_name_length)
-                )
+                # user did not set option
+                if self.rec_ids_mode:
+                    # if we're using rec_ids, record separation is disabled by default
+                    marker = None
+                else:
+                    # this is the default record separator
+                    marker = "".join(
+                        DEFAULT_EOR_MARKER for i in range(self.max_column_name_length)
+                    )
+
         return marker
 
     @property
@@ -133,6 +156,9 @@ class CSVFlatten(UniformReader, CmkUtil):
         self._read_input_done = True
 
     def main(self):
+        if self.args.newline_separator and self.args.record_separator:
+            self.argparser.error("Cannot set both -N/--newline-sep and -S/--separator.")
+
         if self.additional_input_expected():
             self.argparser.error("You must provide an input file or piped data.")
 
@@ -184,10 +210,10 @@ class CSVFlatten(UniformReader, CmkUtil):
                 else []
             )
 
-            if self.end_of_record_marker and row_idx > 0:
-                # print out a end-of-record marker
-                eor_row = [None] if self.rec_ids_mode else []
-                outrows.append(eor_row + [self.end_of_record_marker, None])
+            if self.record_separator is not None and row_idx > 0:
+                # print out a record-separator
+                sep = [None] if self.rec_ids_mode else []
+                outrows.append(sep + [self.record_separator, None])
 
             for col_idx, colname in enumerate(self.i_column_names):
                 # value_lines = row[col_idx].strip().splitlines()
